@@ -50,7 +50,7 @@ export const foodShoppingInfo: Record<string, { unitWeight: number, unit: string
 export function calculateShoppingList(
   currentDay: number,
   daysToPlan: number = 15,
-  introSteps: Array<{ dayNumber: number; weekNumber: number; specificFood?: string; foodGroup?: string }>
+  introSteps: Array<{ dayNumber: number; specificFood?: string; foodGroup?: string }>
 ): ShoppingItem[] {
   
   // Obtener los alimentos de los próximos días
