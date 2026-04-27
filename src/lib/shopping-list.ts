@@ -248,3 +248,89 @@ export function calculateShoppingListByAgeRange(
   
   return listsByAge
 }
+
+// Información de meses para lista de compras
+export const monthShoppingInfo: Record<number, { title: string; startDay: number; endDay: number; color: string; bgClass: string; borderClass: string; icon: string }> = {
+  6: { title: 'Mes 6', startDay: 1, endDay: 30, color: 'orange', bgClass: 'bg-orange-50', borderClass: 'border-orange-200', icon: '🍼' },
+  7: { title: 'Mes 7', startDay: 31, endDay: 60, color: 'amber', bgClass: 'bg-amber-50', borderClass: 'border-amber-200', icon: '🥄' },
+  8: { title: 'Mes 8', startDay: 61, endDay: 72, color: 'yellow', bgClass: 'bg-yellow-50', borderClass: 'border-yellow-200', icon: '🥣' },
+  9: { title: 'Mes 9', startDay: 1, endDay: 30, color: 'lime', bgClass: 'bg-lime-50', borderClass: 'border-lime-200', icon: '🥗' },
+  10: { title: 'Mes 10', startDay: 31, endDay: 60, color: 'green', bgClass: 'bg-green-50', borderClass: 'border-green-200', icon: '🥬' },
+  11: { title: 'Mes 11', startDay: 61, endDay: 72, color: 'emerald', bgClass: 'bg-emerald-50', borderClass: 'border-emerald-200', icon: '🥦' },
+  12: { title: 'Mes 12', startDay: 1, endDay: 30, color: 'teal', bgClass: 'bg-teal-50', borderClass: 'border-teal-200', icon: '🍽️' },
+  13: { title: 'Mes 13', startDay: 31, endDay: 60, color: 'cyan', bgClass: 'bg-cyan-50', borderClass: 'border-cyan-200', icon: '🍴' },
+  14: { title: 'Mes 14', startDay: 61, endDay: 72, color: 'sky', bgClass: 'bg-sky-50', borderClass: 'border-sky-200', icon: '🥘' },
+  15: { title: 'Mes 15', startDay: 1, endDay: 30, color: 'blue', bgClass: 'bg-blue-50', borderClass: 'border-blue-200', icon: '🥫' },
+  16: { title: 'Mes 16', startDay: 31, endDay: 60, color: 'indigo', bgClass: 'bg-indigo-50', borderClass: 'border-indigo-200', icon: '🍲' },
+  17: { title: 'Mes 17', startDay: 61, endDay: 72, color: 'violet', bgClass: 'bg-violet-50', borderClass: 'border-violet-200', icon: '🥧' },
+  18: { title: 'Mes 18', startDay: 1, endDay: 30, color: 'purple', bgClass: 'bg-purple-50', borderClass: 'border-purple-200', icon: '🧁' },
+  19: { title: 'Mes 19', startDay: 31, endDay: 60, color: 'fuchsia', bgClass: 'bg-fuchsia-50', borderClass: 'border-fuchsia-200', icon: '🍰' },
+  20: { title: 'Mes 20', startDay: 61, endDay: 72, color: 'pink', bgClass: 'bg-pink-50', borderClass: 'border-pink-200', icon: '🎂' },
+  21: { title: 'Mes 21', startDay: 1, endDay: 30, color: 'rose', bgClass: 'bg-rose-50', borderClass: 'border-rose-200', icon: '🧃' },
+  22: { title: 'Mes 22', startDay: 31, endDay: 60, color: 'red', bgClass: 'bg-red-50', borderClass: 'border-red-200', icon: '🍎' },
+  23: { title: 'Mes 23', startDay: 61, endDay: 72, color: 'orange', bgClass: 'bg-orange-50', borderClass: 'border-orange-200', icon: '🍊' },
+  24: { title: 'Mes 24', startDay: 1, endDay: 72, color: 'green', bgClass: 'bg-green-50', borderClass: 'border-green-200', icon: '🎉' },
+}
+
+// Calcular lista de compras por mes calendario (Mes 6, Mes 7, etc.)
+export function calculateShoppingListByMonth(
+  introSteps: Array<{ dayNumber: number; specificFood?: string; foodGroup?: string; ageRange?: string }>
+): Record<number, ShoppingItem[]> {
+  
+  const listsByMonth: Record<number, ShoppingItem[]> = {}
+  
+  // Procesar cada mes desde el 6 hasta el 24
+  for (let month = 6; month <= 24; month++) {
+    const monthInfo = monthShoppingInfo[month]
+    const foodsNeeded: Record<string, { count: number; category: string }> = {}
+    
+    // Determinar qué días corresponden a este mes
+    // Los días del plan se distribuyen a lo largo de los meses
+    // Mes 6 = días 1-30, Mes 7 = días 31-60, etc. (aproximadamente)
+    
+    for (let day = monthInfo.startDay; day <= monthInfo.endDay && day <= introSteps.length; day++) {
+      const step = introSteps[day - 1]
+      
+      if (step?.specificFood) {
+        const foods = step.specificFood.split('+').map(f => f.trim())
+        
+        foods.forEach(food => {
+          if (food && food !== 'Mezcla de verduras' && food !== 'Combinaciones variadas' && food !== 'Variedad de alimentos seguros' && food !== 'Variedad con proteínas') {
+            if (!foodsNeeded[food]) {
+              foodsNeeded[food] = { count: 0, category: step.foodGroup || 'Otros' }
+            }
+            foodsNeeded[food].count++
+          }
+        })
+      }
+    }
+    
+    // Convertir a lista de compra
+    listsByMonth[month] = []
+    Object.entries(foodsNeeded).forEach(([food, info]) => {
+      const shopInfo = foodShoppingInfo[food]
+      if (shopInfo) {
+        const gramsPerMeal = 50
+        const totalGrams = info.count * gramsPerMeal
+        const units = Math.ceil(totalGrams / shopInfo.unitWeight)
+        
+        listsByMonth[month].push({
+          name: food,
+          category: info.category as ShoppingItem['category'],
+          quantity: `${units} ${shopInfo.unit}${units > 1 ? 's' : ''} (~${totalGrams}g)`,
+          quantityGrams: totalGrams,
+          notes: shopInfo.shelfLife,
+          icon: categoryIcons[info.category] || '🥣',
+        })
+      }
+    })
+    
+    // Ordenar por categoría
+    const categoryOrder = ['Verduras', 'Frutas', 'Proteínas', 'Lácteos', 'Legumbres', 'Cereales', 'Otros']
+    listsByMonth[month].sort((a, b) => {
+      return categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category)
+    })
+  }
+  
+  return listsByMonth
+}

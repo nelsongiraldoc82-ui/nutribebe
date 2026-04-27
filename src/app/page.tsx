@@ -20,7 +20,7 @@ import { Progress } from '@/components/ui/progress'
 import { Input } from '@/components/ui/input'
 import { Loader2 } from 'lucide-react'
 import { introStepsData, type IntroStep, ageRangeInfo, getAgeRangeForDay } from '@/lib/intro-steps-data'
-import { calculateShoppingList, calculateShoppingListByAgeRange, getShoppingPeriod, shoppingAgeRanges, type ShoppingItem } from '@/lib/shopping-list'
+import { calculateShoppingList, calculateShoppingListByAgeRange, calculateShoppingListByMonth, getShoppingPeriod, shoppingAgeRanges, monthShoppingInfo, type ShoppingItem } from '@/lib/shopping-list'
 
 // Types
 interface BabyReaction {
@@ -39,6 +39,8 @@ interface Family {
   code: string
   name: string
   baby_name?: string
+  baby_birth_date?: string // Fecha de nacimiento del bebé
+  feeding_start_date?: string // Fecha de inicio de alimentación complementaria (6 meses)
   created_at: string
 }
 
@@ -85,6 +87,7 @@ export default function NutriBebeApp() {
   const [introSteps, setIntroSteps] = useState<IntroStep[]>([])
   const [currentDay, setCurrentDay] = useState(1)
   const [selectedAgeRange, setSelectedAgeRange] = useState<'6-8m' | '8-12m' | '12-24m'>('6-8m')
+  const [babyBirthDate, setBabyBirthDate] = useState('')
   
   // Reaction state
   const [showReactionForm, setShowReactionForm] = useState(false)
@@ -94,7 +97,6 @@ export default function NutriBebeApp() {
   
   // Shopping list state
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
-  const [shoppingAgeRange, setShoppingAgeRange] = useState<'6-8m' | '8-12m' | '12-24m'>('6-8m')
 
   // Load family from storage on mount
   useEffect(() => {
@@ -103,6 +105,9 @@ export default function NutriBebeApp() {
       try {
         const parsed = JSON.parse(stored)
         setFamily(parsed)
+        if (parsed.baby_birth_date) {
+          setBabyBirthDate(parsed.baby_birth_date)
+        }
       } catch (e) {
         console.error('Error loading family:', e)
       }
@@ -110,19 +115,47 @@ export default function NutriBebeApp() {
     setIsLoadingAuth(false)
   }, [])
 
-  // Load intro steps and current day
+  // Load intro steps and calculate current day based on baby's age
   useEffect(() => {
     setIntroSteps(introStepsData)
-    
-    // Load saved current day
-    const savedDay = localStorage.getItem(CURRENT_DAY_STORAGE_KEY)
-    if (savedDay) {
-      const day = parseInt(savedDay, 10)
-      if (!isNaN(day) && day > 0 && day <= introStepsData.length) {
-        setCurrentDay(day)
+  }, [])
+
+  // Calculate current feeding day based on baby's birth date
+  useEffect(() => {
+    if (family?.baby_birth_date && introSteps.length > 0) {
+      const birthDate = new Date(family.baby_birth_date)
+      const today = new Date()
+      
+      // Calculate baby's age in months
+      const ageInMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth())
+      
+      // Feeding starts at 6 months (180 days)
+      const sixMonthsInDays = 180
+      const daysSinceBirth = Math.floor((today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24))
+      
+      // If baby is younger than 6 months, show day 1 as preview
+      if (daysSinceBirth < sixMonthsInDays) {
+        setCurrentDay(1)
+        return
+      }
+      
+      // Calculate feeding day (day 1 = 6 months old)
+      const feedingDay = daysSinceBirth - sixMonthsInDays + 1
+      
+      // Cap at total available days
+      const cappedDay = Math.min(Math.max(1, feedingDay), introSteps.length)
+      setCurrentDay(cappedDay)
+      
+      // Update selected age range based on current day
+      if (cappedDay <= 30) {
+        setSelectedAgeRange('6-8m')
+      } else if (cappedDay <= 60) {
+        setSelectedAgeRange('8-12m')
+      } else {
+        setSelectedAgeRange('12-24m')
       }
     }
-  }, [])
+  }, [family?.baby_birth_date, introSteps.length])
 
   // Load reactions when family changes
   useEffect(() => {
@@ -155,6 +188,19 @@ export default function NutriBebeApp() {
       return
     }
     
+    if (!babyBirthDate) {
+      setAuthError('Por favor ingresa la fecha de nacimiento del bebé')
+      return
+    }
+    
+    // Validate birth date is not in the future
+    const birthDate = new Date(babyBirthDate)
+    const today = new Date()
+    if (birthDate > today) {
+      setAuthError('La fecha de nacimiento no puede ser en el futuro')
+      return
+    }
+    
     setAuthError('')
     
     const newFamily: Family = {
@@ -162,6 +208,7 @@ export default function NutriBebeApp() {
       code: generateFamilyCode(),
       name: familyName,
       baby_name: babyName || undefined,
+      baby_birth_date: babyBirthDate,
       created_at: new Date().toISOString(),
     }
     
@@ -282,6 +329,43 @@ export default function NutriBebeApp() {
     })
   }
 
+  // Helper function: Calculate baby's age in months
+  const getBabyAgeInMonths = (): number => {
+    if (!family?.baby_birth_date) return 0
+    const birthDate = new Date(family.baby_birth_date)
+    const today = new Date()
+    return (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth())
+  }
+
+  // Helper function: Format baby's age display
+  const getBabyAgeDisplay = (): string => {
+    const months = getBabyAgeInMonths()
+    if (months < 1) return 'Recién nacido'
+    if (months === 1) return '1 mes'
+    return `${months} meses`
+  }
+
+  // Helper function: Get current feeding month (Mes 6, Mes 7, etc.)
+  const getCurrentFeedingMonth = (): number => {
+    return getBabyAgeInMonths()
+  }
+
+  // Helper function: Check if baby has started solids
+  const hasStartedSolids = (): boolean => {
+    return getBabyAgeInMonths() >= 6
+  }
+
+  // Helper function: Days until solids
+  const getDaysUntilSolids = (): number => {
+    if (!family?.baby_birth_date) return 0
+    const birthDate = new Date(family.baby_birth_date)
+    const sixMonthsDate = new Date(birthDate)
+    sixMonthsDate.setMonth(sixMonthsDate.getMonth() + 6)
+    const today = new Date()
+    const diffTime = sixMonthsDate.getTime() - today.getTime()
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  }
+
   // Calculations
   const totalDays = introSteps.length
   const progressPercentage = totalDays > 0 ? (currentDay / totalDays) * 100 : 0
@@ -294,10 +378,6 @@ export default function NutriBebeApp() {
   
   // Shopping list calculation - por rango de edad
   const shoppingListsByAge = calculateShoppingListByAgeRange(introSteps)
-  const currentShoppingList = shoppingListsByAge[shoppingAgeRange] || []
-  const currentShoppingRangeInfo = shoppingAgeRanges[shoppingAgeRange]
-  const totalItems = currentShoppingList.length
-  const checkedCount = currentShoppingList.filter(item => checkedItems.has(`${shoppingAgeRange}-${item.name}`)).length
 
   // Loading screen
   if (isLoadingAuth) {
@@ -341,7 +421,7 @@ export default function NutriBebeApp() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="babyName">Nombre del bebé (opcional)</Label>
+                  <Label htmlFor="babyName">Nombre del bebé</Label>
                   <Input
                     id="babyName"
                     placeholder="Ej: Sofía"
@@ -349,6 +429,20 @@ export default function NutriBebeApp() {
                     onChange={(e) => setBabyName(e.target.value)}
                     className="mt-1"
                   />
+                </div>
+                <div>
+                  <Label htmlFor="babyBirthDate">Fecha de nacimiento del bebé *</Label>
+                  <Input
+                    id="babyBirthDate"
+                    type="date"
+                    value={babyBirthDate}
+                    onChange={(e) => setBabyBirthDate(e.target.value)}
+                    className="mt-1"
+                    max={new Date().toISOString().split('T')[0]}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Esta fecha se usará para calcular automáticamente el plan de alimentación
+                  </p>
                 </div>
                 <Button onClick={createFamily} className="w-full bg-orange-500 hover:bg-orange-600">
                   <Plus className="w-4 h-4 mr-2" />
@@ -402,7 +496,16 @@ export default function NutriBebeApp() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-orange-600">NutriBebé</h1>
-                <p className="text-xs text-gray-500">{family.name}</p>
+                <div className="flex items-center gap-2">
+                  {family.baby_name && (
+                    <span className="text-sm font-medium text-gray-700">{family.baby_name}</span>
+                  )}
+                  {family.baby_birth_date && (
+                    <Badge variant="secondary" className="text-xs">
+                      {getBabyAgeDisplay()}
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
             
@@ -735,149 +838,155 @@ export default function NutriBebeApp() {
             </motion.div>
           )}
 
-          {/* Shopping List Section */}
+          {/* Shopping List Section - Por Mes */}
           {activeSection === 'shopping' && (
             <motion.div key="shopping" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">Lista de Compras por Edad</h2>
-                <p className="text-gray-500">Alimentos necesarios para cada etapa de alimentación</p>
+                <h2 className="text-2xl font-bold text-gray-800">Lista de Compras por Mes</h2>
+                <p className="text-gray-500">Alimentos necesarios para cada mes de alimentación complementaria</p>
+                {family.baby_birth_date && (
+                  <p className="text-sm text-orange-600 mt-1">
+                    {family.baby_name ? `${family.baby_name}` : 'Tu bebé'} tiene {getBabyAgeDisplay()} 
+                    {hasStartedSolids() ? ' - Mes actual de alimentación: Mes ' + getCurrentFeedingMonth() : ` - Faltan ${getDaysUntilSolids()} días para iniciar alimentos sólidos`}
+                  </p>
+                )}
               </div>
 
-              {/* Age Range Tabs for Shopping */}
-              <div className="flex gap-2 flex-wrap">
-                {(['6-8m', '8-12m', '12-24m'] as const).map(range => {
-                  const info = shoppingAgeRanges[range]
-                  const itemCount = shoppingListsByAge[range]?.length || 0
+              {/* Calculate monthly shopping lists */}
+              {(() => {
+                const shoppingListsByMonth = calculateShoppingListByMonth(introSteps)
+                const currentMonth = getCurrentFeedingMonth()
+                
+                // Show months from 6 to 24, highlighting current month
+                const monthsToShow = Array.from({ length: 19 }, (_, i) => i + 6) // 6 to 24
+                
+                return monthsToShow.map(month => {
+                  const monthInfo = monthShoppingInfo[month]
+                  const monthList = shoppingListsByMonth[month] || []
+                  const isCurrentMonth = month === currentMonth && hasStartedSolids()
+                  const isPastMonth = month < currentMonth && hasStartedSolids()
+                  const isFutureMonth = month > currentMonth || !hasStartedSolids()
+                  
                   return (
-                    <Button
-                      key={range}
-                      variant={shoppingAgeRange === range ? 'default' : 'outline'}
-                      className={`flex-1 flex flex-col items-center py-3 h-auto ${
-                        shoppingAgeRange === range 
-                          ? range === '6-8m' ? 'bg-orange-500 hover:bg-orange-600' 
-                          : range === '8-12m' ? 'bg-green-500 hover:bg-green-600'
-                          : 'bg-blue-500 hover:bg-blue-600'
-                          : ''
-                      }`}
-                      onClick={() => {
-                        setShoppingAgeRange(range)
-                        setCheckedItems(new Set())
-                      }}
-                    >
-                      <span className="text-xl mb-1">{info.icon}</span>
-                      <span className="font-medium">{info.title}</span>
-                      <span className="text-xs opacity-80">{itemCount} alimentos</span>
-                    </Button>
-                  )
-                })}
-              </div>
-
-              {/* Current Range Info */}
-              <Card className={`${currentShoppingRangeInfo.borderClass} ${currentShoppingRangeInfo.bgClass}`}>
-                <CardContent className="pt-4 pb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl">{currentShoppingRangeInfo.icon}</span>
-                      <div>
-                        <p className="font-bold text-lg text-gray-800">{currentShoppingRangeInfo.title}</p>
-                        <p className="text-sm text-gray-600">{currentShoppingRangeInfo.subtitle}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Días {currentShoppingRangeInfo.startDay} - {currentShoppingRangeInfo.endDay}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-gray-700">{checkedCount}/{totalItems}</p>
-                      <p className="text-xs text-gray-500">items comprados</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Progress */}
-              {totalItems > 0 && (
-                <Progress value={(checkedCount / totalItems) * 100} className="h-2" />
-              )}
-
-              {/* Empty state */}
-              {currentShoppingList.length === 0 && (
-                <Card className="border-orange-200 bg-orange-50">
-                  <CardContent className="pt-6 pb-6 text-center">
-                    <ShoppingCart className="w-12 h-12 mx-auto text-orange-400 mb-3" />
-                    <p className="text-orange-700 font-medium">No hay alimentos para este rango</p>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Shopping List by Category */}
-              {currentShoppingList.length > 0 && (
-                <div className="space-y-4">
-                  {['Verduras', 'Frutas', 'Proteínas', 'Lácteos', 'Legumbres', 'Cereales', 'Otros'].map(category => {
-                    const categoryItems = currentShoppingList.filter(item => item.category === category)
-                    if (categoryItems.length === 0) return null
-                    
-                    return (
-                      <Card key={category} className="border-gray-200">
-                        <CardHeader className="pb-2 pt-3">
-                          <CardTitle className="text-base flex items-center gap-2">
-                            <span className="text-xl">{categoryItems[0].icon}</span>
-                            {category}
-                            <Badge variant="secondary" className="ml-auto">{categoryItems.length}</Badge>
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2 pb-3">
-                          {categoryItems.map((item) => {
-                            const itemKey = `${shoppingAgeRange}-${item.name}`
-                            const isChecked = checkedItems.has(itemKey)
-                            return (
-                              <div
-                                key={item.name}
-                                className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all ${
-                                  isChecked 
-                                    ? 'bg-green-50 border border-green-200' 
-                                    : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
-                                }`}
-                                onClick={() => {
-                                  setCheckedItems(prev => {
-                                    const newSet = new Set(prev)
-                                    if (newSet.has(itemKey)) {
-                                      newSet.delete(itemKey)
-                                    } else {
-                                      newSet.add(itemKey)
-                                    }
-                                    return newSet
-                                  })
-                                }}
-                              >
-                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                                  isChecked 
-                                    ? 'bg-green-500 border-green-500' 
-                                    : 'border-gray-300'
-                                }`}>
-                                  {isChecked && <Check className="w-3 h-3 text-white" />}
+                    <div key={month} className="space-y-3">
+                      {/* Month Header */}
+                      <Card className={`${monthInfo.borderClass} ${monthInfo.bgClass} ${isCurrentMonth ? 'ring-2 ring-orange-400 ring-offset-2' : ''} ${isPastMonth ? 'opacity-60' : ''}`}>
+                        <CardContent className="pt-4 pb-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <span className="text-3xl">{monthInfo.icon}</span>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-bold text-lg text-gray-800">{monthInfo.title}</p>
+                                  {isCurrentMonth && (
+                                    <Badge className="bg-orange-500 text-white text-xs">Mes actual</Badge>
+                                  )}
+                                  {isPastMonth && (
+                                    <Badge variant="outline" className="text-xs">Completado</Badge>
+                                  )}
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className={`font-medium text-sm ${isChecked ? 'line-through text-gray-400' : 'text-gray-800'}`}>
-                                    {item.name}
-                                  </p>
-                                  <p className={`text-xs ${isChecked ? 'text-gray-400' : 'text-gray-500'}`}>
-                                    {item.quantity}
-                                  </p>
-                                </div>
-                                {item.notes && (
-                                  <Badge variant="outline" className="text-xs flex-shrink-0">
-                                    {item.notes}
-                                  </Badge>
-                                )}
+                                <p className="text-sm text-gray-600">
+                                  Bebé de {month} meses de edad
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {monthList.length} alimentos
+                                </p>
                               </div>
-                            )
-                          })}
+                            </div>
+                          </div>
                         </CardContent>
                       </Card>
-                    )
-                  })}
-                </div>
-              )}
+
+                      {/* Shopping Items by Category - Only show for current/past months or expand manually */}
+                      {(isCurrentMonth || isPastMonth) && monthList.length > 0 && (
+                        <div className="space-y-3 pl-2">
+                          {['Verduras', 'Frutas', 'Proteínas', 'Lácteos', 'Legumbres', 'Cereales', 'Otros'].map(category => {
+                            const categoryItems = monthList.filter(item => item.category === category)
+                            if (categoryItems.length === 0) return null
+                            
+                            return (
+                              <Card key={`month${month}-${category}`} className="border-gray-200">
+                                <CardHeader className="pb-2 pt-3">
+                                  <CardTitle className="text-base flex items-center gap-2">
+                                    <span className="text-xl">{categoryItems[0].icon}</span>
+                                    {category}
+                                    <Badge variant="secondary" className="ml-auto">{categoryItems.length}</Badge>
+                                  </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-2 pb-3">
+                                  {categoryItems.map((item) => {
+                                    const itemKey = `month${month}-${item.name}`
+                                    const isChecked = checkedItems.has(itemKey)
+                                    return (
+                                      <div
+                                        key={item.name}
+                                        className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all ${
+                                          isChecked 
+                                            ? 'bg-green-50 border border-green-200' 
+                                            : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
+                                        }`}
+                                        onClick={() => {
+                                          setCheckedItems(prev => {
+                                            const newSet = new Set(prev)
+                                            if (newSet.has(itemKey)) {
+                                              newSet.delete(itemKey)
+                                            } else {
+                                              newSet.add(itemKey)
+                                            }
+                                            return newSet
+                                          })
+                                        }}
+                                      >
+                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                                          isChecked 
+                                            ? 'bg-green-500 border-green-500' 
+                                            : 'border-gray-300'
+                                        }`}>
+                                          {isChecked && <Check className="w-3 h-3 text-white" />}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p className={`font-medium text-sm ${isChecked ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                                            {item.name}
+                                          </p>
+                                          <p className={`text-xs ${isChecked ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            {item.quantity}
+                                          </p>
+                                        </div>
+                                        {item.notes && (
+                                          <Badge variant="outline" className="text-xs flex-shrink-0">
+                                            {item.notes}
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    )
+                                  })}
+                                </CardContent>
+                              </Card>
+                            )
+                          })}
+                        </div>
+                      )}
+
+                      {/* Empty state */}
+                      {(isCurrentMonth || isPastMonth) && monthList.length === 0 && (
+                        <Card className="border-orange-200 bg-orange-50 ml-2">
+                          <CardContent className="pt-4 pb-4 text-center">
+                            <ShoppingCart className="w-8 h-8 mx-auto text-orange-400 mb-2" />
+                            <p className="text-orange-700 text-sm font-medium">No hay alimentos específicos para este mes</p>
+                          </CardContent>
+                        </Card>
+                      )}
+
+                      {/* Future month preview */}
+                      {isFutureMonth && !isPastMonth && !isCurrentMonth && (
+                        <div className="ml-2 text-sm text-gray-500 italic pl-4">
+                          Lista disponible cuando el bebé tenga {month} meses
+                        </div>
+                      )}
+                    </div>
+                  )
+                })
+              })()}
 
               {/* Action Buttons */}
               <div className="flex gap-3">
@@ -891,7 +1000,13 @@ export default function NutriBebeApp() {
                 <Button 
                   className="flex-1 bg-green-500 hover:bg-green-600"
                   onClick={() => {
-                    const allItems = new Set(currentShoppingList.map(item => `${shoppingAgeRange}-${item.name}`))
+                    const shoppingListsByMonth = calculateShoppingListByMonth(introSteps)
+                    const allItems = new Set<string>()
+                    Object.entries(shoppingListsByMonth).forEach(([month, items]) => {
+                      items.forEach(item => {
+                        allItems.add(`month${month}-${item.name}`)
+                      })
+                    })
                     setCheckedItems(allItems)
                   }}
                 >
