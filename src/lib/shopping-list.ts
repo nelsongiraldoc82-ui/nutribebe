@@ -148,3 +148,103 @@ export function getShoppingPeriod(currentDay: number): { start: number; end: num
   const end = start + 29
   return { start, end, period }
 }
+
+// Información de rangos de edad para lista de compras
+export const shoppingAgeRanges = {
+  '6-8m': {
+    title: '6-8 meses',
+    subtitle: 'Primeras comidas',
+    startDay: 1,
+    endDay: 30,
+    color: 'orange',
+    bgClass: 'bg-orange-50',
+    borderClass: 'border-orange-200',
+    textClass: 'text-orange-700',
+    icon: '🍼'
+  },
+  '8-12m': {
+    title: '8-12 meses',
+    subtitle: 'Ampliando variedad',
+    startDay: 31,
+    endDay: 60,
+    color: 'green',
+    bgClass: 'bg-green-50',
+    borderClass: 'border-green-200',
+    textClass: 'text-green-700',
+    icon: '🥄'
+  },
+  '12-24m': {
+    title: '12-24 meses',
+    subtitle: 'Comida familiar',
+    startDay: 61,
+    endDay: 72,
+    color: 'blue',
+    bgClass: 'bg-blue-50',
+    borderClass: 'border-blue-200',
+    textClass: 'text-blue-700',
+    icon: '🍽️'
+  }
+}
+
+// Calcular lista de compras por rango de edad
+export function calculateShoppingListByAgeRange(
+  introSteps: Array<{ dayNumber: number; specificFood?: string; foodGroup?: string; ageRange?: string }>
+): Record<string, ShoppingItem[]> {
+  
+  const listsByAge: Record<string, ShoppingItem[]> = {
+    '6-8m': [],
+    '8-12m': [],
+    '12-24m': []
+  }
+  
+  // Procesar cada rango de edad
+  Object.keys(listsByAge).forEach(ageRange => {
+    const rangeInfo = shoppingAgeRanges[ageRange as keyof typeof shoppingAgeRanges]
+    const foodsNeeded: Record<string, { count: number; category: string }> = {}
+    
+    // Obtener alimentos para este rango
+    for (let day = rangeInfo.startDay; day <= rangeInfo.endDay; day++) {
+      const step = introSteps[day - 1]
+      
+      if (step?.specificFood) {
+        const foods = step.specificFood.split('+').map(f => f.trim())
+        
+        foods.forEach(food => {
+          if (food && food !== 'Mezcla de verduras' && food !== 'Combinaciones variadas' && food !== 'Variedad de alimentos seguros' && food !== 'Variedad con proteínas') {
+            if (!foodsNeeded[food]) {
+              foodsNeeded[food] = { count: 0, category: step.foodGroup || 'Otros' }
+            }
+            foodsNeeded[food].count++
+          }
+        })
+      }
+    }
+    
+    // Convertir a lista de compra
+    Object.entries(foodsNeeded).forEach(([food, info]) => {
+      const shopInfo = foodShoppingInfo[food]
+      if (shopInfo) {
+        const gramsPerMeal = 50
+        const totalGrams = info.count * gramsPerMeal
+        const units = Math.ceil(totalGrams / shopInfo.unitWeight)
+        
+        listsByAge[ageRange].push({
+          name: food,
+          category: info.category as ShoppingItem['category'],
+          quantity: `${units} ${shopInfo.unit}${units > 1 ? 's' : ''} (~${totalGrams}g)`,
+          quantityGrams: totalGrams,
+          notes: shopInfo.shelfLife,
+          icon: categoryIcons[info.category] || '🥣',
+        })
+      }
+    })
+    
+    // Ordenar por categoría
+    const categoryOrder = ['Verduras', 'Frutas', 'Proteínas', 'Lácteos', 'Legumbres', 'Cereales', 'Otros']
+    listsByAge[ageRange].sort((a, b) => {
+      return categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category)
+    })
+  })
+  
+  return listsByAge
+}

@@ -20,7 +20,7 @@ import { Progress } from '@/components/ui/progress'
 import { Input } from '@/components/ui/input'
 import { Loader2 } from 'lucide-react'
 import { introStepsData, type IntroStep, ageRangeInfo, getAgeRangeForDay } from '@/lib/intro-steps-data'
-import { calculateShoppingList, getShoppingPeriod, type ShoppingItem } from '@/lib/shopping-list'
+import { calculateShoppingList, calculateShoppingListByAgeRange, getShoppingPeriod, shoppingAgeRanges, type ShoppingItem } from '@/lib/shopping-list'
 
 // Types
 interface BabyReaction {
@@ -94,6 +94,7 @@ export default function NutriBebeApp() {
   
   // Shopping list state
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
+  const [shoppingAgeRange, setShoppingAgeRange] = useState<'6-8m' | '8-12m' | '12-24m'>('6-8m')
 
   // Load family from storage on mount
   useEffect(() => {
@@ -291,11 +292,12 @@ export default function NutriBebeApp() {
   const getCurrentReaction = (step: IntroStep): BabyReaction | null => 
     step.specificFood ? savedReactions[`${step.id}-${step.specificFood}`] || null : null
   
-  // Shopping list calculation
-  const shoppingPeriod = getShoppingPeriod(currentDay)
-  const shoppingList = calculateShoppingList(currentDay, 30, introSteps)
-  const totalItems = shoppingList.length
-  const checkedCount = shoppingList.filter(item => checkedItems.has(item.name)).length
+  // Shopping list calculation - por rango de edad
+  const shoppingListsByAge = calculateShoppingListByAgeRange(introSteps)
+  const currentShoppingList = shoppingListsByAge[shoppingAgeRange] || []
+  const currentShoppingRangeInfo = shoppingAgeRanges[shoppingAgeRange]
+  const totalItems = currentShoppingList.length
+  const checkedCount = currentShoppingList.filter(item => checkedItems.has(`${shoppingAgeRange}-${item.name}`)).length
 
   // Loading screen
   if (isLoadingAuth) {
@@ -737,23 +739,55 @@ export default function NutriBebeApp() {
           {activeSection === 'shopping' && (
             <motion.div key="shopping" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">Lista de Compras</h2>
-                <p className="text-gray-500">Alimentos necesarios para los próximos 30 días según tu progreso</p>
+                <h2 className="text-2xl font-bold text-gray-800">Lista de Compras por Edad</h2>
+                <p className="text-gray-500">Alimentos necesarios para cada etapa de alimentación</p>
               </div>
 
-              {/* Period Info */}
-              <Card className="border-green-200 bg-gradient-to-r from-green-50 to-blue-50">
+              {/* Age Range Tabs for Shopping */}
+              <div className="flex gap-2 flex-wrap">
+                {(['6-8m', '8-12m', '12-24m'] as const).map(range => {
+                  const info = shoppingAgeRanges[range]
+                  const itemCount = shoppingListsByAge[range]?.length || 0
+                  return (
+                    <Button
+                      key={range}
+                      variant={shoppingAgeRange === range ? 'default' : 'outline'}
+                      className={`flex-1 flex flex-col items-center py-3 h-auto ${
+                        shoppingAgeRange === range 
+                          ? range === '6-8m' ? 'bg-orange-500 hover:bg-orange-600' 
+                          : range === '8-12m' ? 'bg-green-500 hover:bg-green-600'
+                          : 'bg-blue-500 hover:bg-blue-600'
+                          : ''
+                      }`}
+                      onClick={() => {
+                        setShoppingAgeRange(range)
+                        setCheckedItems(new Set())
+                      }}
+                    >
+                      <span className="text-xl mb-1">{info.icon}</span>
+                      <span className="font-medium">{info.title}</span>
+                      <span className="text-xs opacity-80">{itemCount} alimentos</span>
+                    </Button>
+                  )
+                })}
+              </div>
+
+              {/* Current Range Info */}
+              <Card className={`${currentShoppingRangeInfo.borderClass} ${currentShoppingRangeInfo.bgClass}`}>
                 <CardContent className="pt-4 pb-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <ShoppingCart className="w-6 h-6 text-green-600" />
+                      <span className="text-3xl">{currentShoppingRangeInfo.icon}</span>
                       <div>
-                        <p className="font-medium text-green-800">Período de Compra #{shoppingPeriod.period}</p>
-                        <p className="text-sm text-green-600">Días {shoppingPeriod.start} - {Math.min(shoppingPeriod.end, totalDays)} (30 días)</p>
+                        <p className="font-bold text-lg text-gray-800">{currentShoppingRangeInfo.title}</p>
+                        <p className="text-sm text-gray-600">{currentShoppingRangeInfo.subtitle}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Días {currentShoppingRangeInfo.startDay} - {currentShoppingRangeInfo.endDay}
+                        </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-green-700">{checkedCount}/{totalItems}</p>
+                      <p className="text-2xl font-bold text-gray-700">{checkedCount}/{totalItems}</p>
                       <p className="text-xs text-gray-500">items comprados</p>
                     </div>
                   </div>
@@ -761,68 +795,83 @@ export default function NutriBebeApp() {
               </Card>
 
               {/* Progress */}
-              <Progress value={(checkedCount / totalItems) * 100} className="h-2" />
+              {totalItems > 0 && (
+                <Progress value={(checkedCount / totalItems) * 100} className="h-2" />
+              )}
 
               {/* Empty state */}
-              {shoppingList.length === 0 && (
+              {currentShoppingList.length === 0 && (
                 <Card className="border-orange-200 bg-orange-50">
                   <CardContent className="pt-6 pb-6 text-center">
                     <ShoppingCart className="w-12 h-12 mx-auto text-orange-400 mb-3" />
-                    <p className="text-orange-700 font-medium">No hay alimentos programados para este período</p>
-                    <p className="text-sm text-orange-600 mt-1">Continúa avanzando en la guía de introducción</p>
+                    <p className="text-orange-700 font-medium">No hay alimentos para este rango</p>
                   </CardContent>
                 </Card>
               )}
 
               {/* Shopping List by Category */}
-              {shoppingList.length > 0 && (
-                <div className="space-y-6">
+              {currentShoppingList.length > 0 && (
+                <div className="space-y-4">
                   {['Verduras', 'Frutas', 'Proteínas', 'Lácteos', 'Legumbres', 'Cereales', 'Otros'].map(category => {
-                    const categoryItems = shoppingList.filter(item => item.category === category)
+                    const categoryItems = currentShoppingList.filter(item => item.category === category)
                     if (categoryItems.length === 0) return null
                     
                     return (
                       <Card key={category} className="border-gray-200">
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-lg flex items-center gap-2">
-                            <span className="text-2xl">{categoryItems[0].icon}</span>
+                        <CardHeader className="pb-2 pt-3">
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <span className="text-xl">{categoryItems[0].icon}</span>
                             {category}
                             <Badge variant="secondary" className="ml-auto">{categoryItems.length}</Badge>
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-2">
-                          {categoryItems.map((item) => (
-                            <div
-                              key={item.name}
-                              className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${
-                                checkedItems.has(item.name) 
-                                  ? 'bg-green-50 border border-green-200' 
-                                  : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
-                              }`}
-                              onClick={() => toggleItem(item.name)}
-                            >
-                              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                                checkedItems.has(item.name) 
-                                  ? 'bg-green-500 border-green-500' 
-                                  : 'border-gray-300'
-                              }`}>
-                                {checkedItems.has(item.name) && <Check className="w-4 h-4 text-white" />}
+                        <CardContent className="space-y-2 pb-3">
+                          {categoryItems.map((item) => {
+                            const itemKey = `${shoppingAgeRange}-${item.name}`
+                            const isChecked = checkedItems.has(itemKey)
+                            return (
+                              <div
+                                key={item.name}
+                                className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all ${
+                                  isChecked 
+                                    ? 'bg-green-50 border border-green-200' 
+                                    : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
+                                }`}
+                                onClick={() => {
+                                  setCheckedItems(prev => {
+                                    const newSet = new Set(prev)
+                                    if (newSet.has(itemKey)) {
+                                      newSet.delete(itemKey)
+                                    } else {
+                                      newSet.add(itemKey)
+                                    }
+                                    return newSet
+                                  })
+                                }}
+                              >
+                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                                  isChecked 
+                                    ? 'bg-green-500 border-green-500' 
+                                    : 'border-gray-300'
+                                }`}>
+                                  {isChecked && <Check className="w-3 h-3 text-white" />}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className={`font-medium text-sm ${isChecked ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                                    {item.name}
+                                  </p>
+                                  <p className={`text-xs ${isChecked ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    {item.quantity}
+                                  </p>
+                                </div>
+                                {item.notes && (
+                                  <Badge variant="outline" className="text-xs flex-shrink-0">
+                                    {item.notes}
+                                  </Badge>
+                                )}
                               </div>
-                              <div className="flex-1">
-                                <p className={`font-medium ${checkedItems.has(item.name) ? 'line-through text-gray-400' : 'text-gray-800'}`}>
-                                  {item.name}
-                                </p>
-                                <p className={`text-sm ${checkedItems.has(item.name) ? 'text-gray-400' : 'text-gray-600'}`}>
-                                  {item.quantity}
-                                </p>
-                              </div>
-                              {item.notes && (
-                                <Badge variant="outline" className="text-xs">
-                                  {item.notes}
-                                </Badge>
-                              )}
-                            </div>
-                          ))}
+                            )
+                          })}
                         </CardContent>
                       </Card>
                     )
@@ -842,7 +891,7 @@ export default function NutriBebeApp() {
                 <Button 
                   className="flex-1 bg-green-500 hover:bg-green-600"
                   onClick={() => {
-                    const allItems = new Set(shoppingList.map(item => item.name))
+                    const allItems = new Set(currentShoppingList.map(item => `${shoppingAgeRange}-${item.name}`))
                     setCheckedItems(allItems)
                   }}
                 >
