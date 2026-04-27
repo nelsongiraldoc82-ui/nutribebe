@@ -593,6 +593,17 @@ export default function NutriBebeApp() {
                     <CardDescription className="text-base mt-2">{currentStep.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="pt-6 space-y-4">
+                    {/* Meal Progression - DESTACADO */}
+                    {currentStep.mealProgression && (
+                      <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
+                        <div className="flex items-center gap-2 text-purple-700 mb-2">
+                          <Calendar className="w-5 h-5" />
+                          <span className="font-bold text-lg">Rutina de comidas</span>
+                        </div>
+                        <p className="text-base text-purple-800 font-medium">{currentStep.mealProgression}</p>
+                      </div>
+                    )}
+
                     {/* Portion and Frequency */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {currentStep.portionSize && (
@@ -646,6 +657,66 @@ export default function NutriBebeApp() {
                             </li>
                           ))}
                         </ul>
+                      </div>
+                    )}
+
+                    {/* Recipe Section */}
+                    {currentStep.recipe && (
+                      <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border-2 border-amber-200">
+                        <div className="flex items-center gap-2 text-amber-700 mb-3">
+                          <ChefHat className="w-5 h-5" />
+                          <span className="font-bold text-lg">Receta: {currentStep.recipe.name}</span>
+                        </div>
+                        
+                        {/* Time indicators */}
+                        {(currentStep.recipe.prepTime || currentStep.recipe.cookTime) && (
+                          <div className="flex gap-4 mb-3 text-sm text-amber-600">
+                            {currentStep.recipe.prepTime && (
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-4 h-4" />
+                                Prep: {currentStep.recipe.prepTime}
+                              </span>
+                            )}
+                            {currentStep.recipe.cookTime && (
+                              <span className="flex items-center gap-1">
+                                <Utensils className="w-4 h-4" />
+                                Cocción: {currentStep.recipe.cookTime}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        
+                        {/* Ingredients */}
+                        <div className="mb-3">
+                          <h5 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
+                            <BookOpen className="w-4 h-4" /> Ingredientes:
+                          </h5>
+                          <ul className="grid grid-cols-1 md:grid-cols-2 gap-1">
+                            {currentStep.recipe.ingredients.map((ingredient, i) => (
+                              <li key={i} className="flex items-center gap-2 text-sm text-amber-700">
+                                <CheckCircle className="w-3 h-3 flex-shrink-0" />
+                                <span>{ingredient}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        
+                        {/* Steps */}
+                        <div>
+                          <h5 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
+                            <Sparkles className="w-4 h-4" /> Preparación:
+                          </h5>
+                          <ol className="space-y-2">
+                            {currentStep.recipe.steps.map((step, i) => (
+                              <li key={i} className="flex items-start gap-2 text-sm text-amber-700">
+                                <span className="flex-shrink-0 w-5 h-5 bg-amber-200 text-amber-800 rounded-full flex items-center justify-center text-xs font-bold">
+                                  {i + 1}
+                                </span>
+                                <span>{step}</span>
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
                       </div>
                     )}
 
