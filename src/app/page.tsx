@@ -20,7 +20,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import { Input } from '@/components/ui/input'
 import { Loader2 } from 'lucide-react'
-import { introStepsData, groupStepsByWeek, type IntroStep } from '@/lib/intro-steps-data'
+import { introStepsData, groupStepsByWeek, filterByAgeRange, getAvailableAgeRanges, getWeeksByAgeRange, type IntroStep } from '@/lib/intro-steps-data'
 import { calculateShoppingList, getShoppingPeriod, type ShoppingItem } from '@/lib/shopping-list'
 
 // Types
@@ -62,12 +62,8 @@ function generateId(): string {
   return `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }
 
-// Age stages
-const ageStages = [
-  { value: '6', label: '6-8 meses', description: 'Iniciación' },
-  { value: '8', label: '8-10 meses', description: 'Exploración' },
-  { value: '10', label: '10-12 meses', description: 'Transición' },
-]
+// Age stages - usar función del módulo
+const ageStages = getAvailableAgeRanges()
 
 // Reaction options
 const reactionOptions = [
@@ -113,7 +109,7 @@ export default function NutriBebeApp() {
   const [authError, setAuthError] = useState('')
   
   // App state
-  const [selectedAge, setSelectedAge] = useState('6')
+  const [selectedAge, setSelectedAge] = useState('6-8')
   const [activeSection, setActiveSection] = useState('intro')
   const [introSteps, setIntroSteps] = useState<IntroStep[]>([])
   const [groupedSteps, setGroupedSteps] = useState<Record<number, IntroStep[]>>({})
@@ -144,11 +140,16 @@ export default function NutriBebeApp() {
     setIsLoadingAuth(false)
   }, [])
 
-  // Load intro steps
+  // Load intro steps filtered by age
   useEffect(() => {
-    setIntroSteps(introStepsData)
-    setGroupedSteps(groupStepsByWeek(introStepsData))
-  }, [])
+    const filtered = filterByAgeRange(introStepsData, selectedAge)
+    setIntroSteps(filtered)
+    setGroupedSteps(groupStepsByWeek(filtered))
+    // Reset to first week of the age range
+    const weeks = getWeeksByAgeRange(selectedAge)
+    setSelectedWeek(weeks.start)
+    setCurrentDay(1)
+  }, [selectedAge])
 
   // Load reactions when family changes
   useEffect(() => {

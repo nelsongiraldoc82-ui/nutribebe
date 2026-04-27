@@ -1,5 +1,6 @@
 // Datos estáticos de introducción de alimentos
 // Basados en recomendaciones OMS, UNICEF y AEPAP
+// Plan de alimentación desde 6 hasta 24 meses
 
 export interface IntroStep {
   id: string
@@ -14,756 +15,262 @@ export interface IntroStep {
   breastmilkNote?: string
   tips?: string
   warnings?: string
+  ageRange?: string // '6-8', '8-10', '10-12', '12-18', '18-24'
 }
 
-export const introStepsData: IntroStep[] = [
+// Función para generar pasos automáticamente
+function generateSteps(): IntroStep[] {
+  const steps: IntroStep[] = []
+  
+  // ===== MESES 6-8: INTRODUCCIÓN (Semanas 1-8) =====
+  
   // SEMANA 1 - Verduras suaves
-  {
-    id: 'w1d1',
-    weekNumber: 1,
-    dayNumber: 1,
-    title: '¡Primer día de alimentación complementaria!',
-    description: 'Hoy comienza una nueva etapa. Ofrece tu primera cucharada de puré de calabacín. Solo 2-3 cucharaditas es suficiente.',
-    foodGroup: 'Verduras',
-    specificFood: 'Calabacín',
-    portionSize: '2-3 cucharaditas (10-15g)',
-    frequency: 'Una sola comida (almuerzo)',
-    breastmilkNote: 'Continúa con la lactancia materna a demanda. El puré es COMPLEMENTARIO, no sustituye ninguna toma de leche.',
-    tips: JSON.stringify([
-      'Elige un momento tranquilo, cuando el bebé esté despierto y contento',
-      'Siéntalo en una silla alta o en tu regazo',
-      'Usa una cuchara pequeña de plástico o silicona suave',
-      'No te preocupes si escupe la comida, es normal',
-      'Puede que solo acepte 1-2 cucharadas el primer día'
-    ]),
-    warnings: JSON.stringify([
-      'No añadas sal ni azúcar',
-      'La textura debe ser muy líquida, casi como una sopa',
-      'Observa si hay alguna reacción alérgica en las próximas 24-48 horas'
-    ]),
-  },
-  {
-    id: 'w1d2',
-    weekNumber: 1,
-    dayNumber: 2,
-    title: 'Segundo día con calabacín',
-    description: 'Continúa ofreciendo puré de calabacín. Aumenta ligeramente la cantidad si el bebé lo acepta.',
-    foodGroup: 'Verduras',
-    specificFood: 'Calabacín',
-    portionSize: '3-4 cucharadas (20-30g)',
-    frequency: 'Una comida (almuerzo)',
-    breastmilkNote: 'La lactancia sigue siendo la fuente principal de nutrición. Ofrece el pecho antes o después del puré según prefiera tu bebé.',
-    tips: JSON.stringify([
-      'Intenta que el bebé abra la boca mostrándole la cuchara',
-      'Habla suavemente y sonríe durante la comida',
-      'No fuerces la comida, deja que el bebé marque el ritmo'
-    ]),
-    warnings: JSON.stringify([
-      'Observa si hay sarpullidos, vómitos o diarrea',
-      'Consulta al pediatra si notas algo inusual'
-    ]),
-  },
-  {
-    id: 'w1d3',
-    weekNumber: 1,
-    dayNumber: 3,
-    title: 'Tercer día con calabacín',
-    description: 'Último día de prueba con calabacín. Si todo va bien, mañana podrás introducir un nuevo alimento.',
-    foodGroup: 'Verduras',
-    specificFood: 'Calabacín',
-    portionSize: '4-5 cucharadas (30-40g)',
-    frequency: 'Una comida (almuerzo)',
-    breastmilkNote: 'Mantén las tomas de pecho habituales. El bebé debe seguir recibiendo al menos 4-6 tomas de leche materna al día.',
-    tips: JSON.stringify([
-      'El bebé ya debería estar más acostumbrado a la cuchara',
-      'Celebra cada pequeño progreso con sonrisas',
-      'Puedes ofrecer el puré un poco más espeso si lo tolera bien'
-    ]),
-    warnings: JSON.stringify([
-      'Si no ha habido reacciones adversas, el calabacín está aprobado',
-      'Anota en tu diario cualquier observación importante'
-    ]),
-  },
-  {
-    id: 'w1d4',
-    weekNumber: 1,
-    dayNumber: 4,
-    title: 'Nuevo alimento: Calabaza',
-    description: 'Hoy introducimos la calabaza. Es dulce y suave, ideal para bebés. Prepara un puré solo de calabaza.',
-    foodGroup: 'Verduras',
-    specificFood: 'Calabaza',
-    portionSize: '2-3 cucharadas (15-20g)',
-    frequency: 'Una comida (almuerzo)',
-    breastmilkNote: 'Amamanta a demanda. La leche materna sigue siendo el alimento principal.',
-    tips: JSON.stringify([
-      'La calabaza es naturalmente dulce, suele gustar mucho',
-      'Cocina al vapor para conservar nutrientes',
-      'Tritura muy bien hasta que no queden grumos'
-    ]),
-    warnings: JSON.stringify([
-      'Es un alimento nuevo: observa durante 2-3 días',
-      'No mezcles con otros alimentos nuevos todavía'
-    ]),
-  },
-  {
-    id: 'w1d5',
-    weekNumber: 1,
-    dayNumber: 5,
-    title: 'Continúa con calabaza',
-    description: 'Sigue probando la calabaza. El bebé se acostumbra a nuevos sabores.',
-    foodGroup: 'Verduras',
-    specificFood: 'Calabaza',
-    portionSize: '3-4 cucharadas (25-35g)',
-    frequency: 'Una comida (almuerzo)',
-    breastmilkNote: 'Ofrece el pecho antes del puré para asegurar que reciba suficientes nutrientes de la leche.',
-    tips: JSON.stringify([
-      'Puedes mezclar un poco de calabacín del día anterior si quieres',
-      'La consistencia debe ser suave pero no líquida',
-      'Deja que el bebé toque la comida con las manos'
-    ]),
-    warnings: JSON.stringify([
-      'Observa las heces del bebé, pueden cambiar de color',
-      'La calabaza puede dar un tono anaranjado a las deposiciones'
-    ]),
-  },
-  {
-    id: 'w1d6',
-    weekNumber: 1,
-    dayNumber: 6,
-    title: 'Último día de calabaza',
-    description: 'Finalizamos la prueba de calabaza. Si todo está bien, mañana un nuevo alimento.',
-    foodGroup: 'Verduras',
-    specificFood: 'Calabaza',
-    portionSize: '4-5 cucharadas (35-45g)',
-    frequency: 'Una comida (almuerzo)',
-    breastmilkNote: 'La lactancia materna proporciona anticuerpos que protegen al bebé mientras prueba nuevos alimentos.',
-    tips: JSON.stringify([
-      'El bebé puede empezar a mostrar preferencias',
-      'No te preocupes si come más o menos un día',
-      'Cada bebé tiene su propio ritmo'
-    ]),
-    warnings: JSON.stringify([
-      'Si no ha habido reacciones, la calabaza está aprobada',
-      'Añádela a tu lista de alimentos seguros'
-    ]),
-  },
-  {
-    id: 'w1d7',
-    weekNumber: 1,
-    dayNumber: 7,
-    title: 'Nuevo alimento: Zanahoria',
-    description: 'Introducimos la zanahoria, rica en vitamina A. Debe estar muy bien cocida y triturada.',
-    foodGroup: 'Verduras',
-    specificFood: 'Zanahoria',
-    portionSize: '2-3 cucharadas (15-20g)',
-    frequency: 'Una comida (almuerzo)',
-    breastmilkNote: 'Continúa amamantando a demanda. La leche materna aporta grasas esenciales para la absorción de vitamina A.',
-    tips: JSON.stringify([
-      'La zanahoria tarda más en cocinarse, asegúrate de que esté muy blanda',
-      'Su dulzor natural la hace atractiva para el bebé',
-      'No añadas aceite todavía'
-    ]),
-    warnings: JSON.stringify([
-      'La zanahoria puede causar estreñimiento en algunos bebés',
-      'Observa si hay cambios en las deposiciones'
-    ]),
-  },
+  steps.push(
+    { id: 'w1d1', weekNumber: 1, dayNumber: 1, title: '¡Primer día de alimentación complementaria!', description: 'Hoy comienza una nueva etapa. Ofrece tu primera cucharada de puré de calabacín.', foodGroup: 'Verduras', specificFood: 'Calabacín', portionSize: '2-3 cucharaditas', frequency: 'Una comida', ageRange: '6-8', breastmilkNote: 'Continúa con la lactancia materna a demanda.', tips: JSON.stringify(['Elige un momento tranquilo', 'Usa cuchara pequeña de silicona', 'No te preocupes si escupe']), warnings: JSON.stringify(['No añadas sal ni azúcar', 'Observa reacciones alérgicas']) },
+    { id: 'w1d2', weekNumber: 1, dayNumber: 2, title: 'Segundo día con calabacín', description: 'Continúa ofreciendo puré de calabacín.', foodGroup: 'Verduras', specificFood: 'Calabacín', portionSize: '3-4 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w1d3', weekNumber: 1, dayNumber: 3, title: 'Tercer día con calabacín', description: 'Último día de prueba con calabacín.', foodGroup: 'Verduras', specificFood: 'Calabacín', portionSize: '4-5 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w1d4', weekNumber: 1, dayNumber: 4, title: 'Nuevo alimento: Calabaza', description: 'Hoy introducimos la calabaza, dulce y suave.', foodGroup: 'Verduras', specificFood: 'Calabaza', portionSize: '2-3 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w1d5', weekNumber: 1, dayNumber: 5, title: 'Continúa con calabaza', description: 'Sigue probando la calabaza.', foodGroup: 'Verduras', specificFood: 'Calabaza', portionSize: '3-4 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w1d6', weekNumber: 1, dayNumber: 6, title: 'Último día de calabaza', description: 'Finalizamos la prueba de calabaza.', foodGroup: 'Verduras', specificFood: 'Calabaza', portionSize: '4-5 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w1d7', weekNumber: 1, dayNumber: 7, title: 'Nuevo alimento: Zanahoria', description: 'Introducimos la zanahoria, rica en vitamina A.', foodGroup: 'Verduras', specificFood: 'Zanahoria', portionSize: '2-3 cucharadas', frequency: 'Una comida', ageRange: '6-8' }
+  )
+
   // SEMANA 2
-  {
-    id: 'w2d1',
-    weekNumber: 2,
-    dayNumber: 1,
-    title: 'Continúa con zanahoria',
-    description: 'Segundo día con zanahoria. Observa cómo responde el bebé.',
-    foodGroup: 'Verduras',
-    specificFood: 'Zanahoria',
-    portionSize: '3-4 cucharadas (25-35g)',
-    frequency: 'Una comida (almuerzo)',
-    breastmilkNote: 'Ofrece el pecho después del puré para "cerrar" la comida. Es reconfortante para el bebé.',
-    tips: JSON.stringify([
-      'Puedes empezar a mezclar: zanahoria + calabacín',
-      'Mezclar alimentos ya conocidos ayuda a aceptar nuevos sabores',
-      'Proporción: 2 partes zanahoria, 1 parte calabacín'
-    ]),
-    warnings: JSON.stringify([
-      'Solo mezcla alimentos ya probados y aprobados',
-      'No introduzcas más de un alimento nuevo cada 3 días'
-    ]),
-  },
-  {
-    id: 'w2d2',
-    weekNumber: 2,
-    dayNumber: 2,
-    title: 'Mezcla de verduras',
-    description: 'Prueba una mezcla suave de verduras ya conocidas.',
-    foodGroup: 'Verduras',
-    specificFood: 'Calabacín + Calabaza + Zanahoria',
-    portionSize: '5-6 cucharadas (40-50g)',
-    frequency: 'Una comida (almuerzo)',
-    breastmilkNote: 'Mantén al menos 4-5 tomas de leche materna al día.',
-    tips: JSON.stringify([
-      'Esta mezcla es nutritiva y colorida',
-      'El bebé empieza a conocer diferentes sabores',
-      'Puedes preparar más cantidad y congelar en cubitos'
-    ]),
-    warnings: JSON.stringify([
-      'Descongela solo la cantidad necesaria',
-      'No recalentar más de una vez'
-    ]),
-  },
-  {
-    id: 'w2d3',
-    weekNumber: 2,
-    dayNumber: 3,
-    title: 'Nuevo alimento: Patata',
-    description: 'Introducimos la patata, excelente base para purés.',
-    foodGroup: 'Verduras',
-    specificFood: 'Patata',
-    portionSize: '2-3 cucharadas (20-30g)',
-    frequency: 'Una comida (almuerzo)',
-    breastmilkNote: 'La patata es muy saciante. Asegúrate de que el bebé siga tomando suficiente leche.',
-    tips: JSON.stringify([
-      'Cocina la patata al vapor o hervida',
-      'Añade un poco de agua de cocción para obtener textura suave',
-      'La patata puede quedar pegajosa si se bate mucho'
-    ]),
-    warnings: JSON.stringify([
-      'No uses patatas verdes o con brotes',
-      'Observa durante 2-3 días como con cualquier alimento nuevo'
-    ]),
-  },
-  {
-    id: 'w2d4',
-    weekNumber: 2,
-    dayNumber: 4,
-    title: 'Patata + verduras',
-    description: 'Mezcla patata con verduras ya conocidas.',
-    foodGroup: 'Verduras',
-    specificFood: 'Patata + Calabacín',
-    portionSize: '4-5 cucharadas (35-45g)',
-    frequency: 'Una comida (almuerzo)',
-    breastmilkNote: 'La combinación de patata y leche materna proporciona energía sostenida.',
-    tips: JSON.stringify([
-      'La patata suaviza sabores más fuertes',
-      'Es una buena forma de introducir verduras menos aceptadas',
-      'El puré debe quedar cremoso, no grumoso'
-    ]),
-    warnings: JSON.stringify([
-      'No añadas mantequilla ni leche de vaca',
-      'La leche materna o fórmula es suficiente'
-    ]),
-  },
-  {
-    id: 'w2d5',
-    weekNumber: 2,
-    dayNumber: 5,
-    title: 'Nuevo alimento: Judías verdes',
-    description: 'Las judías verdes aportan fibra y vitaminas. Deben estar muy bien cocidas.',
-    foodGroup: 'Verduras',
-    specificFood: 'Judías verdes',
-    portionSize: '2-3 cucharadas (15-20g)',
-    frequency: 'Una comida (almuerzo)',
-    breastmilkNote: 'Continúa con la lactancia a demanda. El bebé puede mostrar preferencia por el pecho antes de comer.',
-    tips: JSON.stringify([
-      'Quita las hebras y puntas antes de cocinar',
-      'Cocina hasta que estén muy tiernas',
-      'Tritura muy bien, pueden quedar hilos'
-    ]),
-    warnings: JSON.stringify([
-      'Algunos bebés no aceptan el sabor al principio',
-      'Mezcla con patata para suavizar'
-    ]),
-  },
-  {
-    id: 'w2d6',
-    weekNumber: 2,
-    dayNumber: 6,
-    title: 'Mezcla completa de verduras',
-    description: 'Prepara un puré con todas las verduras ya introducidas.',
-    foodGroup: 'Verduras',
-    specificFood: 'Mezcla de verduras',
-    portionSize: '5-6 cucharadas (50-60g)',
-    frequency: 'Una comida (almuerzo)',
-    breastmilkNote: 'El bebé debe seguir recibiendo entre 500-600ml de leche materna al día.',
-    tips: JSON.stringify([
-      'Proporción: 2 partes patata, 1 parte otras verduras',
-      'Varía las proporciones para diferentes sabores',
-      'El bebé está aprendiendo a comer, celebra sus logros'
-    ]),
-    warnings: JSON.stringify([
-      'Si notas rechazo hacia algún alimento, reintrodúcelo más tarde',
-      'No fuerces nunca al bebé a comer'
-    ]),
-  },
-  {
-    id: 'w2d7',
-    weekNumber: 2,
-    dayNumber: 7,
-    title: 'Puerro - nuevo sabor',
-    description: 'El puerro aporta un sabor suave diferente. Ideal para caldos y purés.',
-    foodGroup: 'Verduras',
-    specificFood: 'Puerro',
-    portionSize: '2-3 cucharadas (15-20g)',
-    frequency: 'Una comida (almuerzo)',
-    breastmilkNote: 'La lactancia materna aporta el 80-90% de los nutrientes necesarios a esta edad.',
-    tips: JSON.stringify([
-      'Usa solo la parte blanca, más suave',
-      'El puerro da un sabor interesante a los purés',
-      'Mezcla con patata para suavizar'
-    ]),
-    warnings: JSON.stringify([
-      'Lava bien el puerro, puede tener tierra entre capas',
-      'Cocina completamente para evitar irritación digestiva'
-    ]),
-  },
+  steps.push(
+    { id: 'w2d1', weekNumber: 2, dayNumber: 1, title: 'Continúa con zanahoria', description: 'Segundo día con zanahoria.', foodGroup: 'Verduras', specificFood: 'Zanahoria', portionSize: '3-4 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w2d2', weekNumber: 2, dayNumber: 2, title: 'Mezcla de verduras', description: 'Prueba mezcla de verduras ya conocidas.', foodGroup: 'Verduras', specificFood: 'Calabacín + Calabaza + Zanahoria', portionSize: '5-6 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w2d3', weekNumber: 2, dayNumber: 3, title: 'Nuevo alimento: Patata', description: 'La patata es excelente base para purés.', foodGroup: 'Verduras', specificFood: 'Patata', portionSize: '2-3 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w2d4', weekNumber: 2, dayNumber: 4, title: 'Patata + verduras', description: 'Mezcla patata con verduras ya conocidas.', foodGroup: 'Verduras', specificFood: 'Patata + Calabacín', portionSize: '4-5 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w2d5', weekNumber: 2, dayNumber: 5, title: 'Nuevo alimento: Judías verdes', description: 'Las judías verdes aportan fibra y vitaminas.', foodGroup: 'Verduras', specificFood: 'Judías verdes', portionSize: '2-3 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w2d6', weekNumber: 2, dayNumber: 6, title: 'Mezcla completa de verduras', description: 'Prepara un puré con todas las verduras introducidas.', foodGroup: 'Verduras', specificFood: 'Mezcla de verduras', portionSize: '5-6 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w2d7', weekNumber: 2, dayNumber: 7, title: 'Puerro - nuevo sabor', description: 'El puerro aporta un sabor suave diferente.', foodGroup: 'Verduras', specificFood: 'Puerro', portionSize: '2-3 cucharadas', frequency: 'Una comida', ageRange: '6-8' }
+  )
+
   // SEMANA 3 - FRUTAS
-  {
-    id: 'w3d1',
-    weekNumber: 3,
-    dayNumber: 1,
-    title: '¡Llegaron las frutas! - Pera',
-    description: 'Introducimos la primera fruta: la pera. Dulce, digestiva y suave.',
-    foodGroup: 'Frutas',
-    specificFood: 'Pera',
-    portionSize: '2-3 cucharadas (20-30g)',
-    frequency: 'Una comida (puede ser merienda)',
-    breastmilkNote: 'Puedes ofrecer fruta en la merienda y el puré de verduras en el almuerzo. Mantén la lactancia.',
-    tips: JSON.stringify([
-      'Usa peras maduras (variedad Conference o Blanquilla)',
-      'Puedes ofrecerla cruda rallada o cocida en puré',
-      'La pera es muy digestiva y suele gustar mucho'
-    ]),
-    warnings: JSON.stringify([
-      'Observa si hay reacciones como en cualquier alimento nuevo',
-      'La fruta cruda tiene más vitaminas pero cocida es más digestiva'
-    ]),
-  },
-  {
-    id: 'w3d2',
-    weekNumber: 3,
-    dayNumber: 2,
-    title: 'Continúa con pera',
-    description: 'El bebé se acostumbra al dulzor natural de la fruta.',
-    foodGroup: 'Frutas',
-    specificFood: 'Pera',
-    portionSize: '3-4 cucharadas (30-40g)',
-    frequency: 'Una comida (merienda)',
-    breastmilkNote: 'Después de la fruta, ofrece el pecho. El bebé puede querer menos leche.',
-    tips: JSON.stringify([
-      'Varía entre pera cruda rallada y cocida',
-      'Puedes añadir un poco de cereales de arroz para espesar',
-      'La fruta es un excelente postre o merienda'
-    ]),
-    warnings: JSON.stringify([
-      'No añadas azúcar ni miel',
-      'La fruta ya es dulce naturalmente'
-    ]),
-  },
-  {
-    id: 'w3d3',
-    weekNumber: 3,
-    dayNumber: 3,
-    title: 'Nuevo alimento: Manzana',
-    description: 'La manzana es suave y versátil. Cocida es más digestiva al principio.',
-    foodGroup: 'Frutas',
-    specificFood: 'Manzana',
-    portionSize: '2-3 cucharadas (20-30g)',
-    frequency: 'Una comida (merienda)',
-    breastmilkNote: 'La vitamina C de la manzana ayuda a absorber el hierro de la leche materna.',
-    tips: JSON.stringify([
-      'Usa manzanas tipo Golden o Reineta, más suaves',
-      'Cocina al vapor con piel y luego retírala',
-      'La manzana cocida es ideal para empezar'
-    ]),
-    warnings: JSON.stringify([
-      'La manzana cruda puede ser difícil de digerir al principio',
-      'Empieza con manzana cocida'
-    ]),
-  },
-  {
-    id: 'w3d4',
-    weekNumber: 3,
-    dayNumber: 4,
-    title: 'Mezcla de frutas',
-    description: 'Combina pera y manzana para una papilla deliciosa.',
-    foodGroup: 'Frutas',
-    specificFood: 'Pera + Manzana',
-    portionSize: '4-5 cucharadas (40-50g)',
-    frequency: 'Una comida (merienda)',
-    breastmilkNote: 'Ahora el bebé tiene dos comidas al día: verduras (almuerzo) y frutas (merienda).',
-    tips: JSON.stringify([
-      'Mezcla mitad pera, mitad manzana',
-      'Puedes triturar juntas o por separado',
-      'Añade cereales de arroz si quieres más consistencia'
-    ]),
-    warnings: JSON.stringify([
-      'No ofrezcas zumos, solo fruta triturada',
-      'Los zumos no tienen fibra y pueden causar diarrea'
-    ]),
-  },
-  {
-    id: 'w3d5',
-    weekNumber: 3,
-    dayNumber: 5,
-    title: 'Nuevo alimento: Plátano',
-    description: 'El plátano es muy nutritivo y fácil de preparar. No necesita cocción.',
-    foodGroup: 'Frutas',
-    specificFood: 'Plátano',
-    portionSize: 'Medio plátano pequeño triturado (30-40g)',
-    frequency: 'Una comida (merienda)',
-    breastmilkNote: 'El plátano es muy saciante. Asegúrate de que el bebé siga tomando leche.',
-    tips: JSON.stringify([
-      'Tritura con un tenedor, no necesita batidora',
-      'El plátano maduro es más dulce y digestivo',
-      'Se oxida rápido, prepáralo justo antes de darlo'
-    ]),
-    warnings: JSON.stringify([
-      'El plátano puede estreñir si se da en exceso',
-      'No des más de medio plátano al día'
-    ]),
-  },
-  {
-    id: 'w3d6',
-    weekNumber: 3,
-    dayNumber: 6,
-    title: 'Papilla de tres frutas',
-    description: 'Combina las tres frutas ya conocidas.',
-    foodGroup: 'Frutas',
-    specificFood: 'Pera + Manzana + Plátano',
-    portionSize: '5-6 cucharadas (50-60g)',
-    frequency: 'Una comida (merienda)',
-    breastmilkNote: 'Esta papilla es muy nutritiva y energética. El bebé puede dormir mejor por las noches.',
-    tips: JSON.stringify([
-      'Proporción: 1/3 de cada fruta',
-      'El plátano aporta cremosidad',
-      'Puedes preparar y congelar en cubitos'
-    ]),
-    warnings: JSON.stringify([
-      'El plátano congelado pierde textura, mejor fresco',
-      'Descongela la mezcla de pera-manzana y añade plátano fresco'
-    ]),
-  },
-  {
-    id: 'w3d7',
-    weekNumber: 3,
-    dayNumber: 7,
-    title: 'Resumen de la semana',
-    description: 'El bebé ya conoce verduras y frutas básicas. Prueba diferentes combinaciones.',
-    foodGroup: 'Mixto',
-    specificFood: 'Combinaciones variadas',
-    portionSize: 'Almuerzo: 50-60g verduras / Merienda: 50-60g frutas',
-    frequency: 'Dos comidas al día',
-    breastmilkNote: 'Mantén al menos 4-5 tomas de leche materna. La leche sigue siendo el alimento principal.',
-    tips: JSON.stringify([
-      'El bebé empieza a tener rutina: verduras al mediodía, frutas por la tarde',
-      'Celebra que ya conoces muchos alimentos seguros',
-      'Anota qué le gusta más al bebé'
-    ]),
-    warnings: JSON.stringify([
-      'No introduzcas nuevos alimentos hoy',
-      'Descansa y observa cómo ha evolucionado el bebé'
-    ]),
-  },
+  steps.push(
+    { id: 'w3d1', weekNumber: 3, dayNumber: 1, title: '¡Llegaron las frutas! - Pera', description: 'Introducimos la primera fruta: la pera.', foodGroup: 'Frutas', specificFood: 'Pera', portionSize: '2-3 cucharadas', frequency: 'Una comida (merienda)', ageRange: '6-8', tips: JSON.stringify(['Usa peras maduras', 'Puedes ofrecerla cruda rallada o cocida']) },
+    { id: 'w3d2', weekNumber: 3, dayNumber: 2, title: 'Continúa con pera', description: 'El bebé se acostumbra al dulzor de la fruta.', foodGroup: 'Frutas', specificFood: 'Pera', portionSize: '3-4 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w3d3', weekNumber: 3, dayNumber: 3, title: 'Nuevo alimento: Manzana', description: 'La manzana es suave y versátil.', foodGroup: 'Frutas', specificFood: 'Manzana', portionSize: '2-3 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w3d4', weekNumber: 3, dayNumber: 4, title: 'Mezcla de frutas', description: 'Combina pera y manzana.', foodGroup: 'Frutas', specificFood: 'Pera + Manzana', portionSize: '4-5 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w3d5', weekNumber: 3, dayNumber: 5, title: 'Nuevo alimento: Plátano', description: 'El plátano es nutritivo y fácil de preparar.', foodGroup: 'Frutas', specificFood: 'Plátano', portionSize: 'Medio plátano pequeño', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w3d6', weekNumber: 3, dayNumber: 6, title: 'Papilla de tres frutas', description: 'Combina las tres frutas ya conocidas.', foodGroup: 'Frutas', specificFood: 'Pera + Manzana + Plátano', portionSize: '5-6 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w3d7', weekNumber: 3, dayNumber: 7, title: 'Resumen de la semana', description: 'El bebé ya conoce verduras y frutas básicas.', foodGroup: 'Mixto', specificFood: 'Combinaciones variadas', portionSize: '50-60g por comida', frequency: 'Dos comidas al día', ageRange: '6-8' }
+  )
+
   // SEMANA 4
-  {
-    id: 'w4d1',
-    weekNumber: 4,
-    dayNumber: 1,
-    title: 'Nuevo alimento: Aguacate',
-    description: 'El aguacate es único: una fruta rica en grasas saludables.',
-    foodGroup: 'Frutas',
-    specificFood: 'Aguacate',
-    portionSize: '2-3 cucharadas (20-30g)',
-    frequency: 'Una comida (merienda)',
-    breastmilkNote: 'Las grasas del aguacate son excelentes para el desarrollo cerebral, igual que la leche materna.',
-    tips: JSON.stringify([
-      'Tritura con un tenedor, textura cremosa natural',
-      'El aguacate debe estar maduro pero no pasado',
-      'Puedes mezclarlo con plátano para más dulzor'
-    ]),
-    warnings: JSON.stringify([
-      'El aguacate se oxida muy rápido (se pone negro)',
-      'Añade unas gotas de limón si vas a guardar un rato',
-      'Sirve inmediatamente si es posible'
-    ]),
-  },
-  {
-    id: 'w4d2',
-    weekNumber: 4,
-    dayNumber: 2,
-    title: 'Aguacate + frutas',
-    description: 'Combina aguacate con otras frutas ya conocidas.',
-    foodGroup: 'Frutas',
-    specificFood: 'Aguacate + Plátano',
-    portionSize: '4-5 cucharadas (40-50g)',
-    frequency: 'Una comida (merienda)',
-    breastmilkNote: 'Esta combinación es muy saciante. El bebé puede querer menos leche después.',
-    tips: JSON.stringify([
-      'Mezcla mitad aguacate, mitad plátano',
-      'Es cremosa y nutritiva, ideal para el crecimiento',
-      'El bebé puede necesitar menos cantidad por lo saciante'
-    ]),
-    warnings: JSON.stringify([
-      'No ofrezcas demasiado aguacate de una vez',
-      'Puede ser pesado si se combina con otros alimentos grasos'
-    ]),
-  },
-  {
-    id: 'w4d3',
-    weekNumber: 4,
-    dayNumber: 3,
-    title: 'Nuevo alimento: Cereales de arroz',
-    description: 'Los cereales de arroz (sin gluten) son ideales para espesar purés y papillas.',
-    foodGroup: 'Cereales',
-    specificFood: 'Cereales de arroz',
-    portionSize: '1-2 cucharadas (5-10g) en el puré',
-    frequency: 'Añadir al almuerzo o merienda',
-    breastmilkNote: 'Puedes preparar los cereales con leche materna extraída para mayor aceptación.',
-    tips: JSON.stringify([
-      'Empieza con poca cantidad para que el bebé se acostumbre',
-      'Espesan los purés y aportan energía',
-      'El arroz no tiene gluten, es seguro'
-    ]),
-    warnings: JSON.stringify([
-      'No uses cereales con gluten todavía (trigo, cebada, centeno)',
-      'Los cereales de arroz son de digestión fácil'
-    ]),
-  },
-  {
-    id: 'w4d4',
-    weekNumber: 4,
-    dayNumber: 4,
-    title: 'Cereales con frutas',
-    description: 'Añade cereales de arroz a la papilla de frutas.',
-    foodGroup: 'Cereales',
-    specificFood: 'Cereales de arroz + Frutas',
-    portionSize: '2-3 cucharadas de cereales en la papilla',
-    frequency: 'Una comida (merienda)',
-    breastmilkNote: 'Los cereales aportan energía extra. El bebé puede dormir más tiempo por la noche.',
-    tips: JSON.stringify([
-      'La papilla quedará más espesa',
-      'Ajusta la textura añadiendo más o menos cereales',
-      'Puedes usar agua, leche materna o fórmula para preparar'
-    ]),
-    warnings: JSON.stringify([
-      'No añadas azúcar ni miel a los cereales',
-      'El sabor natural de la fruta es suficiente'
-    ]),
-  },
-  {
-    id: 'w4d5',
-    weekNumber: 4,
-    dayNumber: 5,
-    title: 'Nuevo alimento: Melocotón',
-    description: 'El melocotón aporta un sabor dulce y refrescante.',
-    foodGroup: 'Frutas',
-    specificFood: 'Melocotón',
-    portionSize: '2-3 cucharadas (20-30g)',
-    frequency: 'Una comida (merienda)',
-    breastmilkNote: 'El melocotón es hidratante. En días calurosos es especialmente bueno.',
-    tips: JSON.stringify([
-      'Usa melocotones maduros y jugosos',
-      'Pela bien antes de triturar',
-      'Combina bien con manzana o pera'
-    ]),
-    warnings: JSON.stringify([
-      'Algunos bebés pueden ser alérgicos al melocotón (raro)',
-      'Observa si hay reacciones en piel alrededor de la boca'
-    ]),
-  },
-  {
-    id: 'w4d6',
-    weekNumber: 4,
-    dayNumber: 6,
-    title: 'Puré mixto con cereales',
-    description: 'Prepara un puré de verduras con cereales de arroz.',
-    foodGroup: 'Mixto',
-    specificFood: 'Verduras + Cereales de arroz',
-    portionSize: 'Almuerzo: 60-70g puré con cereales',
-    frequency: 'Almuerzo completo',
-    breastmilkNote: 'Este puré es muy completo. El bebé puede empezar a reducir una toma de leche.',
-    tips: JSON.stringify([
-      'Los cereales en el puré de verduras aportan saciedad',
-      'El puré quedará más cremoso',
-      'Es una comida muy nutritiva'
-    ]),
-    warnings: JSON.stringify([
-      'No sustituyas todas las tomas de leche',
-      'La leche materna sigue siendo esencial'
-    ]),
-  },
-  {
-    id: 'w4d7',
-    weekNumber: 4,
-    dayNumber: 7,
-    title: 'Resumen del primer mes',
-    description: '¡Felicidades! Has completado el primer mes de alimentación complementaria.',
-    foodGroup: 'Mixto',
-    specificFood: 'Variedad de alimentos seguros',
-    portionSize: 'Almuerzo: 60-70g / Merienda: 50-60g',
-    frequency: 'Dos comidas al día',
-    breastmilkNote: 'La OMS recomienda continuar la lactancia materna hasta los 2 años o más, junto con alimentos complementarios.',
-    tips: JSON.stringify([
-      'Alimentos aprobados: calabacín, calabaza, zanahoria, patata, judías verdes, puerro, pera, manzana, plátano, aguacate, melocotón, cereales de arroz',
-      'El bebé ya tiene una rutina establecida',
-      'Próximamente: proteínas (pollo, ternera)'
-    ]),
-    warnings: JSON.stringify([
-      'Aún no: huevo, pescado, lácteos, gluten, miel',
-      'Continúa introduciendo un alimento nuevo cada 3 días'
-    ]),
-  },
+  steps.push(
+    { id: 'w4d1', weekNumber: 4, dayNumber: 1, title: 'Nuevo alimento: Aguacate', description: 'El aguacate es rico en grasas saludables.', foodGroup: 'Frutas', specificFood: 'Aguacate', portionSize: '2-3 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w4d2', weekNumber: 4, dayNumber: 2, title: 'Aguacate + frutas', description: 'Combina aguacate con otras frutas.', foodGroup: 'Frutas', specificFood: 'Aguacate + Plátano', portionSize: '4-5 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w4d3', weekNumber: 4, dayNumber: 3, title: 'Nuevo alimento: Cereales de arroz', description: 'Los cereales de arroz espesan purés.', foodGroup: 'Cereales', specificFood: 'Cereales de arroz', portionSize: '1-2 cucharadas', frequency: 'Añadir al puré', ageRange: '6-8' },
+    { id: 'w4d4', weekNumber: 4, dayNumber: 4, title: 'Cereales con frutas', description: 'Añade cereales a la papilla de frutas.', foodGroup: 'Cereales', specificFood: 'Cereales de arroz + Frutas', portionSize: '2-3 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w4d5', weekNumber: 4, dayNumber: 5, title: 'Nuevo alimento: Melocotón', description: 'El melocotón aporta sabor dulce.', foodGroup: 'Frutas', specificFood: 'Melocotón', portionSize: '2-3 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w4d6', weekNumber: 4, dayNumber: 6, title: 'Puré mixto con cereales', description: 'Prepara puré de verduras con cereales.', foodGroup: 'Mixto', specificFood: 'Verduras + Cereales', portionSize: '60-70g', frequency: 'Almuerzo completo', ageRange: '6-8' },
+    { id: 'w4d7', weekNumber: 4, dayNumber: 7, title: 'Resumen del primer mes', description: '¡Felicidades! Has completado el primer mes.', foodGroup: 'Mixto', specificFood: 'Variedad', portionSize: '60-70g', frequency: 'Dos comidas', ageRange: '6-8' }
+  )
+
   // SEMANA 5 - PROTEÍNAS
-  {
-    id: 'w5d1',
-    weekNumber: 5,
-    dayNumber: 1,
-    title: '¡Llegaron las proteínas! - Pollo',
-    description: 'El pollo es la primera carne que introducimos. Suave y fácil de digerir.',
-    foodGroup: 'Proteínas',
-    specificFood: 'Pollo',
-    portionSize: '20-30g de pollo en el puré',
-    frequency: 'Una comida (almuerzo)',
-    breastmilkNote: 'El hierro de la carne se absorbe mejor que el de las verduras. Combínalo con la lactancia.',
-    tips: JSON.stringify([
-      'Usa pechuga de pollo sin piel ni huesos',
-      'Cuece bien y tritura con las verduras',
-      'Empieza con poca cantidad para que acepte el sabor'
-    ]),
-    warnings: JSON.stringify([
-      'La carne debe estar muy bien cocida',
-      'Tritura completamente para evitar trozos',
-      'No añadas sal'
-    ]),
-  },
-  {
-    id: 'w5d2',
-    weekNumber: 5,
-    dayNumber: 2,
-    title: 'Puré de pollo con verduras',
-    description: 'Combina pollo con las verduras ya conocidas.',
-    foodGroup: 'Proteínas',
-    specificFood: 'Pollo + Verduras',
-    portionSize: '30-40g de pollo + 50g verduras',
-    frequency: 'Una comida (almuerzo)',
-    breastmilkNote: 'El pollo aumenta la saciedad. El bebé puede dormir mejor.',
-    tips: JSON.stringify([
-      'Proporción: 1 parte pollo, 2 partes verduras',
-      'El puré debe quedar cremoso',
-      'Puedes usar el caldo de cocción para triturar'
-    ]),
-    warnings: JSON.stringify([
-      'El caldo de pollo puede ser salado, usa poca cantidad',
-      'Mejor triturar con agua o leche materna'
-    ]),
-  },
-  {
-    id: 'w5d3',
-    weekNumber: 5,
-    dayNumber: 3,
-    title: 'Nuevo cereal: Maíz',
-    description: 'El maíz es otro cereal sin gluten, aporta variedad.',
-    foodGroup: 'Cereales',
-    specificFood: 'Maíz (harina o cereales)',
-    portionSize: '1-2 cucharadas en el puré',
-    frequency: 'Una comida',
-    breastmilkNote: 'El maíz es energético pero bajo en proteínas. La leche materna complementa.',
-    tips: JSON.stringify([
-      'Usa harina de maíz o cereales de maíz',
-      'Tiene un sabor ligeramente dulce',
-      'Combina bien con verduras'
-    ]),
-    warnings: JSON.stringify([
-      'El maíz no contiene gluten',
-      'Es seguro para celíacos'
-    ]),
-  },
-  {
-    id: 'w5d4',
-    weekNumber: 5,
-    dayNumber: 4,
-    title: 'Nuevo alimento: Ternera',
-    description: 'La ternera es rica en hierro, esencial para el desarrollo.',
-    foodGroup: 'Proteínas',
-    specificFood: 'Ternera',
-    portionSize: '20-30g de ternera en el puré',
-    frequency: 'Una comida (almuerzo)',
-    breastmilkNote: 'El hierro de la carne es de alta absorción. Importante junto con la lactancia.',
-    tips: JSON.stringify([
-      'Usa carne magra sin grasa',
-      'Cocina bien y tritura finamente',
-      'Combina con verduras ya conocidas'
-    ]),
-    warnings: JSON.stringify([
-      'La ternera es más fuerte que el pollo',
-      'Introdúcela gradualmente'
-    ]),
-  },
-  {
-    id: 'w5d5',
-    weekNumber: 5,
-    dayNumber: 5,
-    title: 'Puré de ternera con verduras',
-    description: 'Mezcla ternera con verduras para un puré nutritivo.',
-    foodGroup: 'Proteínas',
-    specificFood: 'Ternera + Verduras',
-    portionSize: '30-40g de ternera + 50g verduras',
-    frequency: 'Una comida (almuerzo)',
-    breastmilkNote: 'Esta comida aporta mucho hierro. Excelente para el desarrollo.',
-    tips: JSON.stringify([
-      'La ternera combina bien con zanahoria y patata',
-      'Aporta saciedad duradera',
-      'El bebé puede dormir más tiempo'
-    ]),
-    warnings: JSON.stringify([
-      'Alterna entre pollo y ternera',
-      'Varía las proteínas durante la semana'
-    ]),
-  },
-  {
-    id: 'w5d6',
-    weekNumber: 5,
-    dayNumber: 6,
-    title: 'Nuevo alimento: Avena',
-    description: 'La avena es un cereal nutritivo. Contiene gluten (introducir con cuidado).',
-    foodGroup: 'Cereales',
-    specificFood: 'Avena',
-    portionSize: '1-2 cucharadas en papilla',
-    frequency: 'Una comida (merienda)',
-    breastmilkNote: 'La avena es energética y rica en fibra. Combina con leche materna.',
-    tips: JSON.stringify([
-      'Usa copos de avena finos o harina de avena',
-      'Cocina bien para que sea digestiva',
-      'Mezcla con frutas para mejor sabor'
-    ]),
-    warnings: JSON.stringify([
-      'La avena puede contener gluten por contaminación cruzada',
-      'Observa si hay reacciones digestivas',
-      'Introduce gradualmente'
-    ]),
-  },
-  {
-    id: 'w5d7',
-    weekNumber: 5,
-    dayNumber: 7,
-    title: 'Resumen de la semana 5',
-    description: 'El bebé ya come proteínas y más cereales. ¡Gran progreso!',
-    foodGroup: 'Mixto',
-    specificFood: 'Variedad con proteínas',
-    portionSize: 'Almuerzo: 70-80g con proteínas / Merienda: 60g',
-    frequency: 'Dos comidas al día',
-    breastmilkNote: 'Las proteínas complementan la lactancia. Continúa amamantando a demanda.',
-    tips: JSON.stringify([
-      'Proteínas introducidas: pollo, ternera',
-      'Cereales: arroz, maíz, avena',
-      'Mantén variedad en las comidas'
-    ]),
-    warnings: JSON.stringify([
-      'Aún no: huevo, pescado, lácteos, miel',
-      'Continúa con un alimento nuevo cada 3 días'
-    ]),
-  },
-]
+  steps.push(
+    { id: 'w5d1', weekNumber: 5, dayNumber: 1, title: '¡Llegaron las proteínas! - Pollo', description: 'El pollo es la primera carne que introducimos.', foodGroup: 'Proteínas', specificFood: 'Pollo', portionSize: '20-30g', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w5d2', weekNumber: 5, dayNumber: 2, title: 'Puré de pollo con verduras', description: 'Combina pollo con verduras conocidas.', foodGroup: 'Proteínas', specificFood: 'Pollo + Verduras', portionSize: '30-40g pollo + 50g verduras', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w5d3', weekNumber: 5, dayNumber: 3, title: 'Nuevo cereal: Maíz', description: 'El maíz es otro cereal sin gluten.', foodGroup: 'Cereales', specificFood: 'Maíz', portionSize: '1-2 cucharadas', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w5d4', weekNumber: 5, dayNumber: 4, title: 'Nuevo alimento: Ternera', description: 'La ternera es rica en hierro.', foodGroup: 'Proteínas', specificFood: 'Ternera', portionSize: '20-30g', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w5d5', weekNumber: 5, dayNumber: 5, title: 'Puré de ternera con verduras', description: 'Mezcla ternera con verduras.', foodGroup: 'Proteínas', specificFood: 'Ternera + Verduras', portionSize: '30-40g + 50g', frequency: 'Una comida', ageRange: '6-8' },
+    { id: 'w5d6', weekNumber: 5, dayNumber: 6, title: 'Nuevo alimento: Avena', description: 'La avena es nutritiva, contiene gluten.', foodGroup: 'Cereales', specificFood: 'Avena', portionSize: '1-2 cucharadas', frequency: 'Una comida', ageRange: '6-8', warnings: JSON.stringify(['Contiene gluten - observa reacciones']) },
+    { id: 'w5d7', weekNumber: 5, dayNumber: 7, title: 'Resumen semana 5', description: 'El bebé ya come proteínas y más cereales.', foodGroup: 'Mixto', specificFood: 'Variedad', portionSize: '70-80g', frequency: 'Dos comidas', ageRange: '6-8' }
+  )
+
+  // SEMANAS 6-8: Más variedad (6-8 meses)
+  for (let week = 6; week <= 8; week++) {
+    const foods6_8 = [
+      { food: 'Brócoli', group: 'Verduras', tip: 'Cocinar muy bien hasta que esté muy tierno' },
+      { food: 'Coliflor', group: 'Verduras', tip: 'Ideal para purés cremosos' },
+      { food: 'Espinacas', group: 'Verduras', tip: 'Ricas en hierro, cocinar bien' },
+      { food: 'Naranja', group: 'Frutas', tip: 'Vitamina C para absorber hierro' },
+      { food: 'Mandarina', group: 'Frutas', tip: 'Dulce y fácil de aceptar' },
+      { food: 'Pavo', group: 'Proteínas', tip: 'Carne magra y suave' },
+      { food: 'Merluza', group: 'Pescados', tip: 'Primer pescado, magro y suave' },
+    ]
+    
+    for (let day = 1; day <= 7; day++) {
+      const foodIndex = (week - 6) * 7 + day - 1
+      const foodItem = foods6_8[foodIndex % foods6_8.length]
+      steps.push({
+        id: `w${week}d${day}`,
+        weekNumber: week,
+        dayNumber: day,
+        title: `${week === 6 && day === 1 ? 'Nueva etapa: ' : ''}${foodItem.food}`,
+        description: `Introducción de ${foodItem.food.toLowerCase()}. ${foodItem.tip}.`,
+        foodGroup: foodItem.group,
+        specificFood: foodItem.food,
+        portionSize: week < 8 ? '30-50g' : '50-70g',
+        frequency: '2-3 comidas al día',
+        ageRange: '6-8',
+        tips: JSON.stringify([foodItem.tip, 'Observar aceptación', 'Mezclar con alimentos ya conocidos'])
+      })
+    }
+  }
+
+  // ===== MESES 8-10: EXPLORACIÓN (Semanas 9-17) =====
+  for (let week = 9; week <= 17; week++) {
+    const foods8_10 = [
+      { food: 'Lenguado', group: 'Pescados', tip: 'Pescado blanco suave' },
+      { food: 'Huevo (yema)', group: 'Proteínas', tip: 'Empezar solo con la yema cocida' },
+      { food: 'Huevo (clara)', group: 'Proteínas', tip: 'Introducir después de tolerar yema' },
+      { food: 'Yogur natural', group: 'Lácteos', tip: 'Sin azúcar, natural entero' },
+      { food: 'Queso fresco', group: 'Lácteos', tip: 'Bajo en sal, sin añadidos' },
+      { food: 'Lentejas', group: 'Legumbres', tip: 'Triturar muy bien' },
+      { food: 'Garbanzos', group: 'Legumbres', tip: 'En puré o hummus suave' },
+      { food: 'Arroz integral', group: 'Cereales', tip: 'Más fibra y nutrientes' },
+      { food: 'Pan (sin sal)', group: 'Cereales', tip: 'Puede masticar trocitos blandos' },
+      { food: 'Pasta', group: 'Cereales', tip: 'Muy cocida, trozos pequeños' },
+      { food: 'Piña', group: 'Frutas', tip: 'Madura y bien troceada' },
+      { food: 'Sandía', group: 'Frutas', tip: 'Sin pepitas, trocitos pequeños' },
+      { food: 'Melón', group: 'Frutas', tip: 'Hidratante y dulce' },
+      { food: 'Albaricoque', group: 'Frutas', tip: 'Cocido o crudo maduro' },
+    ]
+    
+    for (let day = 1; day <= 7; day++) {
+      const foodIndex = (week - 9) * 7 + day - 1
+      const foodItem = foods8_10[foodIndex % foods8_10.length]
+      steps.push({
+        id: `w${week}d${day}`,
+        weekNumber: week,
+        dayNumber: day,
+        title: `${foodItem.food} - Semana ${week}`,
+        description: `Exploración de ${foodItem.food.toLowerCase()}. ${foodItem.tip}. Texturas más gruesas.`,
+        foodGroup: foodItem.group,
+        specificFood: foodItem.food,
+        portionSize: '70-100g',
+        frequency: '3 comidas + 1-2 snacks',
+        ageRange: '8-10',
+        tips: JSON.stringify([foodItem.tip, 'Texturas más gruesas', 'Fomentar autoalimentación con manos'])
+      })
+    }
+  }
+
+  // ===== MESES 10-12: TRANSICIÓN (Semanas 18-26) =====
+  for (let week = 18; week <= 26; week++) {
+    const foods10_12 = [
+      { food: 'Salmón', group: 'Pescados', tip: 'Rico en omega-3, bien cocido' },
+      { food: 'Atún fresco', group: 'Pescados', tip: 'Evitar enlatado por sal' },
+      { food: 'Sardinas', group: 'Pescados', tip: 'Sin espinas, ricas en calcio' },
+      { food: 'Cordero', group: 'Proteínas', tip: 'Carne tierna, bien cocida' },
+      { food: 'Cerdo magro', group: 'Proteínas', tip: 'Lomo o presa bien cocidos' },
+      { food: 'Tofu', group: 'Proteínas', tip: 'Textura suave, versátil' },
+      { food: 'Judiones', group: 'Legumbres', tip: 'En puré o trocitos' },
+      { food: 'Alubias', group: 'Legumbres', tip: 'Bien cocidas y trituradas' },
+      { food: 'Arroz salvaje', group: 'Cereales', tip: 'Más textura y nutrientes' },
+      { food: 'Quinoa', group: 'Cereales', tip: 'Proteína completa' },
+      { food: 'Cuscús', group: 'Cereales', tip: 'Fácil de preparar y comer' },
+      { food: 'Remolacha', group: 'Verduras', tip: 'Colorida y dulce' },
+      { food: 'Pimiento rojo', group: 'Verduras', tip: 'Bien cocido, sin piel' },
+      { food: 'Berenjena', group: 'Verduras', tip: 'Suave cuando está bien cocida' },
+    ]
+    
+    for (let day = 1; day <= 7; day++) {
+      const foodIndex = (week - 18) * 7 + day - 1
+      const foodItem = foods10_12[foodIndex % foods10_12.length]
+      steps.push({
+        id: `w${week}d${day}`,
+        weekNumber: week,
+        dayNumber: day,
+        title: `${foodItem.food} - Semana ${week}`,
+        description: `Transición con ${foodItem.food.toLowerCase()}. ${foodItem.tip}. Comidas familiares adaptadas.`,
+        foodGroup: foodItem.group,
+        specificFood: foodItem.food,
+        portionSize: '100-150g',
+        frequency: '3 comidas + 2 snacks',
+        ageRange: '10-12',
+        tips: JSON.stringify([foodItem.tip, 'Ofrecer trozos para agarrar', 'Comidas familiares adaptadas', 'Menos puré, más textura'])
+      })
+    }
+  }
+
+  // ===== MESES 12-18: CONSOLIDACIÓN (Semanas 27-52) =====
+  for (let week = 27; week <= 52; week++) {
+    const foods12_18 = [
+      { food: 'Fresas', group: 'Frutas', tip: 'Lavar bien, trocitos pequeños' },
+      { food: 'Arándanos', group: 'Frutas', tip: 'Ricos en antioxidantes' },
+      { food: 'Cerezas', group: 'Frutas', tip: 'Sin hueso, troceadas' },
+      { food: 'Uvas', group: 'Frutas', tip: 'Cortar en cuartos por el peligro de atragantamiento' },
+      { food: 'Kiwi', group: 'Frutas', tip: 'Maduro, rico en vitamina C' },
+      { food: 'Mango', group: 'Frutas', tip: 'Maduro y troceado' },
+      { food: 'Papaya', group: 'Frutas', tip: 'Digestiva y dulce' },
+      { food: 'Miel (1 año+)', group: 'Otros', tip: 'Solo después de 12 meses' },
+      { food: 'Crema de cacahuete', group: 'Proteínas', tip: 'Capa fina, observar alergia' },
+      { food: 'Frutos secos triturados', group: 'Otros', tip: 'En puré o bien triturados' },
+    ]
+    
+    for (let day = 1; day <= 7; day++) {
+      const foodIndex = (week - 27) * 7 + day - 1
+      const foodItem = foods12_18[foodIndex % foods12_18.length]
+      steps.push({
+        id: `w${week}d${day}`,
+        weekNumber: week,
+        dayNumber: day,
+        title: `${foodItem.food} - Semana ${week}`,
+        description: `Consolidación con ${foodItem.food.toLowerCase()}. ${foodItem.tip}. Dieta variada.`,
+        foodGroup: foodItem.group,
+        specificFood: foodItem.food,
+        portionSize: '100-200g',
+        frequency: '3 comidas + 2 snacks',
+        ageRange: '12-18',
+        tips: JSON.stringify([foodItem.tip, 'Dieta cada vez más variada', 'Puede comer casi todo lo de la familia'])
+      })
+    }
+  }
+
+  // ===== MESES 18-24: MADUREZ (Semanas 53-104) =====
+  for (let week = 53; week <= 104; week++) {
+    const foods18_24 = [
+      { food: 'Dieta familiar completa', group: 'Mixto', tip: 'Adaptar solo sal y azúcar' },
+      { food: 'Ensaladas variadas', group: 'Verduras', tip: 'Trozos pequeños, ingredientes variados' },
+      { food: 'Sopas y cremas', group: 'Verduras', tip: 'Nutritivas y reconfortantes' },
+      { food: 'Platos combinados', group: 'Mixto', tip: 'Proteína + verdura + carbohidrato' },
+      { food: 'Bocadillos saludables', group: 'Mixto', tip: 'Pan integral con opciones nutritivas' },
+      { food: 'Batidos de frutas', group: 'Frutas', tip: 'Sin azúcar añadido' },
+      { food: 'Postres caseros', group: 'Otros', tip: 'Pocos, y caseros preferiblemente' },
+    ]
+    
+    for (let day = 1; day <= 7; day++) {
+      const foodIndex = (week - 53) * 7 + day - 1
+      const foodItem = foods18_24[foodIndex % foods18_24.length]
+      steps.push({
+        id: `w${week}d${day}`,
+        weekNumber: week,
+        dayNumber: day,
+        title: `${foodItem.food} - Semana ${week}`,
+        description: `Madurez alimentaria: ${foodItem.food.toLowerCase()}. ${foodItem.tip}. Dieta completa.`,
+        foodGroup: foodItem.group,
+        specificFood: foodItem.food,
+        portionSize: '150-250g',
+        frequency: '3 comidas + 2 snacks',
+        ageRange: '18-24',
+        tips: JSON.stringify([foodItem.tip, 'Dieta casi igual que adultos', 'Evitar solo azúcar y sal añadidos', 'Fomentar autonomía en la comida'])
+      })
+    }
+  }
+
+  return steps
+}
+
+export const introStepsData: IntroStep[] = generateSteps()
+
+// Función para filtrar por rango de edad
+export function filterByAgeRange(steps: IntroStep[], ageRange: string): IntroStep[] {
+  return steps.filter(step => step.ageRange === ageRange)
+}
+
+// Función para obtener rangos de edad disponibles
+export function getAvailableAgeRanges(): { value: string; label: string; description: string }[] {
+  return [
+    { value: '6-8', label: '6-8 meses', description: 'Iniciación' },
+    { value: '8-10', label: '8-10 meses', description: 'Exploración' },
+    { value: '10-12', label: '10-12 meses', description: 'Transición' },
+    { value: '12-18', label: '12-18 meses', description: 'Consolidación' },
+    { value: '18-24', label: '18-24 meses', description: 'Madurez' },
+  ]
+}
 
 // Función para agrupar por semana
 export function groupStepsByWeek(steps: IntroStep[]): Record<number, IntroStep[]> {
@@ -774,4 +281,16 @@ export function groupStepsByWeek(steps: IntroStep[]): Record<number, IntroStep[]
     acc[step.weekNumber].push(step)
     return acc
   }, {} as Record<number, IntroStep[]>)
+}
+
+// Función para obtener el número total de semanas por rango de edad
+export function getWeeksByAgeRange(ageRange: string): { start: number; end: number } {
+  const ranges: Record<string, { start: number; end: number }> = {
+    '6-8': { start: 1, end: 8 },
+    '8-10': { start: 9, end: 17 },
+    '10-12': { start: 18, end: 26 },
+    '12-18': { start: 27, end: 52 },
+    '18-24': { start: 53, end: 104 },
+  }
+  return ranges[ageRange] || { start: 1, end: 8 }
 }
