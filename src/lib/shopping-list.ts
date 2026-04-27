@@ -3,7 +3,7 @@
 
 export interface ShoppingItem {
   name: string
-  category: 'Verduras' | 'Frutas' | 'Proteínas' | 'Cereales' | 'Otros'
+  category: 'Verduras' | 'Frutas' | 'Proteínas' | 'Cereales' | 'Lácteos' | 'Legumbres' | 'Otros'
   quantity: string
   quantityGrams: number
   notes?: string
@@ -16,6 +16,8 @@ export const categoryIcons: Record<string, string> = {
   'Frutas': '🍎',
   'Proteínas': '🍗',
   'Cereales': '🌾',
+  'Lácteos': '🥛',
+  'Legumbres': '🫘',
   'Otros': '🥣',
 }
 
@@ -28,6 +30,12 @@ export const foodShoppingInfo: Record<string, { unitWeight: number, unit: string
   'Patata': { unitWeight: 150, unit: 'unidad mediana', shelfLife: '14-21 días' },
   'Judías verdes': { unitWeight: 250, unit: 'manojo', shelfLife: '3-5 días' },
   'Puerro': { unitWeight: 150, unit: 'unidad grande', shelfLife: '7-10 días' },
+  'Espinacas': { unitWeight: 200, unit: 'manojo', shelfLife: '2-3 días' },
+  'Acelgas': { unitWeight: 250, unit: 'manojo', shelfLife: '2-3 días' },
+  'Brócoli': { unitWeight: 300, unit: 'unidad', shelfLife: '3-5 días' },
+  'Tomate': { unitWeight: 150, unit: 'unidad mediana', shelfLife: '5-7 días' },
+  'Pimiento': { unitWeight: 150, unit: 'unidad', shelfLife: '5-7 días' },
+  'Cebolla': { unitWeight: 150, unit: 'unidad', shelfLife: '14-21 días' },
   
   // Frutas
   'Pera': { unitWeight: 180, unit: 'unidad mediana', shelfLife: '3-5 días' },
@@ -35,15 +43,42 @@ export const foodShoppingInfo: Record<string, { unitWeight: number, unit: string
   'Plátano': { unitWeight: 120, unit: 'unidad', shelfLife: '3-5 días' },
   'Aguacate': { unitWeight: 200, unit: 'unidad', shelfLife: '2-4 días maduro' },
   'Melocotón': { unitWeight: 150, unit: 'unidad', shelfLife: '3-5 días' },
+  'Naranja': { unitWeight: 200, unit: 'unidad', shelfLife: '7-14 días' },
+  'Fresa': { unitWeight: 250, unit: 'bandeja 250g', shelfLife: '2-3 días' },
+  'Mandarina': { unitWeight: 100, unit: 'unidad', shelfLife: '7-14 días' },
   
   // Proteínas
   'Pollo': { unitWeight: 150, unit: 'pechuga', shelfLife: '2-3 días (congelar si es más)' },
   'Ternera': { unitWeight: 150, unit: 'trozo magro', shelfLife: '2-3 días (congelar si es más)' },
+  'Pavo': { unitWeight: 150, unit: 'pechuga', shelfLife: '2-3 días' },
+  'Conejo': { unitWeight: 500, unit: 'unidad', shelfLife: '2-3 días' },
+  'Merluza': { unitWeight: 200, unit: 'filete', shelfLife: '1-2 días' },
+  'Bacalao': { unitWeight: 200, unit: 'filete', shelfLife: '1-2 días' },
+  'Salmón': { unitWeight: 200, unit: 'filete', shelfLife: '1-2 días' },
+  'Sardinas': { unitWeight: 100, unit: 'lata', shelfLife: '12+ meses' },
+  'Yema de huevo': { unitWeight: 20, unit: 'unidad', shelfLife: '7-14 días (huevo entero)' },
+  'Huevo completo': { unitWeight: 60, unit: 'unidad', shelfLife: '7-14 días' },
+  
+  // Lácteos
+  'Yogur natural': { unitWeight: 125, unit: 'unidad', shelfLife: '14-21 días' },
+  'Queso fresco': { unitWeight: 100, unit: 'porción', shelfLife: '5-7 días' },
+  'Leche de vaca entera': { unitWeight: 1000, unit: 'litro', shelfLife: '7-10 días abierto' },
   
   // Cereales
   'Cereales de arroz': { unitWeight: 200, unit: 'caja 200g', shelfLife: '30+ días' },
   'Maíz (harina o cereales)': { unitWeight: 250, unit: 'paquete', shelfLife: '30+ días' },
   'Avena': { unitWeight: 250, unit: 'paquete', shelfLife: '30+ días' },
+  'Arroz': { unitWeight: 500, unit: 'paquete 500g', shelfLife: '30+ días' },
+  'Pasta pequeña': { unitWeight: 250, unit: 'paquete', shelfLife: '30+ días' },
+  'Cuscús': { unitWeight: 250, unit: 'paquete', shelfLife: '30+ días' },
+  'Pan': { unitWeight: 50, unit: 'rebanada', shelfLife: '2-3 días' },
+  
+  // Legumbres
+  'Lentejas': { unitWeight: 250, unit: 'paquete 250g', shelfLife: '12+ meses' },
+  'Garbanzos': { unitWeight: 250, unit: 'paquete 250g', shelfLife: '12+ meses' },
+  
+  // Otros
+  'Miel': { unitWeight: 250, unit: 'frasco', shelfLife: '12+ meses' },
 }
 
 // Calcular lista de compras para los próximos N días
@@ -98,7 +133,7 @@ export function calculateShoppingList(
   })
   
   // Ordenar por categoría
-  const categoryOrder = ['Verduras', 'Frutas', 'Proteínas', 'Cereales', 'Otros']
+  const categoryOrder = ['Verduras', 'Frutas', 'Proteínas', 'Lácteos', 'Legumbres', 'Cereales', 'Otros']
   shoppingList.sort((a, b) => {
     return categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category)
   })
@@ -106,10 +141,10 @@ export function calculateShoppingList(
   return shoppingList
 }
 
-// Períodos de compra (cada 15 días)
+// Períodos de compra (cada 30 días)
 export function getShoppingPeriod(currentDay: number): { start: number; end: number; period: number } {
-  const period = Math.floor((currentDay - 1) / 15) + 1
-  const start = (period - 1) * 15 + 1
-  const end = start + 14
+  const period = Math.floor((currentDay - 1) / 30) + 1
+  const start = (period - 1) * 30 + 1
+  const end = start + 29
   return { start, end, period }
 }

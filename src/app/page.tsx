@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import { Input } from '@/components/ui/input'
 import { Loader2 } from 'lucide-react'
-import { introStepsData, type IntroStep } from '@/lib/intro-steps-data'
+import { introStepsData, type IntroStep, ageRangeInfo, getAgeRangeForDay } from '@/lib/intro-steps-data'
 import { calculateShoppingList, getShoppingPeriod, type ShoppingItem } from '@/lib/shopping-list'
 
 // Types
@@ -84,6 +84,7 @@ export default function NutriBebeApp() {
   const [activeSection, setActiveSection] = useState('intro')
   const [introSteps, setIntroSteps] = useState<IntroStep[]>([])
   const [currentDay, setCurrentDay] = useState(1)
+  const [selectedAgeRange, setSelectedAgeRange] = useState<'6-8m' | '8-12m' | '12-24m'>('6-8m')
   
   // Reaction state
   const [showReactionForm, setShowReactionForm] = useState(false)
@@ -284,12 +285,15 @@ export default function NutriBebeApp() {
   const totalDays = introSteps.length
   const progressPercentage = totalDays > 0 ? (currentDay / totalDays) * 100 : 0
   const currentStep = introSteps.find(s => s.dayNumber === currentDay) || introSteps[0]
+  const currentAgeRange = currentStep?.ageRange || '6-8m'
+  const currentRangeInfo = ageRangeInfo[currentAgeRange]
+  const daysInRange = introSteps.filter(s => s.ageRange === selectedAgeRange)
   const getCurrentReaction = (step: IntroStep): BabyReaction | null => 
     step.specificFood ? savedReactions[`${step.id}-${step.specificFood}`] || null : null
   
   // Shopping list calculation
   const shoppingPeriod = getShoppingPeriod(currentDay)
-  const shoppingList = calculateShoppingList(currentDay, 15, introSteps)
+  const shoppingList = calculateShoppingList(currentDay, 30, introSteps)
   const totalItems = shoppingList.length
   const checkedCount = shoppingList.filter(item => checkedItems.has(item.name)).length
 
@@ -492,6 +496,34 @@ export default function NutriBebeApp() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
+                    {/* Age Range Tabs */}
+                    <div className="flex gap-2 flex-wrap">
+                      {(['6-8m', '8-12m', '12-24m'] as const).map(range => (
+                        <Button
+                          key={range}
+                          variant={selectedAgeRange === range ? 'default' : 'outline'}
+                          className={`flex-1 ${selectedAgeRange === range ? 'bg-orange-500 hover:bg-orange-600' : ''}`}
+                          onClick={() => {
+                            setSelectedAgeRange(range)
+                            const firstDayInRange = introSteps.find(s => s.ageRange === range)
+                            if (firstDayInRange) setCurrentDay(firstDayInRange.dayNumber)
+                          }}
+                        >
+                          {ageRangeInfo[range].title}
+                        </Button>
+                      ))}
+                    </div>
+                    
+                    {/* Current Range Info */}
+                    <div className="p-3 bg-white/50 rounded-lg border border-orange-200">
+                      <p className="text-sm font-medium text-orange-800">{currentRangeInfo.title}</p>
+                      <p className="text-xs text-gray-600 mt-1">{currentRangeInfo.description}</p>
+                      <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                        <span>📅 Días {currentRangeInfo.startDay}-{currentRangeInfo.endDay}</span>
+                        <span>🍽️ {currentRangeInfo.mealsPerDay}</span>
+                      </div>
+                    </div>
+                    
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Día {currentDay} de {totalDays}</span>
                       <span className="text-sm font-medium text-orange-600">{Math.round(progressPercentage)}% completado</span>
@@ -507,7 +539,10 @@ export default function NutriBebeApp() {
                   <CardHeader className="bg-gradient-to-r from-green-100 to-orange-50">
                     <div className="flex items-center justify-between">
                       <div>
-                        <Badge variant="secondary" className="mb-2">Día {currentStep.dayNumber}</Badge>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="secondary">Día {currentStep.dayNumber}</Badge>
+                          <Badge className="bg-purple-500 text-white text-xs">{ageRangeInfo[currentStep.ageRange].title}</Badge>
+                        </div>
                         <CardTitle className="text-xl text-green-700">{currentStep.title}</CardTitle>
                       </div>
                       {currentStep.specificFood && (
@@ -703,7 +738,7 @@ export default function NutriBebeApp() {
             <motion.div key="shopping" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold text-gray-800">Lista de Compras</h2>
-                <p className="text-gray-500">Alimentos necesarios para los próximos 15 días según tu progreso</p>
+                <p className="text-gray-500">Alimentos necesarios para los próximos 30 días según tu progreso</p>
               </div>
 
               {/* Period Info */}
@@ -714,7 +749,7 @@ export default function NutriBebeApp() {
                       <ShoppingCart className="w-6 h-6 text-green-600" />
                       <div>
                         <p className="font-medium text-green-800">Período de Compra #{shoppingPeriod.period}</p>
-                        <p className="text-sm text-green-600">Días {shoppingPeriod.start} - {shoppingPeriod.end} (15 días)</p>
+                        <p className="text-sm text-green-600">Días {shoppingPeriod.start} - {Math.min(shoppingPeriod.end, totalDays)} (30 días)</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -742,7 +777,7 @@ export default function NutriBebeApp() {
               {/* Shopping List by Category */}
               {shoppingList.length > 0 && (
                 <div className="space-y-6">
-                  {['Verduras', 'Frutas', 'Proteínas', 'Cereales', 'Otros'].map(category => {
+                  {['Verduras', 'Frutas', 'Proteínas', 'Lácteos', 'Legumbres', 'Cereales', 'Otros'].map(category => {
                     const categoryItems = shoppingList.filter(item => item.category === category)
                     if (categoryItems.length === 0) return null
                     
