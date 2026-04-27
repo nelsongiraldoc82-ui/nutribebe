@@ -1,10 +1,8 @@
 // Datos estáticos de introducción de alimentos
 // Basados en recomendaciones OMS, UNICEF y AEPAP
-// Plan de alimentación desde 6 hasta 24 meses con recetas
 
 export interface IntroStep {
   id: string
-  weekNumber: number
   dayNumber: number
   title: string
   description: string
@@ -15,1417 +13,654 @@ export interface IntroStep {
   breastmilkNote?: string
   tips?: string
   warnings?: string
-  ageRange?: string
-  mealProgression?: string
-  recipe?: {
-    name: string
-    ingredients: string[]
-    steps: string[]
-    prepTime?: string
-    cookTime?: string
-  }
+  recipe?: string
 }
 
-// Función para generar pasos automáticamente
-function generateSteps(): IntroStep[] {
-  const steps: IntroStep[] = []
-  
-  // ===== MESES 6-8: INTRODUCCIÓN =====
-  
-  // SEMANA 1 - Verduras suaves (1 comida: almuerzo)
-  steps.push(
-    { 
-      id: 'w1d1', weekNumber: 1, dayNumber: 1, 
-      title: '¡Primer día! Puré de calabacín', 
-      description: 'Hoy comienza la alimentación complementaria. Solo ALMUERZO con calabacín.', 
-      foodGroup: 'Verduras', 
-      specificFood: 'Calabacín', 
-      portionSize: '2-3 cucharaditas', 
-      frequency: '1 comida (ALMUERZO)', 
-      ageRange: '6-8', 
-      mealProgression: '1 COMIDA: Solo almuerzo con puré. Leche materna/formula el resto del día.',
-      breastmilkNote: 'La leche sigue siendo el 90% de la nutrición. El puré es solo una introducción.',
-      tips: JSON.stringify(['Elige un momento tranquilo', 'Usa cuchara pequeña de silicona', 'No te preocupes si escupe', 'Mantén las 5-6 tomas de leche']),
-      warnings: JSON.stringify(['No añadas sal ni azúcar', 'Observa reacciones alérgicas']),
-      recipe: {
-        name: 'Puré de Calabacín Básico',
-        ingredients: [
-          '50g de calabacín (sin piel ni semillas)',
-          'Agua para cocinar'
-        ],
-        steps: [
-          'Lava bien el calabacín bajo el grifo',
-          'Pela el calabacín con un pelador',
-          'Corta en trozos pequeños y quita las semillas',
-          'Cocina al vapor durante 10-12 minutos hasta que esté muy tierno',
-          'Tritura con la batidora hasta obtener un puré muy líquido',
-          'Añade agua de cocción si queda muy espeso',
-          'Deja enfriar a temperatura ambiente antes de dar'
-        ],
-        prepTime: '5 min',
-        cookTime: '12 min'
-      }
-    },
-    { 
-      id: 'w1d2', weekNumber: 1, dayNumber: 2, 
-      title: 'Día 2: Seguimos con calabacín', 
-      description: 'Continúa con puré de calabacín en el ALMUERZO.', 
-      foodGroup: 'Verduras', 
-      specificFood: 'Calabacín', 
-      portionSize: '3-4 cucharadas', 
-      frequency: '1 comida (ALMUERZO)', 
-      ageRange: '6-8', 
-      mealProgression: '1 COMIDA',
-      recipe: {
-        name: 'Puré de Calabacín',
-        ingredients: ['70g de calabacín', 'Agua'],
-        steps: [
-          'Pela y corta el calabacín',
-          'Cocina al vapor 10-12 min',
-          'Tritura muy bien hasta textura líquida',
-          'Puede quedar un poco más espeso que el primer día'
-        ],
-        prepTime: '5 min',
-        cookTime: '12 min'
-      }
-    },
-    { 
-      id: 'w1d3', weekNumber: 1, dayNumber: 3, 
-      title: 'Día 3: Calabacín', 
-      description: 'Último día de prueba con calabacín solo.', 
-      foodGroup: 'Verduras', 
-      specificFood: 'Calabacín', 
-      portionSize: '4-5 cucharadas', 
-      frequency: '1 comida (ALMUERZO)', 
-      ageRange: '6-8', 
-      mealProgression: '1 COMIDA',
-      recipe: {
-        name: 'Puré de Calabacín Cremoso',
-        ingredients: ['80g de calabacín', 'Agua de cocción'],
-        steps: [
-          'Pela y trocea el calabacín',
-          'Cocina al vapor hasta muy tierno',
-          'Tritura con un poco de agua de cocción',
-          'Textura cremosa pero sin grumos'
-        ],
-        prepTime: '5 min',
-        cookTime: '12 min'
-      }
-    },
-    { 
-      id: 'w1d4', weekNumber: 1, dayNumber: 4, 
-      title: 'Nuevo: Puré de Calabaza', 
-      description: 'Introducimos calabaza en el almuerzo.', 
-      foodGroup: 'Verduras', 
-      specificFood: 'Calabaza', 
-      portionSize: '2-3 cucharadas', 
-      frequency: '1 comida (ALMUERZO)', 
-      ageRange: '6-8', 
-      mealProgression: '1 COMIDA',
-      recipe: {
-        name: 'Puré de Calabaza Dulce',
-        ingredients: [
-          '60g de calabaza (tipo butternut o violín)',
-          'Agua para cocinar'
-        ],
-        steps: [
-          'Pela la calabaza con un cuchillo fuerte',
-          'Quita las semillas y fibras del centro',
-          'Corta en cubos pequeños de 1-2 cm',
-          'Cocina al vapor durante 20-25 minutos hasta muy tierna',
-          'Tritura hasta obtener un puré suave y naranja',
-          'La calabaza es naturalmente dulce, ideal para bebés'
-        ],
-        prepTime: '5 min',
-        cookTime: '25 min'
-      }
-    },
-    { 
-      id: 'w1d5', weekNumber: 1, dayNumber: 5, 
-      title: 'Continúa con calabaza', 
-      description: 'Sigue con calabaza en el almuerzo.', 
-      foodGroup: 'Verduras', 
-      specificFood: 'Calabaza', 
-      portionSize: '3-4 cucharadas', 
-      frequency: '1 comida (ALMUERZO)', 
-      ageRange: '6-8', 
-      mealProgression: '1 COMIDA',
-      recipe: {
-        name: 'Crema de Calabaza',
-        ingredients: ['80g de calabaza', 'Agua'],
-        steps: [
-          'Pela y corta la calabaza',
-          'Cocina al vapor 20-25 min',
-          'Tritura con agua de cocción',
-          'Textura suave y cremosa'
-        ],
-        prepTime: '5 min',
-        cookTime: '25 min'
-      }
-    },
-    { 
-      id: 'w1d6', weekNumber: 1, dayNumber: 6, 
-      title: 'Último día de calabaza', 
-      description: 'Finalizamos la prueba de calabaza.', 
-      foodGroup: 'Verduras', 
-      specificFood: 'Calabaza', 
-      portionSize: '4-5 cucharadas', 
-      frequency: '1 comida (ALMUERZO)', 
-      ageRange: '6-8', 
-      mealProgression: '1 COMIDA',
-      recipe: {
-        name: 'Puré de Calabaza',
-        ingredients: ['100g de calabaza', 'Agua'],
-        steps: [
-          'Cocina la calabaza al vapor',
-          'Tritura muy bien',
-          'Aumenta la cantidad gradualmente'
-        ],
-        prepTime: '5 min',
-        cookTime: '25 min'
-      }
-    },
-    { 
-      id: 'w1d7', weekNumber: 1, dayNumber: 7, 
-      title: 'Nuevo: Puré de Zanahoria', 
-      description: 'Introducimos zanahoria, rica en vitamina A.', 
-      foodGroup: 'Verduras', 
-      specificFood: 'Zanahoria', 
-      portionSize: '2-3 cucharadas', 
-      frequency: '1 comida (ALMUERZO)', 
-      ageRange: '6-8', 
-      mealProgression: '1 COMIDA',
-      recipe: {
-        name: 'Puré de Zanahoria',
-        ingredients: [
-          '50g de zanahoria',
-          'Agua para cocinar'
-        ],
-        steps: [
-          'Pela la zanahoria con pelador',
-          'Corta en rodajas finas o cubos pequeños',
-          'Cocina al vapor durante 25-30 minutos (debe estar muy tierna)',
-          'Tritura muy bien hasta eliminar todos los grumos',
-          'Añade agua de cocción para ajustar textura',
-          'La zanahoria tarda más en cocinarse que otras verduras'
-        ],
-        prepTime: '5 min',
-        cookTime: '30 min'
-      }
-    }
-  )
-
-  // SEMANA 2 - Continúa con 1 comida (almuerzo)
-  steps.push(
-    { 
-      id: 'w2d1', weekNumber: 2, dayNumber: 1, 
-      title: 'Zanahoria día 2', 
-      description: 'Continúa con zanahoria.', 
-      foodGroup: 'Verduras', 
-      specificFood: 'Zanahoria', 
-      portionSize: '3-4 cucharadas', 
-      frequency: '1 comida (ALMUERZO)', 
-      ageRange: '6-8', 
-      mealProgression: '1 COMIDA',
-      recipe: {
-        name: 'Puré de Zanahoria',
-        ingredients: ['70g de zanahoria', 'Agua'],
-        steps: [
-          'Pela y corta la zanahoria',
-          'Cocina 25-30 min al vapor',
-          'Tritura hasta puré muy suave'
-        ],
-        prepTime: '5 min',
-        cookTime: '30 min'
-      }
-    },
-    { 
-      id: 'w2d2', weekNumber: 2, dayNumber: 2, 
-      title: 'Mezcla de verduras', 
-      description: 'Prueba mezcla de verduras ya conocidas.', 
-      foodGroup: 'Verduras', 
-      specificFood: 'Calabacín + Calabaza + Zanahoria', 
-      portionSize: '5-6 cucharadas', 
-      frequency: '1 comida (ALMUERZO)', 
-      ageRange: '6-8', 
-      mealProgression: '1 COMIDA',
-      recipe: {
-        name: 'Puré Multiverduras',
-        ingredients: [
-          '30g de calabacín',
-          '30g de calabaza',
-          '30g de zanahoria',
-          'Agua'
-        ],
-        steps: [
-          'Pela todas las verduras',
-          'Corta en trozos pequeños',
-          'Cocina la zanahoria primero (10 min)',
-          'Añade calabaza (otros 15 min)',
-          'Añade calabacín los últimos 10 min',
-          'Tritura todo junto hasta obtener puré suave'
-        ],
-        prepTime: '10 min',
-        cookTime: '30 min'
-      }
-    },
-    { 
-      id: 'w2d3', weekNumber: 2, dayNumber: 3, 
-      title: 'Nuevo: Puré de Patata', 
-      description: 'La patata es excelente base para purés.', 
-      foodGroup: 'Verduras', 
-      specificFood: 'Patata', 
-      portionSize: '3-4 cucharadas', 
-      frequency: '1 comida (ALMUERZO)', 
-      ageRange: '6-8', 
-      mealProgression: '1 COMIDA',
-      recipe: {
-        name: 'Puré de Patata Cremoso',
-        ingredients: [
-          '80g de patata',
-          'Agua o leche materna'
-        ],
-        steps: [
-          'Pela la patata y quita cualquier parte verde',
-          'Corta en cubos pequeños',
-          'Cocina al vapor o hervida 20-25 min',
-          'Aplasta con tenedor o tritura ligeramente',
-          'NO uses batidora mucho tiempo (queda pegajoso)',
-          'Añade agua o leche materna para cremosidad'
-        ],
-        prepTime: '5 min',
-        cookTime: '25 min'
-      }
-    },
-    { 
-      id: 'w2d4', weekNumber: 2, dayNumber: 4, 
-      title: 'Patata + verduras', 
-      description: 'Mezcla patata con verduras ya conocidas.', 
-      foodGroup: 'Verduras', 
-      specificFood: 'Patata + Calabacín', 
-      portionSize: '5-6 cucharadas', 
-      frequency: '1 comida (ALMUERZO)', 
-      ageRange: '6-8', 
-      mealProgression: '1 COMIDA',
-      recipe: {
-        name: 'Puré de Patata y Calabacín',
-        ingredients: [
-          '50g de patata',
-          '50g de calabacín',
-          'Agua'
-        ],
-        steps: [
-          'Pela y corta la patata en cubos',
-          'Pela y corta el calabacín',
-          'Cocina patata 15 min al vapor',
-          'Añade calabacín otros 10 min',
-          'Tritura juntos hasta textura suave'
-        ],
-        prepTime: '10 min',
-        cookTime: '25 min'
-      }
-    },
-    { 
-      id: 'w2d5', weekNumber: 2, dayNumber: 5, 
-      title: 'Nuevo: Judías Verdes', 
-      description: 'Las judías verdes aportan fibra.', 
-      foodGroup: 'Verduras', 
-      specificFood: 'Judías verdes', 
-      portionSize: '3-4 cucharadas', 
-      frequency: '1 comida (ALMUERZO)', 
-      ageRange: '6-8', 
-      mealProgression: '1 COMIDA',
-      recipe: {
-        name: 'Puré de Judías Verdes',
-        ingredients: [
-          '60g de judías verdes frescas',
-          'Agua'
-        ],
-        steps: [
-          'Lava las judías bajo el grifo',
-          'Quita las puntas y las hebras laterales',
-          'Corta en trozos pequeños',
-          'Cocina al vapor 15-20 min hasta muy tiernas',
-          'Tritura muy bien para eliminar hilos',
-          'Pasa por el pasapurés si quedan hebras'
-        ],
-        prepTime: '10 min',
-        cookTime: '20 min'
-      }
-    },
-    { 
-      id: 'w2d6', weekNumber: 2, dayNumber: 6, 
-      title: 'Mezcla completa', 
-      description: 'Puré con todas las verduras introducidas.', 
-      foodGroup: 'Verduras', 
-      specificFood: 'Mezcla de verduras', 
-      portionSize: '6-7 cucharadas', 
-      frequency: '1 comida (ALMUERZO)', 
-      ageRange: '6-8', 
-      mealProgression: '1 COMIDA',
-      recipe: {
-        name: 'Puré de Verduras Variadas',
-        ingredients: [
-          '30g de patata',
-          '30g de calabacín',
-          '20g de zanahoria',
-          '20g de judías verdes'
-        ],
-        steps: [
-          'Pela y trocea todas las verduras',
-          'Cocina por orden: zanahoria 10 min, patata y judías 15 min, calabacín 10 min',
-          'Tritura todo junto',
-          'Ajusta textura con agua de cocción'
-        ],
-        prepTime: '15 min',
-        cookTime: '25 min'
-      }
-    },
-    { 
-      id: 'w2d7', weekNumber: 2, dayNumber: 7, 
-      title: 'Nuevo: Puerro', 
-      description: 'El puerro aporta sabor suave.', 
-      foodGroup: 'Verduras', 
-      specificFood: 'Puerro', 
-      portionSize: '3-4 cucharadas', 
-      frequency: '1 comida (ALMUERZO)', 
-      ageRange: '6-8', 
-      mealProgression: '1 COMIDA',
-      recipe: {
-        name: 'Crema de Puerro',
-        ingredients: [
-          '50g de puerro (solo parte blanca)',
-          '30g de patata',
-          'Agua'
-        ],
-        steps: [
-          'Lava muy bien el puerro (tiene tierra entre capas)',
-          'Usa solo la parte blanca, más suave',
-          'Corta en rodajas finas',
-          'Cocina al vapor con patata 20 min',
-          'Tritura hasta textura suave'
-        ],
-        prepTime: '10 min',
-        cookTime: '20 min'
-      }
-    }
-  )
-
-  // SEMANA 3 - AÑADIMOS SEGUNDA COMIDA (MERIENDA con FRUTAS)
-  steps.push(
-    { 
-      id: 'w3d1', weekNumber: 3, dayNumber: 1, 
-      title: '¡SEGUNDA COMIDA! Pera en merienda', 
-      description: 'Hoy añadimos la MERIENDA con fruta. Ahora son 2 comidas al día: ALMUERZO (verduras) + MERIENDA (frutas).', 
-      foodGroup: 'Frutas', 
-      specificFood: 'Pera', 
-      portionSize: '2-3 cucharadas', 
-      frequency: '2 COMIDAS: Almuerzo (verduras) + Merienda (fruta)', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS: Almuerzo con puré de verduras + Merienda con fruta',
-      breastmilkNote: 'Mantén 4-5 tomas de leche. Las comidas sólidas complementan, no sustituyen.',
-      tips: JSON.stringify(['Almuerzo: puré de verduras ya conocidas', 'Merienda: introduce la pera', 'Espacia las comidas 3-4 horas', 'Ofrece leche después de cada comida sólida']),
-      recipe: {
-        name: 'Compota de Pera',
-        ingredients: [
-          '1 pera madura (variedad Conference o Blanquilla)',
-          'Opcional: 1-2 cucharadas de agua'
-        ],
-        steps: [
-          'Pela la pera con cuidado',
-          'Quita el corazón y las semillas',
-          'Corta en trozos pequeños',
-          'Opción 1 CRUDA: Ralla finamente con rallador',
-          'Opción 2 COCIDA: Cocina con poca agua 8-10 min',
-          'Tritura hasta obtener puré suave',
-          'La pera es muy digestiva y dulce naturalmente'
-        ],
-        prepTime: '5 min',
-        cookTime: '10 min'
-      }
-    },
-    { 
-      id: 'w3d2', weekNumber: 3, dayNumber: 2, 
-      title: 'Pera día 2', 
-      description: 'Continúa con pera en la merienda + verduras en almuerzo.', 
-      foodGroup: 'Frutas', 
-      specificFood: 'Pera', 
-      portionSize: '3-4 cucharadas', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS',
-      tips: JSON.stringify(['Almuerzo: puré de verduras variadas', 'Merienda: papilla de pera']),
-      recipe: {
-        name: 'Papilla de Pera',
-        ingredients: ['1 pera madura'],
-        steps: [
-          'Pela y quita el corazón',
-          'Ralla o tritura hasta puré',
-          'Aumenta la cantidad gradualmente'
-        ],
-        prepTime: '5 min',
-        cookTime: '0 min'
-      }
-    },
-    { 
-      id: 'w3d3', weekNumber: 3, dayNumber: 3, 
-      title: 'Nuevo: Manzana', 
-      description: 'Manzana en la merienda.', 
-      foodGroup: 'Frutas', 
-      specificFood: 'Manzana', 
-      portionSize: '2-3 cucharadas', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS',
-      tips: JSON.stringify(['Almuerzo: puré de verduras', 'Merienda: manzana cocida']),
-      recipe: {
-        name: 'Compota de Manzana',
-        ingredients: [
-          '1 manzana (tipo Golden o Reineta)',
-          '1-2 cucharadas de agua'
-        ],
-        steps: [
-          'Pela la manzana',
-          'Quita el corazón y semillas',
-          'Corta en cubos pequeños',
-          'Cocina al vapor o con poca agua 12-15 min',
-          'Tritura hasta textura suave',
-          'La manzana cocida es más digestiva al principio'
-        ],
-        prepTime: '5 min',
-        cookTime: '15 min'
-      }
-    },
-    { 
-      id: 'w3d4', weekNumber: 3, dayNumber: 4, 
-      title: 'Mezcla pera-manzana', 
-      description: 'Mezcla de frutas en merienda.', 
-      foodGroup: 'Frutas', 
-      specificFood: 'Pera + Manzana', 
-      portionSize: '4-5 cucharadas', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS',
-      recipe: {
-        name: 'Papilla de Frutas Mixtas',
-        ingredients: [
-          'Media pera madura',
-          'Media manzana'
-        ],
-        steps: [
-          'Pela y trocea ambas frutas',
-          'Cocina la manzana (la pera puede ser cruda)',
-          'Mezcla y tritura todo junto',
-          'Proporción 50-50 de cada fruta'
-        ],
-        prepTime: '10 min',
-        cookTime: '12 min'
-      }
-    },
-    { 
-      id: 'w3d5', weekNumber: 3, dayNumber: 5, 
-      title: 'Nuevo: Plátano', 
-      description: 'Plátano en la merienda.', 
-      foodGroup: 'Frutas', 
-      specificFood: 'Plátano', 
-      portionSize: 'Medio plátano pequeño', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS',
-      tips: JSON.stringify(['No necesita cocción', 'Tritura con tenedor', 'Almuerzo: verduras + Merienda: plátano']),
-      recipe: {
-        name: 'Papilla de Plátano',
-        ingredients: [
-          'Medio plátano maduro'
-        ],
-        steps: [
-          'Pela el plátano',
-          'Corta en trozos',
-          'Aplasta con un tenedor hasta obtener puré',
-          'NO necesita batidora ni cocción',
-          'El plátano maduro es más dulce y digestivo',
-          'Se oxida rápido, prepáralo justo antes de dar'
-        ],
-        prepTime: '2 min',
-        cookTime: '0 min'
-      }
-    },
-    { 
-      id: 'w3d6', weekNumber: 3, dayNumber: 6, 
-      title: 'Papilla tres frutas', 
-      description: 'Mezcla de frutas en merienda.', 
-      foodGroup: 'Frutas', 
-      specificFood: 'Pera + Manzana + Plátano', 
-      portionSize: '5-6 cucharadas', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS',
-      recipe: {
-        name: 'Papilla de Tres Frutas',
-        ingredients: [
-          '1/3 de pera',
-          '1/3 de manzana',
-          '1/3 de plátano'
-        ],
-        steps: [
-          'Pela y trocea pera y manzana',
-          'Cocina manzana al vapor 10 min',
-          'Añade pera los últimos 5 min',
-          'Tritura con el plátano crudo',
-          'El plátano aporta cremosidad'
-        ],
-        prepTime: '10 min',
-        cookTime: '10 min'
-      }
-    },
-    { 
-      id: 'w3d7', weekNumber: 3, dayNumber: 7, 
-      title: 'Resumen: 2 comidas establecidas', 
-      description: 'Ya tienes rutina de 2 comidas: verduras al almuerzo, frutas en merienda.', 
-      foodGroup: 'Mixto', 
-      specificFood: 'Verduras + Frutas', 
-      portionSize: 'Almuerzo: 50-60g / Merienda: 40-50g', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS estables',
-      tips: JSON.stringify(['Rutina establecida', 'Almuerzo: 12:00-13:00', 'Merienda: 16:00-17:00', 'Leche el resto del día']),
-      recipe: {
-        name: 'Menú del Día Ejemplo',
-        ingredients: [
-          'ALMUERZO: Puré de verduras variadas',
-          'MERIENDA: Papilla de frutas'
-        ],
-        steps: [
-          'Almuerzo: Mezcla patata, calabacín, zanahoria',
-          'Cocina y tritura las verduras',
-          'Merienda: Mezcla pera, manzana, plátano',
-          'Aplasta y sirve'
-        ],
-        prepTime: '20 min',
-        cookTime: '25 min'
-      }
-    }
-  )
-
-  // SEMANA 4 - Continúa con 2 comidas
-  steps.push(
-    { 
-      id: 'w4d1', weekNumber: 4, dayNumber: 1, 
-      title: 'Nuevo: Aguacate', 
-      description: 'Aguacate en la merienda.', 
-      foodGroup: 'Frutas', 
-      specificFood: 'Aguacate', 
-      portionSize: '2-3 cucharadas', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS',
-      recipe: {
-        name: 'Puré de Aguacate',
-        ingredients: [
-          'Medio aguacate maduro'
-        ],
-        steps: [
-          'Elige un aguacate maduro (cede al apretar suavemente)',
-          'Corta por la mitad y quita el hueso',
-          'Saca la pulpa con cuchara',
-          'Aplasta con tenedor hasta puré cremoso',
-          'NO necesita cocción ni batidora',
-          'Su textura natural es perfecta para bebés',
-          'Sirve inmediatamente (se oxida y pone negro)'
-        ],
-        prepTime: '3 min',
-        cookTime: '0 min'
-      }
-    },
-    { 
-      id: 'w4d2', weekNumber: 4, dayNumber: 2, 
-      title: 'Aguacate + plátano', 
-      description: 'Mezcla cremosa en merienda.', 
-      foodGroup: 'Frutas', 
-      specificFood: 'Aguacate + Plátano', 
-      portionSize: '4-5 cucharadas', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS',
-      recipe: {
-        name: 'Crema de Aguacate y Plátano',
-        ingredients: [
-          'Cuarto de aguacate',
-          'Cuarto de plátano'
-        ],
-        steps: [
-          'Aplasta el aguacate con tenedor',
-          'Aplasta el plátano',
-          'Mezcla ambos hasta obtener crema homogénea',
-          'Muy nutritiva y saciante'
-        ],
-        prepTime: '5 min',
-        cookTime: '0 min'
-      }
-    },
-    { 
-      id: 'w4d3', weekNumber: 4, dayNumber: 3, 
-      title: 'Nuevo: Cereales de arroz', 
-      description: 'Añade cereales al puré de almuerzo.', 
-      foodGroup: 'Cereales', 
-      specificFood: 'Cereales de arroz', 
-      portionSize: '1-2 cucharadas en el puré', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS',
-      tips: JSON.stringify(['Añade cereales al puré del almuerzo', 'Espesa la consistencia', 'Sin gluten']),
-      recipe: {
-        name: 'Puré con Cereales de Arroz',
-        ingredients: [
-          'Puré de verduras (60g)',
-          '1-2 cucharadas de cereales de arroz infantiles'
-        ],
-        steps: [
-          'Prepara el puré de verduras como siempre',
-          'Añade los cereales poco a poco',
-          'Remueve bien hasta integrar',
-          'Deja reposar 1 minuto para que espese',
-          'Ajusta textura con agua si es muy espeso'
-        ],
-        prepTime: '2 min extra',
-        cookTime: '0 min'
-      }
-    },
-    { 
-      id: 'w4d4', weekNumber: 4, dayNumber: 4, 
-      title: 'Cereales con frutas', 
-      description: 'Cereales también en la merienda.', 
-      foodGroup: 'Cereales', 
-      specificFood: 'Cereales + Frutas', 
-      portionSize: '2-3 cucharadas', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS',
-      recipe: {
-        name: 'Papilla de Cereales y Frutas',
-        ingredients: [
-          'Papilla de frutas (50g)',
-          '1 cucharada de cereales de arroz'
-        ],
-        steps: [
-          'Prepara la papilla de frutas',
-          'Añade cereales y remueve',
-          'Queda más espesa y nutritiva'
-        ],
-        prepTime: '2 min',
-        cookTime: '0 min'
-      }
-    },
-    { 
-      id: 'w4d5', weekNumber: 4, dayNumber: 5, 
-      title: 'Nuevo: Melocotón', 
-      description: 'Melocotón en merienda.', 
-      foodGroup: 'Frutas', 
-      specificFood: 'Melocotón', 
-      portionSize: '3-4 cucharadas', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS',
-      recipe: {
-        name: 'Compota de Melocotón',
-        ingredients: [
-          '1 melocotón maduro',
-          '1 cucharada de agua'
-        ],
-        steps: [
-          'Escalda el melocotón 30 seg en agua hirviendo',
-          'Pela con facilidad',
-          'Quita el hueso',
-          'Tritura o cocina con agua 5 min',
-          'El melocotón es hidratante y dulce'
-        ],
-        prepTime: '5 min',
-        cookTime: '5 min'
-      }
-    },
-    { 
-      id: 'w4d6', weekNumber: 4, dayNumber: 6, 
-      title: 'Puré completo con cereales', 
-      description: 'Puré de verduras con cereales en almuerzo.', 
-      foodGroup: 'Mixto', 
-      specificFood: 'Verduras + Cereales', 
-      portionSize: '60-70g', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS',
-      recipe: {
-        name: 'Puré Completo con Cereales',
-        ingredients: [
-          '40g de patata',
-          '30g de calabacín',
-          '20g de zanahoria',
-          '2 cucharadas de cereales de arroz'
-        ],
-        steps: [
-          'Cocina las verduras al vapor',
-          'Tritura hasta puré suave',
-          'Añade cereales y remueve',
-          'Comida muy completa y nutritiva'
-        ],
-        prepTime: '15 min',
-        cookTime: '25 min'
-      }
-    },
-    { 
-      id: 'w4d7', weekNumber: 4, dayNumber: 7, 
-      title: 'Resumen mes 1', 
-      description: '¡Primer mes completado! Rutina de 2 comidas establecida.', 
-      foodGroup: 'Mixto', 
-      specificFood: 'Variedad', 
-      portionSize: 'Almuerzo: 60-70g / Merienda: 50-60g', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS',
-      tips: JSON.stringify(['Alimentos introducidos: calabacín, calabaza, zanahoria, patata, judías, puerro, pera, manzana, plátano, aguacate, melocotón, cereales arroz', 'Próximo: introducir proteínas']),
-      recipe: {
-        name: 'Ejemplo de Menú Semanal',
-        ingredients: [
-          'Verduras: calabacín, calabaza, zanahoria, patata, judías, puerro',
-          'Frutas: pera, manzana, plátano, aguacate, melocotón',
-          'Cereales: arroz'
-        ],
-        steps: [
-          'Puedes congelar purés en cubitos',
-          'Descongela solo lo necesario',
-          'Varía las combinaciones',
-          'El bebé ya tiene rutina de 2 comidas'
-        ],
-        prepTime: 'varios',
-        cookTime: 'varios'
-      }
-    }
-  )
-
-  // SEMANA 5 - Proteínas
-  steps.push(
-    { 
-      id: 'w5d1', weekNumber: 5, dayNumber: 1, 
-      title: '¡PROTEÍNAS! Pollo en almuerzo', 
-      description: 'Introducimos pollo en el puré del almuerzo. Continúa con fruta en merienda.', 
-      foodGroup: 'Proteínas', 
-      specificFood: 'Pollo', 
-      portionSize: '20-30g de pollo', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS: Almuerzo con proteína + Merienda con fruta',
-      tips: JSON.stringify(['Pechuga sin piel ni huesos', 'Bien cocida y triturada', 'Mezcla con verduras del almuerzo']),
-      recipe: {
-        name: 'Puré de Pollo con Verduras',
-        ingredients: [
-          '30g de pechuga de pollo',
-          '50g de verduras (patata, zanahoria, calabacín)',
-          'Agua o caldo sin sal'
-        ],
-        steps: [
-          'Corta el pollo en trozos pequeños',
-          'Cocina el pollo al vapor o hervido 15-20 min',
-          'Asegúrate de que esté muy bien cocido',
-          'Cocina las verduras aparte',
-          'Tritura pollo y verduras juntos',
-          'Añade agua o caldo para textura suave',
-          'NO añadas sal'
-        ],
-        prepTime: '10 min',
-        cookTime: '20 min'
-      }
-    },
-    { 
-      id: 'w5d2', weekNumber: 5, dayNumber: 2, 
-      title: 'Pollo + verduras', 
-      description: 'Puré de pollo con verduras en almuerzo.', 
-      foodGroup: 'Proteínas', 
-      specificFood: 'Pollo + Verduras', 
-      portionSize: '30-40g pollo + 50g verduras', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS',
-      recipe: {
-        name: 'Crema de Pollo y Verduras',
-        ingredients: [
-          '40g de pechuga de pollo',
-          '40g de patata',
-          '30g de calabacín',
-          '20g de zanahoria'
-        ],
-        steps: [
-          'Cocina el pollo 20 min hasta muy tierno',
-          'Cocina las verduras al vapor',
-          'Tritura todo junto con agua de cocción',
-          'Proporción: 1 parte pollo, 2 partes verduras'
-        ],
-        prepTime: '15 min',
-        cookTime: '25 min'
-      }
-    },
-    { 
-      id: 'w5d3', weekNumber: 5, dayNumber: 3, 
-      title: 'Nuevo: Cereales de maíz', 
-      description: 'Cereales de maíz (sin gluten).', 
-      foodGroup: 'Cereales', 
-      specificFood: 'Maíz', 
-      portionSize: '1-2 cucharadas', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS',
-      recipe: {
-        name: 'Papilla de Cereales de Maíz',
-        ingredients: [
-          '2 cucharadas de cereales de maíz infantiles',
-          'Leche materna, fórmula o agua'
-        ],
-        steps: [
-          'Mezcla cereales con líquido tibio',
-          'Remueve hasta obtener papilla homogénea',
-          'Deja reposar 1 minuto',
-          'El maíz es naturalmente dulce'
-        ],
-        prepTime: '2 min',
-        cookTime: '0 min'
-      }
-    },
-    { 
-      id: 'w5d4', weekNumber: 5, dayNumber: 4, 
-      title: 'Nuevo: Ternera', 
-      description: 'Ternera en el almuerzo.', 
-      foodGroup: 'Proteínas', 
-      specificFood: 'Ternera', 
-      portionSize: '20-30g', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS',
-      recipe: {
-        name: 'Puré de Ternera con Verduras',
-        ingredients: [
-          '30g de carne de ternera magra',
-          '50g de verduras variadas',
-          'Agua'
-        ],
-        steps: [
-          'Usa carne magra sin grasa (lomo o babilla)',
-          'Corta en trozos pequeños',
-          'Cocina la carne 20-25 min hasta muy tierna',
-          'Cocina las verduras aparte',
-          'Tritura todo junto muy bien',
-          'La ternera es rica en hierro, importante para bebés'
-        ],
-        prepTime: '10 min',
-        cookTime: '25 min'
-      }
-    },
-    { 
-      id: 'w5d5', weekNumber: 5, dayNumber: 5, 
-      title: 'Ternera + verduras', 
-      description: 'Puré de ternera con verduras.', 
-      foodGroup: 'Proteínas', 
-      specificFood: 'Ternera + Verduras', 
-      portionSize: '30-40g + 50g', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS',
-      recipe: {
-        name: 'Puré de Ternera con Patata y Zanahoria',
-        ingredients: [
-          '40g de ternera magra',
-          '40g de patata',
-          '30g de zanahoria'
-        ],
-        steps: [
-          'Cocina la ternera hasta muy tierna',
-          'Cocina patata y zanahoria al vapor',
-          'Tritura todo con agua de cocción',
-          'Comida muy nutritiva rica en hierro'
-        ],
-        prepTime: '15 min',
-        cookTime: '25 min'
-      }
-    },
-    { 
-      id: 'w5d6', weekNumber: 5, dayNumber: 6, 
-      title: 'Nuevo: Avena', 
-      description: 'Avena en papilla (contiene gluten).', 
-      foodGroup: 'Cereales', 
-      specificFood: 'Avena', 
-      portionSize: '1-2 cucharadas', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS',
-      warnings: JSON.stringify(['Contiene gluten - observa reacciones digestivas']),
-      recipe: {
-        name: 'Papilla de Avena con Frutas',
-        ingredients: [
-          '2 cucharadas de copos de avena finos',
-          'Papilla de frutas (50g)',
-          'Agua o leche'
-        ],
-        steps: [
-          'Cocina la avena con agua o leche 5 min',
-          'Remueve hasta que espese',
-          'Deja enfriar ligeramente',
-          'Mezcla con la papilla de frutas',
-          'Vigila posibles reacciones al gluten'
-        ],
-        prepTime: '5 min',
-        cookTime: '5 min'
-      }
-    },
-    { 
-      id: 'w5d7', weekNumber: 5, dayNumber: 7, 
-      title: 'Resumen semana 5', 
-      description: 'Ya comes proteínas en el almuerzo. 2 comidas al día consolidadas.', 
-      foodGroup: 'Mixto', 
-      specificFood: 'Variedad con proteínas', 
-      portionSize: 'Almuerzo: 70-80g / Merienda: 50-60g', 
-      frequency: '2 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '2 COMIDAS',
-      recipe: {
-        name: 'Menú con Proteínas',
-        ingredients: [
-          'Proteínas: pollo, ternera',
-          'Verduras: patata, zanahoria, calabacín, judías',
-          'Frutas: pera, manzana, plátano, aguacate',
-          'Cereales: arroz, maíz, avena'
-        ],
-        steps: [
-          'Alterna pollo y ternera durante la semana',
-          'El pescado viene próximamente',
-          'La proteína aumenta saciedad'
-        ],
-        prepTime: 'varios',
-        cookTime: 'varios'
-      }
-    }
-  )
-
-  // SEMANA 6 - Añadimos CENA (3 comidas)
-  steps.push(
-    { 
-      id: 'w6d1', weekNumber: 6, dayNumber: 1, 
-      title: '¡TERCERA COMIDA! Cena ligera', 
-      description: 'Añadimos una CENA ligera. Ahora son 3 comidas: DESAYUNO papilla, ALMUERZO puré con proteína, CENA puré ligero.', 
-      foodGroup: 'Mixto', 
-      specificFood: 'Papilla de cereales', 
-      portionSize: 'Desayuno: 50g / Almuerzo: 80g / Cena: 50g', 
-      frequency: '3 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '3 COMIDAS: Desayuno (papilla) + Almuerzo (puré proteína) + Cena (puré ligero)',
-      breastmilkNote: 'Mantén 3-4 tomas de leche. Ahora las sólidas son más importantes.',
-      tips: JSON.stringify(['Desayuno (8:00): papilla de cereales con fruta', 'Almuerzo (12:30): puré con proteína y verduras', 'Cena (19:00): puré ligero de verduras', 'Leche entre comidas y antes de dormir']),
-      recipe: {
-        name: 'Menú de 3 Comidas',
-        ingredients: [
-          'DESAYUNO: Cereales + fruta',
-          'ALMUERZO: Pollo/ternera + verduras',
-          'CENA: Puré de verduras ligero'
-        ],
-        steps: [
-          'Desayuno: Papilla de cereales con pera o plátano',
-          'Almuerzo: Puré de pollo con patata y zanahoria',
-          'Cena: Puré suave de calabacín y patata (sin proteína)',
-          'Ofrece leche después de cada comida'
-        ],
-        prepTime: '30 min total',
-        cookTime: '40 min total'
-      }
-    },
-    { 
-      id: 'w6d2', weekNumber: 6, dayNumber: 2, 
-      title: 'Nuevo: Brócoli', 
-      description: 'Brócoli en el almuerzo o cena.', 
-      foodGroup: 'Verduras', 
-      specificFood: 'Brócoli', 
-      portionSize: '3-4 cucharadas', 
-      frequency: '3 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '3 COMIDAS',
-      tips: JSON.stringify(['Cocinar muy bien hasta que esté muy tierno', 'Triturar completamente']),
-      recipe: {
-        name: 'Puré de Brócoli con Patata',
-        ingredients: [
-          '50g de brócoli (solo los floretes)',
-          '40g de patata',
-          'Agua'
-        ],
-        steps: [
-          'Lava el brócoli y separa los floretes',
-          'Pela y corta la patata',
-          'Cocina ambos al vapor 15-20 min',
-          'El brócoli debe estar muy tierno',
-          'Tritura hasta eliminar todos los grumos',
-          'Mezcla con patata para suavizar el sabor'
-        ],
-        prepTime: '10 min',
-        cookTime: '20 min'
-      }
-    },
-    { 
-      id: 'w6d3', weekNumber: 6, dayNumber: 3, 
-      title: 'Nuevo: Coliflor', 
-      description: 'Coliflor en puré.', 
-      foodGroup: 'Verduras', 
-      specificFood: 'Coliflor', 
-      portionSize: '3-4 cucharadas', 
-      frequency: '3 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '3 COMIDAS',
-      recipe: {
-        name: 'Crema de Coliflor',
-        ingredients: [
-          '60g de coliflor',
-          '40g de patata',
-          'Agua'
-        ],
-        steps: [
-          'Lava y separa los floretes de coliflor',
-          'Cocina al vapor 15-20 min hasta muy tierna',
-          'Tritura con patata cocida',
-          'Textura suave y cremosa'
-        ],
-        prepTime: '10 min',
-        cookTime: '20 min'
-      }
-    },
-    { 
-      id: 'w6d4', weekNumber: 6, dayNumber: 4, 
-      title: 'Nuevo: Espinacas', 
-      description: 'Espinacas bien cocidas.', 
-      foodGroup: 'Verduras', 
-      specificFood: 'Espinacas', 
-      portionSize: '2-3 cucharadas', 
-      frequency: '3 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '3 COMIDAS',
-      tips: JSON.stringify(['Ricas en hierro', 'Mezclar con otras verduras']),
-      recipe: {
-        name: 'Puré de Espinacas con Patata',
-        ingredients: [
-          '40g de espinacas frescas',
-          '50g de patata',
-          'Agua'
-        ],
-        steps: [
-          'Lava muy bien las espinacas',
-          'Quita los tallos duros',
-          'Cocina al vapor 10-12 min',
-          'Cocina la patata aparte',
-          'Tritura todo junto',
-          'Las espinacas son ricas en hierro'
-        ],
-        prepTime: '10 min',
-        cookTime: '20 min'
-      }
-    },
-    { 
-      id: 'w6d5', weekNumber: 6, dayNumber: 5, 
-      title: 'Nuevo: Pavo', 
-      description: 'Pavo en el almuerzo.', 
-      foodGroup: 'Proteínas', 
-      specificFood: 'Pavo', 
-      portionSize: '30-40g', 
-      frequency: '3 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '3 COMIDAS',
-      recipe: {
-        name: 'Puré de Pavo con Verduras',
-        ingredients: [
-          '40g de pechuga de pavo',
-          '50g de verduras variadas',
-          'Agua'
-        ],
-        steps: [
-          'Cocina el pavo 18-20 min hasta muy tierno',
-          'Cocina las verduras aparte',
-          'Tritura todo junto',
-          'El pavo es carne muy magra y suave'
-        ],
-        prepTime: '10 min',
-        cookTime: '25 min'
-      }
-    },
-    { 
-      id: 'w6d6', weekNumber: 6, dayNumber: 6, 
-      title: 'Nuevo: Naranja', 
-      description: 'Gajos de naranja sin pepitas.', 
-      foodGroup: 'Frutas', 
-      specificFood: 'Naranja', 
-      portionSize: 'Medio gajo o 2-3 cucharadas', 
-      frequency: '3 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '3 COMIDAS',
-      tips: JSON.stringify(['Vitamina C ayuda a absorber hierro', 'Ideal en el desayuno o merienda']),
-      recipe: {
-        name: 'Zumo de Naranja Natural',
-        ingredients: [
-          'Media naranja'
-        ],
-        steps: [
-          'Exprime media naranja manualmente',
-          'Cuela para quitar pepitas y pulpa',
-          'Diluye con un poco de agua si es muy ácido',
-          'La vitamina C ayuda a absorber el hierro de las verduras',
-          'Ideal en el desayuno con cereales'
-        ],
-        prepTime: '3 min',
-        cookTime: '0 min'
-      }
-    },
-    { 
-      id: 'w6d7', weekNumber: 6, dayNumber: 7, 
-      title: 'Resumen: 3 comidas al día', 
-      description: 'Rutina completa de 3 comidas establecida.', 
-      foodGroup: 'Mixto', 
-      specificFood: 'Dieta variada', 
-      portionSize: 'Desayuno: 50-60g / Almuerzo: 80-100g / Cena: 60-70g', 
-      frequency: '3 COMIDAS', 
-      ageRange: '6-8', 
-      mealProgression: '3 COMIDAS completas',
-      tips: JSON.stringify(['Desayuno: cereales + fruta', 'Almuerzo: proteína + verduras + cereales', 'Cena: verduras + cereales', 'Leche: 3-4 tomas aún']),
-      recipe: {
-        name: 'Ejemplo de Menú con 3 Comidas',
-        ingredients: [
-          'DESAYUNO: Cereales con zumo de naranja',
-          'ALMUERZO: Pollo con patata, zanahoria y espinacas',
-          'CENA: Puré suave de calabacín y patata'
-        ],
-        steps: [
-          'Desayuno 8:00: Papilla de cereales + zumo naranja',
-          'Almuerzo 12:30: Puré de pollo con verduras',
-          'Cena 19:00: Puré ligero de verduras',
-          'Leche antes de dormir'
-        ],
-        prepTime: 'varios',
-        cookTime: 'varios'
-      }
-    }
-  )
-
-  // SEMANAS 7-8: 3 comidas consolidadas, introducimos pescado
-  const foods6_8_extra = [
-    { food: 'Mandarina', group: 'Frutas', tip: 'Sin pepitas, gajos pequeños', recipe: { name: 'Gajos de Mandarina', ingredients: ['1 mandarina pequeña'], steps: ['Pela la mandarina', 'Separa los gajos', 'Quita las pepitas', 'Cada gajo en trocitos pequeños'] }},
-    { food: 'Merluza', group: 'Pescados', tip: 'Primer pescado blanco, sin espinas', recipe: { name: 'Puré de Merluza con Verduras', ingredients: ['40g de merluza fresca', '50g de patata', '30g de zanahoria'], steps: ['Cocina la merluza al vapor 10-12 min', 'Verifica que no tenga espinas', 'Cocina las verduras', 'Tritura todo junto', 'El pescado blanco es suave y digestivo'] }},
-    { food: 'Lenguado', group: 'Pescados', tip: 'Pescado blanco suave', recipe: { name: 'Puré de Lenguado', ingredients: ['40g de lenguado', '50g de verduras'], steps: ['Cocina el lenguado al vapor', 'Quita piel y espinas', 'Tritura con verduras cocidas', 'Pescado muy suave'] }},
-    { food: 'Arroz', group: 'Cereales', tip: 'Bien cocido, en puré o cremoso', recipe: { name: 'Crema de Arroz con Verduras', ingredients: ['30g de arroz', '50g de verduras', 'Agua'], steps: ['Lava el arroz', 'Cocina 20-25 min hasta muy blando', 'Tritura con verduras', 'Puede quedar algo de textura granulada'] }},
-    { food: 'Fideos finos', group: 'Cereales', tip: 'Muy cocidos, trocitos pequeños', recipe: { name: 'Puré de Fideos con Pollo', ingredients: ['30g de fideos finos', '40g de pollo', 'Verduras'], steps: ['Cocina los fideos 12-15 min hasta muy blandos', 'Cocina pollo y verduras', 'Tritura todo junto', 'Los fideos aportan carbohidratos'] }},
-    { food: 'Acelgas', group: 'Verduras', tip: 'Bien cocidas, solo hojas', recipe: { name: 'Puré de Acelgas', ingredients: ['50g de acelgas (hojas)', '40g de patata'], steps: ['Lava las acelgas', 'Usa solo las hojas, no los tallos', 'Cocina 15 min', 'Tritura con patata cocida'] }},
-    { food: 'Chirivía', group: 'Verduras', tip: 'Sabor dulce, como zanahoria', recipe: { name: 'Puré de Chirivía', ingredients: ['60g de chirivía', '30g de patata'], steps: ['Pela la chirivía', 'Corta y cocina 20 min', 'Tritura con patata', 'Sabor dulce similar a zanahoria'] }},
-  ]
-
-  for (let week = 7; week <= 8; week++) {
-    for (let day = 1; day <= 7; day++) {
-      const foodIndex = (week - 7) * 7 + day - 1
-      const foodItem = foods6_8_extra[foodIndex % foods6_8_extra.length]
-      steps.push({
-        id: `w${week}d${day}`,
-        weekNumber: week,
-        dayNumber: day,
-        title: `${foodItem.food} - 3 comidas`,
-        description: `${foodItem.food}. ${foodItem.tip}. Rutina de 3 comidas consolidada.`,
-        foodGroup: foodItem.group,
-        specificFood: foodItem.food,
-        portionSize: 'Desayuno: 60g / Almuerzo: 100g / Cena: 70g',
-        frequency: '3 COMIDAS',
-        ageRange: '6-8',
-        mealProgression: '3 COMIDAS',
-        tips: JSON.stringify([foodItem.tip, 'Alternar proteínas: pollo, ternera, pavo, pescado', 'Pescado 2-3 veces por semana']),
-        recipe: foodItem.recipe
-      })
-    }
-  }
-
-  // ===== MESES 8-10: EXPLORACIÓN (Semanas 9-17) =====
-  const foods8_10 = [
-    { food: 'Huevo (yema)', group: 'Proteínas', tip: 'Solo yema bien cocida al principio', recipe: { name: 'Puré con Yema de Huevo', ingredients: ['1 yema de huevo', 'Puré de verduras (60g)'], steps: ['Hierve el huevo 10-12 min hasta muy cocido', 'Separa la yema de la clara', 'Aplasta la yema con tenedor', 'Mezcla con el puré de verduras', 'Introduce yema primero, clara más tarde'] }},
-    { food: 'Huevo (completo)', group: 'Proteínas', tip: 'Tras tolerar yema, introducir clara', recipe: { name: 'Tortilla Francesa Blanda', ingredients: ['1 huevo pequeño'], steps: ['Bate el huevo entero', 'Cocina en sartén con poco aceite', 'Debe quedar muy cocida, no líquida', 'Corta en trocitos pequeños o tritura'] }},
-    { food: 'Yogur natural', group: 'Lácteos', tip: 'Sin azúcar, natural entero', recipe: { name: 'Yogur con Frutas', ingredients: ['Medio yogur natural entero', 'Fruta triturada'], steps: ['Usa yogur natural sin azúcar', 'Mezcla con fruta triturada', 'Ideal para merienda', 'Aporta calcio y probióticos'] }},
-    { food: 'Queso fresco', group: 'Lácteos', tip: 'Bajo en sal, trocitos blandos', recipe: { name: 'Queso Fresco con Fruta', ingredients: ['30g de queso fresco tipo Burgos', 'Fruta troceada'], steps: ['Corta el queso en cubitos muy pequeños', 'Asegúrate que es bajo en sal', 'Sirve con fruta o en el puré', 'Puede aplastarse si prefiere'] }},
-    { food: 'Lentejas', group: 'Legumbres', tip: 'Bien cocidas, en puré o cremoso', recipe: { name: 'Crema de Lentejas', ingredients: ['40g de lentejas', '30g de zanahoria', '30g de patata'], steps: ['Lava las lentejas', 'Cocina con verduras 30-40 min', 'Deben quedar muy tiernas', 'Tritura hasta puré suave', 'Ricas en hierro vegetal'] }},
-    { food: 'Garbanzos', group: 'Legumbres', tip: 'En puré o hummus muy suave', recipe: { name: 'Crema de Garbanzos', ingredients: ['40g de garbanzos cocidos', 'Un poco de aceite de oliva'], steps: ['Usa garbanzos ya cocidos', 'Aplasta con tenedor o tritura', 'Añade un chorrito de aceite de oliva', 'Puedes añadir verduras trituradas'] }},
-    { food: 'Arroz integral', group: 'Cereales', tip: 'Más fibra, bien cocido', recipe: { name: 'Arroz Integral con Verduras', ingredients: ['30g de arroz integral', 'Verduras variadas'], steps: ['Lava el arroz', 'Cocina 25-30 min hasta muy tierno', 'Tritura con verduras', 'Más nutritivo que el blanco'] }},
-    { food: 'Pan (sin sal)', group: 'Cereales', tip: 'Puede masticar trocitos blandos', recipe: { name: 'Pan con Puré', ingredients: ['Trozo de pan del día anterior', 'Puré o papilla'], steps: ['Usa pan sin sal añadida', 'Moja en el puré para ablandar', 'Deja que el bebé lo agarre', 'Fomenta la masticación'] }},
-    { food: 'Pasta pequeña', group: 'Cereales', tip: 'Muy cocida, formatos pequeños', recipe: { name: 'Pasta con Verduras Trituradas', ingredients: ['30g de pasta pequeña (estrellas, letras)', 'Verduras cocidas'], steps: ['Cocina la pasta 12-15 min hasta muy tierna', 'No quede al dente, muy blanda', 'Mezcla con verduras trituradas', 'Los formatos pequeños son más seguros'] }},
-    { food: 'Piña', group: 'Frutas', tip: 'Trozos pequeños, sin centro duro', recipe: { name: 'Piña Troceada', ingredients: ['Trozos de piña madura'], steps: ['Usa piña bien madura', 'Quita el centro duro', 'Corta en trocitos muy pequeños', 'Puede ser un poco ácida, introduce poco a poco'] }},
-    { food: 'Sandía', group: 'Frutas', tip: 'Sin pepitas, trocitos', recipe: { name: 'Trozos de Sandía', ingredients: ['Sandía sin pepitas'], steps: ['Quita todas las pepitas', 'Corta en trocitos pequeños', 'Muy hidratante para días calurosos', 'Textura suave'] }},
-    { food: 'Melón', group: 'Frutas', tip: 'Hidratante y dulce', recipe: { name: 'Melón en Trozos', ingredients: ['Melón maduro'], steps: ['Pela el melón', 'Quita las pepitas', 'Corta en trocitos', 'Dulce y refrescante'] }},
-    { food: 'Albaricoque', group: 'Frutas', tip: 'Maduro, sin hueso', recipe: { name: 'Compota de Albaricoque', ingredients: ['2 albaricoques maduros'], steps: ['Lava y parte los albaricoques', 'Quita el hueso', 'Cocina con poca agua 8 min', 'Tritura hasta puré'] }},
-    { food: 'Ciruela', group: 'Frutas', tip: 'Madura, sin hueso', recipe: { name: 'Compota de Ciruela', ingredients: ['2 ciruelas maduras'], steps: ['Pela y quita el hueso', 'Cocina con agua 8-10 min', 'Tritura bien', 'Ayuda al tránsito intestinal'] }},
-  ]
-
-  for (let week = 9; week <= 17; week++) {
-    for (let day = 1; day <= 7; day++) {
-      const foodIndex = (week - 9) * 7 + day - 1
-      const foodItem = foods8_10[foodIndex % foods8_10.length]
-      steps.push({
-        id: `w${week}d${day}`,
-        weekNumber: week,
-        dayNumber: day,
-        title: `${foodItem.food} - Exploración`,
-        description: `${foodItem.tip}. Texturas más gruesas. El bebé puede agarrar trocitos.`,
-        foodGroup: foodItem.group,
-        specificFood: foodItem.food,
-        portionSize: 'Desayuno: 80g / Almuerzo: 120g / Cena: 100g',
-        frequency: '3 COMIDAS + 1 SNACK opcional',
-        ageRange: '8-10',
-        mealProgression: '3 COMIDAS + snack',
-        tips: JSON.stringify([foodItem.tip, 'Texturas más gruesas', 'Fomentar autoalimentación', 'Puede agarrar trozos blandos']),
-        recipe: foodItem.recipe
-      })
-    }
-  }
-
-  // ===== MESES 10-12: TRANSICIÓN (Semanas 18-26) =====
-  const foods10_12 = [
-    { food: 'Salmón', group: 'Pescados', tip: 'Rico en omega-3, bien cocido', recipe: { name: 'Salmón con Verduras', ingredients: ['40g de salmón fresco', 'Verduras al vapor'], steps: ['Cocina el salmón al vapor 10-12 min', 'Desmenuza verificando espinas', 'Sirve con verduras', 'Rico en omega-3 para el cerebro'] }},
-    { food: 'Atún fresco', group: 'Pescados', tip: 'No enlatado por sal', recipe: { name: 'Atún a la Plancha', ingredients: ['40g de atún fresco'], steps: ['Cocina el atún a la plancha', 'Debe quedar bien cocido', 'Desmenuza en trocitos', 'Sirve con verduras'] }},
-    { food: 'Sardinas', group: 'Pescados', tip: 'Sin espinas, ricas en calcio', recipe: { name: 'Sardinas con Pan', ingredients: ['2 sardinas frescas pequeñas', 'Pan'], steps: ['Asa las sardinas', 'Quita cabeza, espinas y piel', 'Desmenuza la carne', 'Sirve con pan o en puré'] }},
-    { food: 'Cordero tierno', group: 'Proteínas', tip: 'Carne suave, bien cocida', recipe: { name: 'Puré de Cordero', ingredients: ['40g de carne de cordero tierna', 'Verduras'], steps: ['Cocina el cordero hasta muy tierno', 'Tritura con verduras', 'Carne más grasa, dar con moderación'] }},
-    { food: 'Cerdo (lomo)', group: 'Proteínas', tip: 'Magro, bien cocido', recipe: { name: 'Lomo de Cerdo con Verduras', ingredients: ['40g de lomo de cerdo', 'Verduras variadas'], steps: ['Cocina el lomo bien hecho', 'Tritura con verduras', 'Carne magra y tierna'] }},
-    { food: 'Tofu', group: 'Proteínas', tip: 'Textura suave, versátil', recipe: { name: 'Tofu con Verduras', ingredients: ['50g de tofu blando', 'Verduras'], steps: ['Escurre el tofu', 'Corta en cubitos pequeños', 'Puede servirse crudo o cocinado', 'Aporta proteína vegetal'] }},
-    { food: 'Judiones/Alubias', group: 'Legumbres', tip: 'Bien cocidas, aplastadas', recipe: { name: 'Puré de Alubias', ingredients: ['40g de alubias cocidas', 'Verduras'], steps: ['Cocina las alubias hasta muy tiernas', 'Aplasta o tritura ligeramente', 'Mezcla con verduras'] }},
-    { food: 'Quinoa', group: 'Cereales', tip: 'Proteína completa', recipe: { name: 'Quinoa con Verduras', ingredients: ['30g de quinoa', 'Verduras variadas'], steps: ['Lava bien la quinoa', 'Cocina 15-20 min', 'Mezcla con verduras', 'Aporta proteína completa'] }},
-    { food: 'Cuscús', group: 'Cereales', tip: 'Fácil de preparar y comer', recipe: { name: 'Cuscús con Verduras', ingredients: ['30g de cuscús', 'Caldo de verduras', 'Verduras'], steps: ['Hierve caldo de verduras', 'Vierte sobre el cuscús', 'Tapar 5 min', 'Mezcla con verduras troceadas'] }},
-    { food: 'Remolacha', group: 'Verduras', tip: 'Colorida, cocida y troceada', recipe: { name: 'Ensalada de Remolacha', ingredients: ['Remolacha cocida'], steps: ['Cocina la remolacha 45-60 min', 'Pela y corta en cubitos', 'Mancha mucho, cuidado con la ropa', 'Dulce y colorida'] }},
-    { food: 'Pimiento rojo', group: 'Verduras', tip: 'Bien cocido, sin piel', recipe: { name: 'Pimientos Asados', ingredients: ['Pimiento rojo'], steps: ['Asa el pimiento hasta piel negra', 'Pela bajo agua fría', 'Quita semillas', 'Corta en tiras o trocitos'] }},
-    { food: 'Berenjena', group: 'Verduras', tip: 'Suave cuando muy cocida', recipe: { name: 'Crema de Berenjena', ingredients: ['Berenjena', 'Otras verduras'], steps: ['Asa o cocina la berenjena 30 min', 'Debe quedar muy tierna', 'Tritura con otras verduras', 'Sabor suave cuando bien cocida'] }},
-    { food: 'Guisantes', group: 'Verduras', tip: 'Aplastados para evitar atragante', recipe: { name: 'Puré de Guisantes', ingredients: ['Guisantes frescos o congelados'], steps: ['Cocina los guisantes 10-12 min', 'Aplasta con tenedor', 'No dar enteros', 'Dulces y nutritivos'] }},
-    { food: 'Maíz dulce', group: 'Verduras', tip: 'Aplastado, no entero', recipe: { name: 'Crema de Maíz', ingredients: ['Maíz dulce'], steps: ['Usa maíz cocido', 'Tritura bien', 'No dar granos enteros', 'Pueden atragantar'] }},
-  ]
-
-  for (let week = 18; week <= 26; week++) {
-    for (let day = 1; day <= 7; day++) {
-      const foodIndex = (week - 18) * 7 + day - 1
-      const foodItem = foods10_12[foodIndex % foods10_12.length]
-      steps.push({
-        id: `w${week}d${day}`,
-        weekNumber: week,
-        dayNumber: day,
-        title: `${foodItem.food} - Transición`,
-        description: `${foodItem.tip}. Comidas familiares adaptadas. Menos puré, más trozos.`,
-        foodGroup: foodItem.group,
-        specificFood: foodItem.food,
-        portionSize: 'Desayuno: 100g / Almuerzo: 150g / Cena: 120g',
-        frequency: '3 COMIDAS + 2 SNACKS',
-        ageRange: '10-12',
-        mealProgression: '3 COMIDAS + 2 snacks',
-        tips: JSON.stringify([foodItem.tip, 'Ofrecer trozos para agarrar', 'Comidas familiares adaptadas', 'Menos puré, más textura', 'Snacks: fruta, yogur, trocitos de pan']),
-        recipe: foodItem.recipe
-      })
-    }
-  }
-
-  // ===== MESES 12-18: CONSOLIDACIÓN (Semanas 27-52) =====
-  const foods12_18 = [
-    { food: 'Fresas', group: 'Frutas', tip: 'Lavar bien, trocitos', recipe: { name: 'Fresas Troceadas', ingredients: ['Fresas frescas'], steps: ['Lava muy bien las fresas', 'Quita el tallo', 'Corta en trocitos pequeños', 'Dulces y ricas en vitamina C'] }},
-    { food: 'Arándanos', group: 'Frutas', tip: 'Antioxidantes, trocear', recipe: { name: 'Arándanos con Yogur', ingredients: ['Arándanos', 'Yogur natural'], steps: ['Lava los arándanos', 'Aplasta ligeramente o corta', 'Mezcla con yogur', 'Ricos en antioxidantes'] }},
-    { food: 'Cerezas', group: 'Frutas', tip: 'Sin hueso, troceadas', recipe: { name: 'Cerezas sin Hueso', ingredients: ['Cerezas maduras'], steps: ['Lava las cerezas', 'Quita el hueso con deshuesador', 'Corta en trocitos', 'Dulces y jugosas'] }},
-    { food: 'Uvas (CUARTOS)', group: 'Frutas', tip: 'PELIGRO: siempre cortar en cuartos', recipe: { name: 'Uvas en Cuartos', ingredients: ['Uvas'], steps: ['Lava las uvas', 'PELIGRO DE ATRAGANTAMIENTO', 'CORTA SIEMPRE EN CUARTOS longitudinalmente', 'Nunca dar uvas enteras'] }},
-    { food: 'Kiwi', group: 'Frutas', tip: 'Maduro, vitamina C', recipe: { name: 'Kiwi Troceado', ingredients: ['Medio kiwi maduro'], steps: ['Pela el kiwi', 'Corta en trocitos pequeños', 'Rico en vitamina C', 'Puede ser un poco ácido'] }},
-    { food: 'Mango', group: 'Frutas', tip: 'Maduro, troceado', recipe: { name: 'Mango en Cubos', ingredients: ['Medio mango maduro'], steps: ['Pela el mango', 'Corta la pulpa en cubos', 'Dulce y cremoso', 'Uno de los favoritos'] }},
-    { food: 'Papaya', group: 'Frutas', tip: 'Digestiva y dulce', recipe: { name: 'Papaya Troceada', ingredients: ['Papaya madura'], steps: ['Pela y quita pepitas', 'Corta en cubos', 'Muy digestiva', 'Ayuda al tránsito intestinal'] }},
-    { food: 'Miel (12m+)', group: 'Otros', tip: 'Solo después de 12 meses', recipe: { name: 'Tostada con Miel', ingredients: ['Pan', 'Miel'], steps: ['Solo después de cumplir 12 meses', 'Antes hay riesgo de botulismo', 'Unta fina capa en pan', 'Mejor en el desayuno'] }},
-    { food: 'Crema de cacahuete', group: 'Proteínas', tip: 'Capa fina, vigilar alergia', recipe: { name: 'Pan con Crema de Cacahuete', ingredients: ['Pan', 'Crema de cacahuete 100%'], steps: ['Usa crema de cacahuete sin azúcar', 'Unta capa muy fina', 'Vigilar reacción alérgica', 'Primer alimento potencialmente alergénico'] }},
-    { food: 'Frutos secos triturados', group: 'Otros', tip: 'Solo bien triturados en preparaciones', recipe: { name: 'Yogur con Nueces Trituradas', ingredients: ['Yogur', 'Nueces molidas'], steps: ['Tritura las nueces muy fino', 'Mezcla con yogur o papilla', 'NUNCA dar enteros', 'Riesgo de atragantamiento'] }},
-  ]
-
-  for (let week = 27; week <= 52; week++) {
-    for (let day = 1; day <= 7; day++) {
-      const foodIndex = (week - 27) * 7 + day - 1
-      const foodItem = foods12_18[foodIndex % foods12_18.length]
-      steps.push({
-        id: `w${week}d${day}`,
-        weekNumber: week,
-        dayNumber: day,
-        title: `${foodItem.food} - Consolidación`,
-        description: `${foodItem.tip}. Dieta variada y casi completa.`,
-        foodGroup: foodItem.group,
-        specificFood: foodItem.food,
-        portionSize: 'Desayuno: 150g / Almuerzo: 200g / Cena: 150g',
-        frequency: '3 COMIDAS + 2 SNACKS',
-        ageRange: '12-18',
-        mealProgression: '3 COMIDAS + 2 snacks',
-        tips: JSON.stringify([foodItem.tip, 'Dieta cada vez más variada', 'Puede comer casi todo lo de la familia', 'Vigilar sal y azúcar añadidos']),
-        recipe: foodItem.recipe
-      })
-    }
-  }
-
-  // ===== MESES 18-24: MADUREZ (Semanas 53-104) =====
-  const foods18_24 = [
-    { food: 'Dieta familiar completa', group: 'Mixto', tip: 'Adaptar solo sal y azúcar', recipe: { name: 'Menú Familiar Adaptado', ingredients: ['Lo que come la familia'], steps: ['Prepara la comida familiar', 'Separa la porción del bebé ANTES de añadir sal', 'Trocea en tamaño apropiado', 'Verifica temperatura'] }},
-    { food: 'Ensaladas variadas', group: 'Verduras', tip: 'Trozos pequeños', recipe: { name: 'Ensalada Mixta', ingredients: ['Lechuga', 'Tomate', 'Pepino', 'Zanahoria rallada'], steps: ['Lava todo muy bien', 'Corta en trozos pequeños', 'Mezcla con un poco de aceite', 'Sin sal añadida'] }},
-    { food: 'Sopas y cremas', group: 'Verduras', tip: 'Nutritivas y reconfortantes', recipe: { name: 'Sopa de Verduras', ingredients: ['Verduras variadas', 'Fideos pequeños', 'Caldo'], steps: ['Prepara caldo de verduras casero', 'Añade fideos pequeños', 'Incluye verduras troceadas', 'Servir tibio'] }},
-    { food: 'Platos combinados', group: 'Mixto', tip: 'Proteína + verdura + carbohidrato', recipe: { name: 'Plato Completo', ingredients: ['Proteína (carne/pescado/legumbres)', 'Verdura', 'Arroz/pasta/patata'], steps: ['Incluye los 3 grupos en cada comida', 'Un tercio de cada uno', 'Varía los ingredientes', 'Comida equilibrada'] }},
-    { food: 'Bocadillos saludables', group: 'Mixto', tip: 'Pan integral con opciones nutritivas', recipe: { name: 'Bocadillo de Queso y Tomate', ingredients: ['Pan integral', 'Queso bajo en sal', 'Tomate'], steps: ['Usa pan integral', 'Pon queso en láminas finas', 'Añade tomate en rodajas', 'Bocadillo nutritivo'] }},
-    { food: 'Batidos caseros', group: 'Frutas', tip: 'Sin azúcar añadido', recipe: { name: 'Batido de Frutas', ingredients: ['Plátano', 'Fresas', 'Leche'], steps: ['Tritura las frutas', 'Añade leche', 'Mezcla bien', 'Sin azúcar añadido'] }},
-    { food: 'Postres caseros', group: 'Otros', tip: 'Ocasionales y caseros', recipe: { name: 'Galletas Caseras', ingredients: ['Harina', 'Plátano maduro', 'Aceite'], steps: ['Aplasta el plátano', 'Mezcla con harina y aceite', 'Forma galletas', 'Hornea 15 min a 180°C'] }},
-  ]
-
-  for (let week = 53; week <= 104; week++) {
-    for (let day = 1; day <= 7; day++) {
-      const foodIndex = (week - 53) * 7 + day - 1
-      const foodItem = foods18_24[foodIndex % foods18_24.length]
-      steps.push({
-        id: `w${week}d${day}`,
-        weekNumber: week,
-        dayNumber: day,
-        title: `${foodItem.food} - Madurez`,
-        description: `${foodItem.tip}. Dieta completa similar a la familia.`,
-        foodGroup: foodItem.group,
-        specificFood: foodItem.food,
-        portionSize: 'Porciones familiares adaptadas',
-        frequency: '3 COMIDAS + 2 SNACKS',
-        ageRange: '18-24',
-        mealProgression: '3 COMIDAS + 2 snacks (dieta completa)',
-        tips: JSON.stringify([foodItem.tip, 'Dieta casi igual que adultos', 'Evitar exceso de sal y azúcar', 'Fomentar autonomía en la comida']),
-        recipe: foodItem.recipe
-      })
-    }
-  }
-
-  return steps
-}
-
-export const introStepsData: IntroStep[] = generateSteps()
-
-// Función para filtrar por rango de edad
-export function filterByAgeRange(steps: IntroStep[], ageRange: string): IntroStep[] {
-  return steps.filter(step => step.ageRange === ageRange)
-}
-
-// Función para obtener rangos de edad disponibles
-export function getAvailableAgeRanges(): { value: string; label: string; description: string }[] {
-  return [
-    { value: '6-8', label: '6-8 meses', description: 'Iniciación (1→3 comidas)' },
-    { value: '8-10', label: '8-10 meses', description: 'Exploración (3 comidas + snacks)' },
-    { value: '10-12', label: '10-12 meses', description: 'Transición (3 comidas + 2 snacks)' },
-    { value: '12-18', label: '12-18 meses', description: 'Consolidación' },
-    { value: '18-24', label: '18-24 meses', description: 'Madurez' },
-  ]
-}
-
-// Función para agrupar por semana
-export function groupStepsByWeek(steps: IntroStep[]): Record<number, IntroStep[]> {
-  return steps.reduce((acc, step) => {
-    if (!acc[step.weekNumber]) {
-      acc[step.weekNumber] = []
-    }
-    acc[step.weekNumber].push(step)
-    return acc
-  }, {} as Record<number, IntroStep[]>)
-}
-
-// Función para obtener el número total de semanas por rango de edad
-export function getWeeksByAgeRange(ageRange: string): { start: number; end: number } {
-  const ranges: Record<string, { start: number; end: number }> = {
-    '6-8': { start: 1, end: 8 },
-    '8-10': { start: 9, end: 17 },
-    '10-12': { start: 18, end: 26 },
-    '12-18': { start: 27, end: 52 },
-    '18-24': { start: 53, end: 104 },
-  }
-  return ranges[ageRange] || { start: 1, end: 8 }
-}
+export const introStepsData: IntroStep[] = [
+  // DÍA 1-3: Calabacín
+  {
+    id: 'day1',
+    dayNumber: 1,
+    title: '¡Primer día de alimentación complementaria!',
+    description: 'Hoy comienza una nueva etapa. Ofrece tu primera cucharada de puré de calabacín. Solo 2-3 cucharaditas es suficiente.',
+    foodGroup: 'Verduras',
+    specificFood: 'Calabacín',
+    portionSize: '2-3 cucharaditas (10-15g)',
+    frequency: 'Una sola comida (almuerzo)',
+    breastmilkNote: 'Continúa con la lactancia materna a demanda. El puré es COMPLEMENTARIO, no sustituye ninguna toma de leche.',
+    tips: JSON.stringify([
+      'Elige un momento tranquilo, cuando el bebé esté despierto y contento',
+      'Siéntalo en una silla alta o en tu regazo',
+      'Usa una cuchara pequeña de plástico o silicona suave',
+      'No te preocupes si escupe la comida, es normal',
+      'Puede que solo acepte 1-2 cucharadas el primer día'
+    ]),
+    warnings: JSON.stringify([
+      'No añadas sal ni azúcar',
+      'La textura debe ser muy líquida, casi como una sopa',
+      'Observa si hay alguna reacción alérgica en las próximas 24-48 horas'
+    ]),
+    recipe: 'Lavar y pelar el calabacín. Cortar en trozos pequeños. Cocinar al vapor 10-15 minutos hasta que esté muy blando. Triturar con un poco de agua de cocción hasta obtener un puré muy suave y líquido.',
+  },
+  {
+    id: 'day2',
+    dayNumber: 2,
+    title: 'Segundo día con calabacín',
+    description: 'Continúa ofreciendo puré de calabacín. Aumenta ligeramente la cantidad si el bebé lo acepta.',
+    foodGroup: 'Verduras',
+    specificFood: 'Calabacín',
+    portionSize: '3-4 cucharadas (20-30g)',
+    frequency: 'Una comida (almuerzo)',
+    breastmilkNote: 'La lactancia sigue siendo la fuente principal de nutrición. Ofrece el pecho antes o después del puré según prefiera tu bebé.',
+    tips: JSON.stringify([
+      'Intenta que el bebé abra la boca mostrándole la cuchara',
+      'Habla suavemente y sonríe durante la comida',
+      'No fuerces la comida, deja que el bebé marque el ritmo'
+    ]),
+    warnings: JSON.stringify([
+      'Observa si hay sarpullidos, vómitos o diarrea',
+      'Consulta al pediatra si notas algo inusual'
+    ]),
+    recipe: 'Igual que el día anterior. Puedes preparar un poco más de cantidad y congelar en cubitos lo que sobre.',
+  },
+  {
+    id: 'day3',
+    dayNumber: 3,
+    title: 'Tercer día con calabacín',
+    description: 'Último día de prueba con calabacín. Si todo va bien, mañana podrás introducir un nuevo alimento.',
+    foodGroup: 'Verduras',
+    specificFood: 'Calabacín',
+    portionSize: '4-5 cucharadas (30-40g)',
+    frequency: 'Una comida (almuerzo)',
+    breastmilkNote: 'Mantén las tomas de pecho habituales. El bebé debe seguir recibiendo al menos 4-6 tomas de leche materna al día.',
+    tips: JSON.stringify([
+      'El bebé ya debería estar más acostumbrado a la cuchara',
+      'Celebra cada pequeño progreso con sonrisas',
+      'Puedes ofrecer el puré un poco más espeso si lo tolera bien'
+    ]),
+    warnings: JSON.stringify([
+      'Si no ha habido reacciones adversas, el calabacín está aprobado',
+      'Anota en tu diario cualquier observación importante'
+    ]),
+    recipe: 'Puré de calabacín. Tritura hasta obtener textura suave pero ligeramente más espesa que los primeros días.',
+  },
+  // DÍA 4-6: Calabaza
+  {
+    id: 'day4',
+    dayNumber: 4,
+    title: 'Nuevo alimento: Calabaza',
+    description: 'Hoy introducimos la calabaza. Es dulce y suave, ideal para bebés. Prepara un puré solo de calabaza.',
+    foodGroup: 'Verduras',
+    specificFood: 'Calabaza',
+    portionSize: '2-3 cucharadas (15-20g)',
+    frequency: 'Una comida (almuerzo)',
+    breastmilkNote: 'Amamanta a demanda. La leche materna sigue siendo el alimento principal.',
+    tips: JSON.stringify([
+      'La calabaza es naturalmente dulce, suele gustar mucho',
+      'Cocina al vapor para conservar nutrientes',
+      'Tritura muy bien hasta que no queden grumos'
+    ]),
+    warnings: JSON.stringify([
+      'Es un alimento nuevo: observa durante 2-3 días',
+      'No mezcles con otros alimentos nuevos todavía'
+    ]),
+    recipe: 'Pelar la calabaza y quitar las semillas. Cortar en cubos pequeños. Cocinar al vapor 20 minutos hasta que esté muy blanda. Triturar con agua de cocción hasta obtener puré suave.',
+  },
+  {
+    id: 'day5',
+    dayNumber: 5,
+    title: 'Continúa con calabaza',
+    description: 'Sigue probando la calabaza. El bebé se acostumbra a nuevos sabores.',
+    foodGroup: 'Verduras',
+    specificFood: 'Calabaza',
+    portionSize: '3-4 cucharadas (25-35g)',
+    frequency: 'Una comida (almuerzo)',
+    breastmilkNote: 'Ofrece el pecho antes del puré para asegurar que reciba suficientes nutrientes de la leche.',
+    tips: JSON.stringify([
+      'Puedes mezclar un poco de calabacín del día anterior si quieres',
+      'La consistencia debe ser suave pero no líquida',
+      'Deja que el bebé toque la comida con las manos'
+    ]),
+    warnings: JSON.stringify([
+      'Observa las heces del bebé, pueden cambiar de color',
+      'La calabaza puede dar un tono anaranjado a las deposiciones'
+    ]),
+    recipe: 'Puré de calabaza. Puedes añadir un poco de calabacín ya aprobado para variar el sabor.',
+  },
+  {
+    id: 'day6',
+    dayNumber: 6,
+    title: 'Último día de calabaza',
+    description: 'Finalizamos la prueba de calabaza. Si todo está bien, mañana un nuevo alimento.',
+    foodGroup: 'Verduras',
+    specificFood: 'Calabaza',
+    portionSize: '4-5 cucharadas (35-45g)',
+    frequency: 'Una comida (almuerzo)',
+    breastmilkNote: 'La lactancia materna proporciona anticuerpos que protegen al bebé mientras prueba nuevos alimentos.',
+    tips: JSON.stringify([
+      'El bebé puede empezar a mostrar preferencias',
+      'No te preocupes si come más o menos un día',
+      'Cada bebé tiene su propio ritmo'
+    ]),
+    warnings: JSON.stringify([
+      'Si no ha habido reacciones, la calabaza está aprobada',
+      'Añádela a tu lista de alimentos seguros'
+    ]),
+    recipe: 'Puré de calabaza solo o mezclado con calabacín (alimentos ya aprobados).',
+  },
+  // DÍA 7-9: Zanahoria
+  {
+    id: 'day7',
+    dayNumber: 7,
+    title: 'Nuevo alimento: Zanahoria',
+    description: 'Introducimos la zanahoria, rica en vitamina A. Debe estar muy bien cocida y triturada.',
+    foodGroup: 'Verduras',
+    specificFood: 'Zanahoria',
+    portionSize: '2-3 cucharadas (15-20g)',
+    frequency: 'Una comida (almuerzo)',
+    breastmilkNote: 'Continúa amamantando a demanda. La leche materna aporta grasas esenciales para la absorción de vitamina A.',
+    tips: JSON.stringify([
+      'La zanahoria tarda más en cocinarse, asegúrate de que esté muy blanda',
+      'Su dulzor natural la hace atractiva para el bebé',
+      'No añadas aceite todavía'
+    ]),
+    warnings: JSON.stringify([
+      'La zanahoria puede causar estreñimiento en algunos bebés',
+      'Observa si hay cambios en las deposiciones'
+    ]),
+    recipe: 'Pelar y cortar la zanahoria en rodajas finas. Cocinar al vapor o hervir 25-30 minutos hasta que esté muy blanda. Triturar muy bien con agua de cocción.',
+  },
+  {
+    id: 'day8',
+    dayNumber: 8,
+    title: 'Continúa con zanahoria',
+    description: 'Segundo día con zanahoria. Observa cómo responde el bebé.',
+    foodGroup: 'Verduras',
+    specificFood: 'Zanahoria',
+    portionSize: '3-4 cucharadas (25-35g)',
+    frequency: 'Una comida (almuerzo)',
+    breastmilkNote: 'Ofrece el pecho después del puré para "cerrar" la comida. Es reconfortante para el bebé.',
+    tips: JSON.stringify([
+      'Puedes empezar a mezclar: zanahoria + calabacín',
+      'Mezclar alimentos ya conocidos ayuda a aceptar nuevos sabores',
+      'Proporción: 2 partes zanahoria, 1 parte calabacín'
+    ]),
+    warnings: JSON.stringify([
+      'Solo mezcla alimentos ya probados y aprobados',
+      'No introduzcas más de un alimento nuevo cada 3 días'
+    ]),
+    recipe: 'Puré de zanahoria solo o mezclado con calabacín ya aprobado.',
+  },
+  {
+    id: 'day9',
+    dayNumber: 9,
+    title: 'Mezcla de verduras',
+    description: 'Prueba una mezcla suave de verduras ya conocidas.',
+    foodGroup: 'Verduras',
+    specificFood: 'Calabacín + Calabaza + Zanahoria',
+    portionSize: '5-6 cucharadas (40-50g)',
+    frequency: 'Una comida (almuerzo)',
+    breastmilkNote: 'Mantén al menos 4-5 tomas de leche materna al día.',
+    tips: JSON.stringify([
+      'Esta mezcla es nutritiva y colorida',
+      'El bebé empieza a conocer diferentes sabores',
+      'Puedes preparar más cantidad y congelar en cubitos'
+    ]),
+    warnings: JSON.stringify([
+      'Descongela solo la cantidad necesaria',
+      'No recalentar más de una vez'
+    ]),
+    recipe: 'Cocinar las tres verduras al vapor por separado (zanahoria 25 min, calabaza 20 min, calabacín 10 min). Triturar juntas con agua de cocción.',
+  },
+  // DÍA 10-12: Patata
+  {
+    id: 'day10',
+    dayNumber: 10,
+    title: 'Nuevo alimento: Patata',
+    description: 'Introducimos la patata, excelente base para purés.',
+    foodGroup: 'Verduras',
+    specificFood: 'Patata',
+    portionSize: '2-3 cucharadas (20-30g)',
+    frequency: 'Una comida (almuerzo)',
+    breastmilkNote: 'La patata es muy saciante. Asegúrate de que el bebé siga tomando suficiente leche.',
+    tips: JSON.stringify([
+      'Cocina la patata al vapor o hervida',
+      'Añade un poco de agua de cocción para obtener textura suave',
+      'La patata puede quedar pegajosa si se bate mucho'
+    ]),
+    warnings: JSON.stringify([
+      'No uses patatas verdes o con brotes',
+      'Observa durante 2-3 días como con cualquier alimento nuevo'
+    ]),
+    recipe: 'Pelar la patata y cortar en cubos. Cocinar al vapor 15-20 minutos. Triturar con agua de cocción hasta obtener puré cremoso.',
+  },
+  {
+    id: 'day11',
+    dayNumber: 11,
+    title: 'Patata + verduras',
+    description: 'Mezcla patata con verduras ya conocidas.',
+    foodGroup: 'Verduras',
+    specificFood: 'Patata + Calabacín',
+    portionSize: '4-5 cucharadas (35-45g)',
+    frequency: 'Una comida (almuerzo)',
+    breastmilkNote: 'La combinación de patata y leche materna proporciona energía sostenida.',
+    tips: JSON.stringify([
+      'La patata suaviza sabores más fuertes',
+      'Es una buena forma de introducir verduras menos aceptadas',
+      'El puré debe quedar cremoso, no grumoso'
+    ]),
+    warnings: JSON.stringify([
+      'No añadas mantequilla ni leche de vaca',
+      'La leche materna o fórmula es suficiente'
+    ]),
+    recipe: 'Cocinar patata y calabacín al vapor. Triturar juntos con un poco de agua de cocción.',
+  },
+  {
+    id: 'day12',
+    dayNumber: 12,
+    title: 'Nuevo alimento: Judías verdes',
+    description: 'Las judías verdes aportan fibra y vitaminas. Deben estar muy bien cocidas.',
+    foodGroup: 'Verduras',
+    specificFood: 'Judías verdes',
+    portionSize: '2-3 cucharadas (15-20g)',
+    frequency: 'Una comida (almuerzo)',
+    breastmilkNote: 'Continúa con la lactancia a demanda. El bebé puede mostrar preferencia por el pecho antes de comer.',
+    tips: JSON.stringify([
+      'Quita las hebras y puntas antes de cocinar',
+      'Cocina hasta que estén muy tiernas',
+      'Tritura muy bien, pueden quedar hilos'
+    ]),
+    warnings: JSON.stringify([
+      'Algunos bebés no aceptan el sabor al principio',
+      'Mezcla con patata para suavizar'
+    ]),
+    recipe: 'Quitar puntas y hebras de las judías. Lavar bien. Cocinar al vapor 15-20 minutos hasta que estén muy tiernas. Triturar muy bien, pasando por colador si quedan hilos.',
+  },
+  // DÍA 13-15: Puerro y mezclas
+  {
+    id: 'day13',
+    dayNumber: 13,
+    title: 'Nuevo alimento: Puerro',
+    description: 'El puerro aporta un sabor suave diferente. Ideal para caldos y purés.',
+    foodGroup: 'Verduras',
+    specificFood: 'Puerro',
+    portionSize: '2-3 cucharadas (15-20g)',
+    frequency: 'Una comida (almuerzo)',
+    breastmilkNote: 'La lactancia materna aporta el 80-90% de los nutrientes necesarios a esta edad.',
+    tips: JSON.stringify([
+      'Usa solo la parte blanca, más suave',
+      'El puerro da un sabor interesante a los purés',
+      'Mezcla con patata para suavizar'
+    ]),
+    warnings: JSON.stringify([
+      'Lava bien el puerro, puede tener tierra entre capas',
+      'Cocina completamente para evitar irritación digestiva'
+    ]),
+    recipe: 'Cortar el puerro por la mitad y lavar bien entre capas. Usar solo la parte blanca. Cocinar al vapor 10-15 minutos. Triturar con patata o otras verduras.',
+  },
+  {
+    id: 'day14',
+    dayNumber: 14,
+    title: 'Mezcla completa de verduras',
+    description: 'Prepara un puré con todas las verduras ya introducidas.',
+    foodGroup: 'Verduras',
+    specificFood: 'Mezcla de verduras',
+    portionSize: '5-6 cucharadas (50-60g)',
+    frequency: 'Una comida (almuerzo)',
+    breastmilkNote: 'El bebé debe seguir recibiendo entre 500-600ml de leche materna al día.',
+    tips: JSON.stringify([
+      'Proporción: 2 partes patata, 1 parte otras verduras',
+      'Varía las proporciones para diferentes sabores',
+      'El bebé está aprendiendo a comer, celebra sus logros'
+    ]),
+    warnings: JSON.stringify([
+      'Si notas rechazo hacia algún alimento, reintrodúcelo más tarde',
+      'No fuerces nunca al bebé a comer'
+    ]),
+    recipe: 'Cocinar patata, zanahoria, calabaza, calabacín y puerro al vapor. Triturar todo junto con agua de cocción hasta obtener puré cremoso.',
+  },
+  {
+    id: 'day15',
+    dayNumber: 15,
+    title: '¡Llegaron las frutas! - Pera',
+    description: 'Introducimos la primera fruta: la pera. Dulce, digestiva y suave.',
+    foodGroup: 'Frutas',
+    specificFood: 'Pera',
+    portionSize: '2-3 cucharadas (20-30g)',
+    frequency: 'Una comida (puede ser merienda)',
+    breastmilkNote: 'Puedes ofrecer fruta en la merienda y el puré de verduras en el almuerzo. Mantén la lactancia.',
+    tips: JSON.stringify([
+      'Usa peras maduras (variedad Conference o Blanquilla)',
+      'Puedes ofrecerla cruda rallada o cocida en puré',
+      'La pera es muy digestiva y suele gustar mucho'
+    ]),
+    warnings: JSON.stringify([
+      'Observa si hay reacciones como en cualquier alimento nuevo',
+      'La fruta cruda tiene más vitaminas pero cocida es más digestiva'
+    ]),
+    recipe: 'Pelar la pera y quitar el corazón. Opción 1: Rallar cruda para ofrecer inmediatamente. Opción 2: Cocinar al vapor 10 minutos y triturar para puré.',
+  },
+  // DÍA 16-18: Manzana y más frutas
+  {
+    id: 'day16',
+    dayNumber: 16,
+    title: 'Continúa con pera',
+    description: 'El bebé se acostumbra al dulzor natural de la fruta.',
+    foodGroup: 'Frutas',
+    specificFood: 'Pera',
+    portionSize: '3-4 cucharadas (30-40g)',
+    frequency: 'Una comida (merienda)',
+    breastmilkNote: 'Después de la fruta, ofrece el pecho. El bebé puede querer menos leche.',
+    tips: JSON.stringify([
+      'Varía entre pera cruda rallada y cocida',
+      'Puedes añadir un poco de cereales de arroz para espesar',
+      'La fruta es un excelente postre o merienda'
+    ]),
+    warnings: JSON.stringify([
+      'No añadas azúcar ni miel',
+      'La fruta ya es dulce naturalmente'
+    ]),
+    recipe: 'Pera madura rallada o en puré. Puedes mezclar con cereales de arroz.',
+  },
+  {
+    id: 'day17',
+    dayNumber: 17,
+    title: 'Nuevo alimento: Manzana',
+    description: 'La manzana es suave y versátil. Cocida es más digestiva al principio.',
+    foodGroup: 'Frutas',
+    specificFood: 'Manzana',
+    portionSize: '2-3 cucharadas (20-30g)',
+    frequency: 'Una comida (merienda)',
+    breastmilkNote: 'La vitamina C de la manzana ayuda a absorber el hierro de la leche materna.',
+    tips: JSON.stringify([
+      'Usa manzanas tipo Golden o Reineta, más suaves',
+      'Cocina al vapor con piel y luego retírela',
+      'La manzana cocida es ideal para empezar'
+    ]),
+    warnings: JSON.stringify([
+      'La manzana cruda puede ser difícil de digerir al principio',
+      'Empieza con manzana cocida'
+    ]),
+    recipe: 'Pelar y descorazonar la manzana. Cortar en trozos. Cocinar al vapor 15 minutos. Triturar hasta obtener compota suave.',
+  },
+  {
+    id: 'day18',
+    dayNumber: 18,
+    title: 'Mezcla de frutas',
+    description: 'Combina pera y manzana para una papilla deliciosa.',
+    foodGroup: 'Frutas',
+    specificFood: 'Pera + Manzana',
+    portionSize: '4-5 cucharadas (40-50g)',
+    frequency: 'Una comida (merienda)',
+    breastmilkNote: 'Ahora el bebé tiene dos comidas al día: verduras (almuerzo) y frutas (merienda).',
+    tips: JSON.stringify([
+      'Mezcla mitad pera, mitad manzana',
+      'Puedes triturar juntas o por separado',
+      'Añade cereales de arroz si quieres más consistencia'
+    ]),
+    warnings: JSON.stringify([
+      'No ofrezcas zumos, solo fruta triturada',
+      'Los zumos no tienen fibra y pueden causar diarrea'
+    ]),
+    recipe: 'Cocinar manzana al vapor. Triturar con pera rallada fresca o cocida. Mezclar bien.',
+  },
+  // DÍA 19-21: Plátano
+  {
+    id: 'day19',
+    dayNumber: 19,
+    title: 'Nuevo alimento: Plátano',
+    description: 'El plátano es muy nutritivo y fácil de preparar. No necesita cocción.',
+    foodGroup: 'Frutas',
+    specificFood: 'Plátano',
+    portionSize: 'Medio plátano pequeño triturado (30-40g)',
+    frequency: 'Una comida (merienda)',
+    breastmilkNote: 'El plátano es muy saciante. Asegúrate de que el bebé siga tomando leche.',
+    tips: JSON.stringify([
+      'Tritura con un tenedor, no necesita batidora',
+      'El plátano maduro es más dulce y digestivo',
+      'Se oxida rápido, prepáralo justo antes de darlo'
+    ]),
+    warnings: JSON.stringify([
+      'El plátano puede estreñir si se da en exceso',
+      'No des más de medio plátano al día'
+    ]),
+    recipe: 'Pelar el plátano maduro. Aplastar con un tenedor hasta obtener puré. Servir inmediatamente. También puedes mezclar con leche materna para más liquidez.',
+  },
+  {
+    id: 'day20',
+    dayNumber: 20,
+    title: 'Papilla de tres frutas',
+    description: 'Combina las tres frutas ya conocidas.',
+    foodGroup: 'Frutas',
+    specificFood: 'Pera + Manzana + Plátano',
+    portionSize: '5-6 cucharadas (50-60g)',
+    frequency: 'Una comida (merienda)',
+    breastmilkNote: 'Esta papilla es muy nutritiva y energética. El bebé puede dormir mejor por las noches.',
+    tips: JSON.stringify([
+      'Proporción: 1/3 de cada fruta',
+      'El plátano aporta cremosidad',
+      'Puedes preparar y congelar en cubitos (sin el plátano)'
+    ]),
+    warnings: JSON.stringify([
+      'El plátano congelado pierde textura, mejor fresco',
+      'Descongela la mezcla de pera-manzana y añade plátano fresco'
+    ]),
+    recipe: 'Cocinar manzana y pera al vapor. Triturar juntas. Añadir plátano aplastado y mezclar bien.',
+  },
+  {
+    id: 'day21',
+    dayNumber: 21,
+    title: 'Nuevo alimento: Aguacate',
+    description: 'El aguacate es único: una fruta rica en grasas saludables.',
+    foodGroup: 'Frutas',
+    specificFood: 'Aguacate',
+    portionSize: '2-3 cucharadas (20-30g)',
+    frequency: 'Una comida (merienda)',
+    breastmilkNote: 'Las grasas del aguacate son excelentes para el desarrollo cerebral, igual que la leche materna.',
+    tips: JSON.stringify([
+      'Tritura con un tenedor, textura cremosa natural',
+      'El aguacate debe estar maduro pero no pasado',
+      'Puedes mezclarlo con plátano para más dulzor'
+    ]),
+    warnings: JSON.stringify([
+      'El aguacate se oxida muy rápido (se pone negro)',
+      'Añade unas gotas de limón si vas a guardar un rato',
+      'Sirve inmediatamente si es posible'
+    ]),
+    recipe: 'Cortar el aguacate por la mitad, quitar el hueso. Sacar la pulpa con una cuchara. Aplastar con un tenedor hasta obtener puré cremoso. Servir inmediatamente.',
+  },
+  // DÍA 22-24: Cereales de arroz
+  {
+    id: 'day22',
+    dayNumber: 22,
+    title: 'Nuevo alimento: Cereales de arroz',
+    description: 'Los cereales de arroz (sin gluten) son ideales para espesar purés y papillas.',
+    foodGroup: 'Cereales',
+    specificFood: 'Cereales de arroz',
+    portionSize: '1-2 cucharadas (5-10g) en el puré',
+    frequency: 'Añadir al almuerzo o merienda',
+    breastmilkNote: 'Puedes preparar los cereales con leche materna extraída para mayor aceptación.',
+    tips: JSON.stringify([
+      'Empieza con poca cantidad para que el bebé se acostumbre',
+      'Espesan los purés y aportan energía',
+      'El arroz no tiene gluten, es seguro'
+    ]),
+    warnings: JSON.stringify([
+      'No uses cereales con gluten todavía (trigo, cebada, centeno)',
+      'Los cereales de arroz son de digestión fácil'
+    ]),
+    recipe: 'Mezclar 1-2 cucharadas de cereales de arroz con leche materna, agua o el puré de frutas/verduras. Remover hasta obtener consistencia cremosa.',
+  },
+  {
+    id: 'day23',
+    dayNumber: 23,
+    title: 'Cereales con frutas',
+    description: 'Añade cereales de arroz a la papilla de frutas.',
+    foodGroup: 'Cereales',
+    specificFood: 'Cereales de arroz + Frutas',
+    portionSize: '2-3 cucharadas de cereales en la papilla',
+    frequency: 'Una comida (merienda)',
+    breastmilkNote: 'Los cereales aportan energía extra. El bebé puede dormir más tiempo por la noche.',
+    tips: JSON.stringify([
+      'La papilla quedará más espesa',
+      'Ajusta la textura añadiendo más o menos cereales',
+      'Puedes usar agua, leche materna o fórmula para preparar'
+    ]),
+    warnings: JSON.stringify([
+      'No añadas azúcar ni miel a los cereales',
+      'El sabor natural de la fruta es suficiente'
+    ]),
+    recipe: 'Preparar papilla de frutas (pera, manzana, plátano). Añadir cereales de arroz y mezclar hasta obtener consistencia deseada.',
+  },
+  {
+    id: 'day24',
+    dayNumber: 24,
+    title: 'Nuevo alimento: Melocotón',
+    description: 'El melocotón aporta un sabor dulce y refrescante.',
+    foodGroup: 'Frutas',
+    specificFood: 'Melocotón',
+    portionSize: '2-3 cucharadas (20-30g)',
+    frequency: 'Una comida (merienda)',
+    breastmilkNote: 'El melocotón es hidratante. En días calurosos es especialmente bueno.',
+    tips: JSON.stringify([
+      'Usa melocotones maduros y jugosos',
+      'Pela bien antes de triturar',
+      'Combina bien con manzana o pera'
+    ]),
+    warnings: JSON.stringify([
+      'Algunos bebés pueden ser alérgicos al melocotón (raro)',
+      'Observa si hay reacciones en piel alrededor de la boca'
+    ]),
+    recipe: 'Pelar el melocotón y quitar el hueso. Triturar crudo si está muy maduro, o cocinar al vapor 5 minutos si está más duro.',
+  },
+  // DÍA 25-27: Pollo (primera proteína)
+  {
+    id: 'day25',
+    dayNumber: 25,
+    title: '¡Llegaron las proteínas! - Pollo',
+    description: 'El pollo es la primera carne que introducimos. Suave y fácil de digerir.',
+    foodGroup: 'Proteínas',
+    specificFood: 'Pollo',
+    portionSize: '20-30g de pollo en el puré',
+    frequency: 'Una comida (almuerzo)',
+    breastmilkNote: 'El hierro de la carne se absorbe mejor que el de las verduras. Combínalo con la lactancia.',
+    tips: JSON.stringify([
+      'Usa pechuga de pollo sin piel ni huesos',
+      'Cuece bien y tritura con las verduras',
+      'Empieza con poca cantidad para que acepte el sabor'
+    ]),
+    warnings: JSON.stringify([
+      'La carne debe estar muy bien cocida',
+      'Tritura completamente para evitar trozos',
+      'No añadas sal'
+    ]),
+    recipe: 'Cortar la pechuga de pollo en trocitos. Cocinar al vapor o hervido 15-20 minutos hasta que esté bien cocido. Triturar con verduras y un poco de agua de cocción.',
+  },
+  {
+    id: 'day26',
+    dayNumber: 26,
+    title: 'Puré de pollo con verduras',
+    description: 'Combina pollo con las verduras ya conocidas.',
+    foodGroup: 'Proteínas',
+    specificFood: 'Pollo + Verduras',
+    portionSize: '30-40g de pollo + 50g verduras',
+    frequency: 'Una comida (almuerzo)',
+    breastmilkNote: 'El pollo aumenta la saciedad. El bebé puede dormir mejor.',
+    tips: JSON.stringify([
+      'Proporción: 1 parte pollo, 2 partes verduras',
+      'El puré debe quedar cremoso',
+      'Puedes usar el caldo de cocción para triturar'
+    ]),
+    warnings: JSON.stringify([
+      'El caldo de pollo puede ser salado, usa poca cantidad',
+      'Mejor triturar con agua o leche materna'
+    ]),
+    recipe: 'Cocinar pechuga de pollo al vapor. Cocinar verduras (patata, zanahoria, calabacín). Triturar todo junto con un poco de agua hasta obtener puré cremoso.',
+  },
+  {
+    id: 'day27',
+    dayNumber: 27,
+    title: 'Nuevo alimento: Ternera',
+    description: 'La ternera es rica en hierro, esencial para el desarrollo.',
+    foodGroup: 'Proteínas',
+    specificFood: 'Ternera',
+    portionSize: '20-30g de ternera en el puré',
+    frequency: 'Una comida (almuerzo)',
+    breastmilkNote: 'El hierro de la carne es de alta absorción. Importante junto con la lactancia.',
+    tips: JSON.stringify([
+      'Usa carne magra sin grasa',
+      'Cocina bien y tritura finamente',
+      'Combina con verduras ya conocidas'
+    ]),
+    warnings: JSON.stringify([
+      'La ternera es más fuerte que el pollo',
+      'Introdúcela gradualmente'
+    ]),
+    recipe: 'Usar carne magra de ternera. Cortar en trocitos pequeños. Cocinar bien (hervida o a la plancha). Triturar con verduras y agua.',
+  },
+  // DÍA 28-30: Avena y resumen
+  {
+    id: 'day28',
+    dayNumber: 28,
+    title: 'Puré de ternera con verduras',
+    description: 'Mezcla ternera con verduras para un puré nutritivo.',
+    foodGroup: 'Proteínas',
+    specificFood: 'Ternera + Verduras',
+    portionSize: '30-40g de ternera + 50g verduras',
+    frequency: 'Una comida (almuerzo)',
+    breastmilkNote: 'Esta comida aporta mucho hierro. Excelente para el desarrollo.',
+    tips: JSON.stringify([
+      'La ternera combina bien con zanahoria y patata',
+      'Aporta saciedad duradera',
+      'El bebé puede dormir más tiempo'
+    ]),
+    warnings: JSON.stringify([
+      'Alterna entre pollo y ternera',
+      'Varía las proteínas durante la semana'
+    ]),
+    recipe: 'Cocinar ternera magra al vapor o hervida. Cocinar verduras. Triturar todo junto con agua hasta obtener puré cremoso.',
+  },
+  {
+    id: 'day29',
+    dayNumber: 29,
+    title: 'Nuevo alimento: Avena',
+    description: 'La avena es un cereal nutritivo con fibra soluble.',
+    foodGroup: 'Cereales',
+    specificFood: 'Avena',
+    portionSize: '1-2 cucharadas en papilla',
+    frequency: 'Una comida (merienda)',
+    breastmilkNote: 'La avena es energética y rica en fibra. Combina con leche materna.',
+    tips: JSON.stringify([
+      'Usa copos de avena finos o harina de avena',
+      'Cocina bien para que sea digestiva',
+      'Mezcla con frutas para mejor sabor'
+    ]),
+    warnings: JSON.stringify([
+      'La avena puede contener gluten por contaminación cruzada',
+      'Observa si hay reacciones digestivas',
+      'Introduce gradualmente'
+    ]),
+    recipe: 'Cocinar 1-2 cucharadas de copos de avena con agua o leche materna durante 5 minutos, removiendo constantemente hasta que espese. Mezclar con frutas.',
+  },
+  {
+    id: 'day30',
+    dayNumber: 30,
+    title: '¡Primer mes completado!',
+    description: 'Felicidades! Has completado el primer mes de alimentación complementaria. El bebé ya conoce muchos alimentos seguros.',
+    foodGroup: 'Mixto',
+    specificFood: 'Variedad de alimentos seguros',
+    portionSize: 'Almuerzo: 70-80g con proteínas / Merienda: 60g frutas',
+    frequency: 'Dos comidas al día',
+    breastmilkNote: 'La OMS recomienda continuar la lactancia materna hasta los 2 años o más, junto con alimentos complementarios.',
+    tips: JSON.stringify([
+      'Alimentos aprobados: calabacín, calabaza, zanahoria, patata, judías verdes, puerro, pera, manzana, plátano, aguacate, melocotón, cereales de arroz, avena, pollo, ternera',
+      'El bebé ya tiene una rutina establecida',
+      'Continúa introduciendo nuevos alimentos gradualmente'
+    ]),
+    warnings: JSON.stringify([
+      'Aún no: huevo, pescado, lácteos, miel',
+      'Continúa con un alimento nuevo cada 3 días'
+    ]),
+    recipe: 'Celebra preparando una comida especial con los alimentos favoritos del bebé.',
+  },
+]

@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Baby, Utensils, ChefHat, BookOpen, Sparkles, 
   Clock, AlertTriangle, CheckCircle,
-  Calendar, Heart, ThumbsUp, ThumbsDown, AlertCircle,
+  Heart, ThumbsUp, ThumbsDown, AlertCircle,
   MinusCircle, MessageSquare, LogOut, Copy, Share2,
-  Key, Plus, ShoppingCart, Check
+  Key, Plus, ShoppingCart, Check, ChevronLeft, ChevronRight
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,12 +15,11 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import { Input } from '@/components/ui/input'
 import { Loader2 } from 'lucide-react'
-import { introStepsData, groupStepsByWeek, filterByAgeRange, getAvailableAgeRanges, getWeeksByAgeRange, type IntroStep } from '@/lib/intro-steps-data'
+import { introStepsData, type IntroStep } from '@/lib/intro-steps-data'
 import { calculateShoppingList, getShoppingPeriod, type ShoppingItem } from '@/lib/shopping-list'
 
 // Types
@@ -46,6 +45,7 @@ interface Family {
 // Storage keys
 const FAMILY_STORAGE_KEY = 'nutribebe_family'
 const REACTIONS_STORAGE_KEY = 'nutribebe_reactions'
+const CURRENT_DAY_STORAGE_KEY = 'nutribebe_current_day'
 
 // Generate random family code
 function generateFamilyCode(): string {
@@ -62,9 +62,6 @@ function generateId(): string {
   return `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }
 
-// Age stages - usar función del módulo
-const ageStages = getAvailableAgeRanges()
-
 // Reaction options
 const reactionOptions = [
   { value: 'liked', label: 'Le gustó', icon: ThumbsUp, color: 'text-green-600', bg: 'bg-green-50' },
@@ -72,31 +69,6 @@ const reactionOptions = [
   { value: 'disliked', label: 'No le gustó', icon: ThumbsDown, color: 'text-orange-600', bg: 'bg-orange-50' },
   { value: 'allergic', label: 'Reacción alérgica', icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-50' },
 ]
-
-// Predefined recipes for common ingredients
-const predefinedRecipes: Record<string, Array<{name: string, ingredients: string[], instructions: string[]}>> = {
-  'Calabacín': [
-    { name: 'Puré de Calabacín', ingredients: ['Calabacín', 'Agua'], instructions: ['Lavar y pelar el calabacín', 'Cortar en trozos pequeños', 'Cocinar al vapor 10-15 min', 'Triturar hasta obtener puré suave'] }
-  ],
-  'Calabaza': [
-    { name: 'Crema de Calabaza', ingredients: ['Calabaza', 'Agua'], instructions: ['Pelar y cortar la calabaza', 'Cocinar al vapor 20 min', 'Triturar con un poco de agua de cocción', 'Servir tibio'] }
-  ],
-  'Zanahoria': [
-    { name: 'Puré de Zanahoria', ingredients: ['Zanahoria', 'Agua'], instructions: ['Pelar y cortar la zanahoria', 'Hervir o cocinar al vapor 25 min', 'Triturar muy bien', 'Dejar enfriar antes de servir'] }
-  ],
-  'Pera': [
-    { name: 'Compota de Pera', ingredients: ['Pera madura'], instructions: ['Pelar y quitar semillas', 'Cortar en trozos', 'Cocinar con poca agua 10 min', 'Triturar hasta obtener puré'] }
-  ],
-  'Manzana': [
-    { name: 'Puré de Manzana', ingredients: ['Manzana', 'Agua'], instructions: ['Pelar y quitar el corazón', 'Cortar en trozos', 'Cocinar al vapor 15 min', 'Triturar hasta obtener textura suave'] }
-  ],
-  'Plátano': [
-    { name: 'Papilla de Plátano', ingredients: ['Plátano maduro'], instructions: ['Pelar el plátano', 'Aplastar con un tenedor', 'Mezclar hasta obtener puré', 'Servir inmediatamente'] }
-  ],
-  'Pollo': [
-    { name: 'Puré de Pollo con Verduras', ingredients: ['Pollo', 'Calabacín', 'Zanahoria'], instructions: ['Cocinar el pollo a la plancha o hervido', 'Cocinar las verduras al vapor', 'Triturar todo junto', 'Añadir agua si es necesario'] }
-  ],
-}
 
 export default function NutriBebeApp() {
   // Family/Auth state
@@ -109,13 +81,9 @@ export default function NutriBebeApp() {
   const [authError, setAuthError] = useState('')
   
   // App state
-  const [selectedAge, setSelectedAge] = useState('6-8')
   const [activeSection, setActiveSection] = useState('intro')
   const [introSteps, setIntroSteps] = useState<IntroStep[]>([])
-  const [groupedSteps, setGroupedSteps] = useState<Record<number, IntroStep[]>>({})
-  const [selectedWeek, setSelectedWeek] = useState(1)
   const [currentDay, setCurrentDay] = useState(1)
-  const [ingredientInput, setIngredientInput] = useState('')
   
   // Reaction state
   const [showReactionForm, setShowReactionForm] = useState(false)
@@ -140,16 +108,19 @@ export default function NutriBebeApp() {
     setIsLoadingAuth(false)
   }, [])
 
-  // Load intro steps filtered by age
+  // Load intro steps and current day
   useEffect(() => {
-    const filtered = filterByAgeRange(introStepsData, selectedAge)
-    setIntroSteps(filtered)
-    setGroupedSteps(groupStepsByWeek(filtered))
-    // Reset to first week of the age range
-    const weeks = getWeeksByAgeRange(selectedAge)
-    setSelectedWeek(weeks.start)
-    setCurrentDay(1)
-  }, [selectedAge])
+    setIntroSteps(introStepsData)
+    
+    // Load saved current day
+    const savedDay = localStorage.getItem(CURRENT_DAY_STORAGE_KEY)
+    if (savedDay) {
+      const day = parseInt(savedDay, 10)
+      if (!isNaN(day) && day > 0 && day <= introStepsData.length) {
+        setCurrentDay(day)
+      }
+    }
+  }, [])
 
   // Load reactions when family changes
   useEffect(() => {
@@ -169,6 +140,11 @@ export default function NutriBebeApp() {
       }
     }
   }, [family])
+
+  // Save current day whenever it changes
+  useEffect(() => {
+    localStorage.setItem(CURRENT_DAY_STORAGE_KEY, currentDay.toString())
+  }, [currentDay])
 
   // Create new family (localStorage only)
   const createFamily = () => {
@@ -191,7 +167,7 @@ export default function NutriBebeApp() {
     localStorage.setItem(FAMILY_STORAGE_KEY, JSON.stringify(newFamily))
   }
 
-  // Join existing family (creates local copy with same code)
+  // Join existing family
   const joinFamily = () => {
     if (!joinCode.trim()) {
       setAuthError('Por favor ingresa el código de tu familia')
@@ -200,7 +176,6 @@ export default function NutriBebeApp() {
     
     setAuthError('')
     
-    // Check if we have this family code stored locally
     const stored = localStorage.getItem(FAMILY_STORAGE_KEY)
     if (stored) {
       const existingFamily: Family = JSON.parse(stored)
@@ -210,8 +185,6 @@ export default function NutriBebeApp() {
       }
     }
     
-    // If not found locally, create a new family with the provided code
-    // This allows using the same code across devices
     const newFamily: Family = {
       id: generateId(),
       code: joinCode.toUpperCase(),
@@ -229,6 +202,7 @@ export default function NutriBebeApp() {
     setFamily(null)
     setSavedReactions({})
     localStorage.removeItem(FAMILY_STORAGE_KEY)
+    localStorage.removeItem(CURRENT_DAY_STORAGE_KEY)
   }
 
   // Copy family code
@@ -253,14 +227,12 @@ export default function NutriBebeApp() {
       reaction_date: new Date().toISOString(),
     }
     
-    // Save to localStorage
     const stored = localStorage.getItem(REACTIONS_STORAGE_KEY)
     let reactions: BabyReaction[] = stored ? JSON.parse(stored) : []
     reactions = reactions.filter(r => !(r.intro_step_id === stepId && r.food_name === foodName))
     reactions.push(reaction)
     localStorage.setItem(REACTIONS_STORAGE_KEY, JSON.stringify(reactions))
     
-    // Update state
     setSavedReactions(prev => ({
       ...prev,
       [`${stepId}-${foodName}`]: reaction
@@ -275,7 +247,6 @@ export default function NutriBebeApp() {
   const toggleIncludeInDiet = (reaction: BabyReaction) => {
     const updatedReaction = { ...reaction, include_in_diet: !reaction.include_in_diet }
     
-    // Update localStorage
     const stored = localStorage.getItem(REACTIONS_STORAGE_KEY)
     if (stored) {
       let reactions: BabyReaction[] = JSON.parse(stored)
@@ -283,7 +254,6 @@ export default function NutriBebeApp() {
       localStorage.setItem(REACTIONS_STORAGE_KEY, JSON.stringify(reactions))
     }
     
-    // Update state
     setSavedReactions(prev => ({
       ...prev,
       [`${reaction.intro_step_id}-${reaction.food_name}`]: updatedReaction
@@ -310,25 +280,10 @@ export default function NutriBebeApp() {
     })
   }
 
-  // Get recipes for food
-  const getRecipesForFood = (food: string) => {
-    const foods = food.split('+').map(f => f.trim())
-    const recipes: Array<{name: string, ingredients: string[], instructions: string[]}> = []
-    
-    for (const f of foods) {
-      if (predefinedRecipes[f]) {
-        recipes.push(...predefinedRecipes[f])
-      }
-    }
-    
-    return recipes.slice(0, 2)
-  }
-
   // Calculations
   const totalDays = introSteps.length
   const progressPercentage = totalDays > 0 ? (currentDay / totalDays) * 100 : 0
-  const currentStep = groupedSteps[selectedWeek]?.find(s => s.dayNumber === (currentDay % 7 || 7)) || groupedSteps[selectedWeek]?.[0]
-  const availableWeeks = Object.keys(groupedSteps).map(Number).sort((a, b) => a - b)
+  const currentStep = introSteps.find(s => s.dayNumber === currentDay) || introSteps[0]
   const getCurrentReaction = (step: IntroStep): BabyReaction | null => 
     step.specificFood ? savedReactions[`${step.id}-${step.specificFood}`] || null : null
   
@@ -455,20 +410,6 @@ export default function NutriBebeApp() {
                 </Button>
               </div>
               
-              {/* Age Selector */}
-              <Select value={selectedAge} onValueChange={setSelectedAge}>
-                <SelectTrigger className="w-32 bg-white border-orange-200">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ageStages.map(stage => (
-                    <SelectItem key={stage.value} value={stage.value}>
-                      {stage.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
               {/* Logout */}
               <Button variant="ghost" size="sm" onClick={logout} className="text-gray-500">
                 <LogOut className="w-4 h-4" />
@@ -479,7 +420,7 @@ export default function NutriBebeApp() {
           {/* Navigation */}
           <nav className="mt-3 flex gap-2 overflow-x-auto pb-2">
             {[
-              { id: 'intro', label: 'Guía Día a Día', icon: Calendar },
+              { id: 'intro', label: 'Guía Día a Día', icon: Utensils },
               { id: 'shopping', label: 'Lista de Compras', icon: ShoppingCart },
               { id: 'guide', label: 'Info Médica', icon: BookOpen },
             ].map(item => (
@@ -560,27 +501,13 @@ export default function NutriBebeApp() {
                 </CardContent>
               </Card>
 
-              {/* Week Selector */}
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {availableWeeks.map(week => (
-                  <Button
-                    key={week}
-                    variant={selectedWeek === week ? 'default' : 'outline'}
-                    className={selectedWeek === week ? 'bg-orange-500 hover:bg-orange-600' : ''}
-                    onClick={() => { setSelectedWeek(week); setCurrentDay(1); }}
-                  >
-                    Semana {week}
-                  </Button>
-                ))}
-              </div>
-
               {/* Current Day Card */}
               {currentStep && (
                 <Card className="border-green-200 bg-white shadow-lg">
                   <CardHeader className="bg-gradient-to-r from-green-100 to-orange-50">
                     <div className="flex items-center justify-between">
                       <div>
-                        <Badge variant="secondary" className="mb-2">Día {currentStep.dayNumber} - Semana {currentStep.weekNumber}</Badge>
+                        <Badge variant="secondary" className="mb-2">Día {currentStep.dayNumber}</Badge>
                         <CardTitle className="text-xl text-green-700">{currentStep.title}</CardTitle>
                       </div>
                       {currentStep.specificFood && (
@@ -593,17 +520,6 @@ export default function NutriBebeApp() {
                     <CardDescription className="text-base mt-2">{currentStep.description}</CardDescription>
                   </CardHeader>
                   <CardContent className="pt-6 space-y-4">
-                    {/* Meal Progression - DESTACADO */}
-                    {currentStep.mealProgression && (
-                      <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border-2 border-purple-200">
-                        <div className="flex items-center gap-2 text-purple-700 mb-2">
-                          <Calendar className="w-5 h-5" />
-                          <span className="font-bold text-lg">Rutina de comidas</span>
-                        </div>
-                        <p className="text-base text-purple-800 font-medium">{currentStep.mealProgression}</p>
-                      </div>
-                    )}
-
                     {/* Portion and Frequency */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {currentStep.portionSize && (
@@ -625,6 +541,16 @@ export default function NutriBebeApp() {
                         </div>
                       )}
                     </div>
+
+                    {/* Recipe */}
+                    {currentStep.recipe && (
+                      <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                        <h4 className="font-medium text-purple-700 mb-2 flex items-center gap-2">
+                          <ChefHat className="w-4 h-4" /> Cómo prepararlo
+                        </h4>
+                        <p className="text-sm text-purple-600">{currentStep.recipe}</p>
+                      </div>
+                    )}
 
                     {/* Tips */}
                     {currentStep.tips && (
@@ -657,66 +583,6 @@ export default function NutriBebeApp() {
                             </li>
                           ))}
                         </ul>
-                      </div>
-                    )}
-
-                    {/* Recipe Section */}
-                    {currentStep.recipe && (
-                      <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border-2 border-amber-200">
-                        <div className="flex items-center gap-2 text-amber-700 mb-3">
-                          <ChefHat className="w-5 h-5" />
-                          <span className="font-bold text-lg">Receta: {currentStep.recipe.name}</span>
-                        </div>
-                        
-                        {/* Time indicators */}
-                        {(currentStep.recipe.prepTime || currentStep.recipe.cookTime) && (
-                          <div className="flex gap-4 mb-3 text-sm text-amber-600">
-                            {currentStep.recipe.prepTime && (
-                              <span className="flex items-center gap-1">
-                                <Clock className="w-4 h-4" />
-                                Prep: {currentStep.recipe.prepTime}
-                              </span>
-                            )}
-                            {currentStep.recipe.cookTime && (
-                              <span className="flex items-center gap-1">
-                                <Utensils className="w-4 h-4" />
-                                Cocción: {currentStep.recipe.cookTime}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                        
-                        {/* Ingredients */}
-                        <div className="mb-3">
-                          <h5 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
-                            <BookOpen className="w-4 h-4" /> Ingredientes:
-                          </h5>
-                          <ul className="grid grid-cols-1 md:grid-cols-2 gap-1">
-                            {currentStep.recipe.ingredients.map((ingredient, i) => (
-                              <li key={i} className="flex items-center gap-2 text-sm text-amber-700">
-                                <CheckCircle className="w-3 h-3 flex-shrink-0" />
-                                <span>{ingredient}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                        
-                        {/* Steps */}
-                        <div>
-                          <h5 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
-                            <Sparkles className="w-4 h-4" /> Preparación:
-                          </h5>
-                          <ol className="space-y-2">
-                            {currentStep.recipe.steps.map((step, i) => (
-                              <li key={i} className="flex items-start gap-2 text-sm text-amber-700">
-                                <span className="flex-shrink-0 w-5 h-5 bg-amber-200 text-amber-800 rounded-full flex items-center justify-center text-xs font-bold">
-                                  {i + 1}
-                                </span>
-                                <span>{step}</span>
-                              </li>
-                            ))}
-                          </ol>
-                        </div>
                       </div>
                     )}
 
@@ -807,12 +673,23 @@ export default function NutriBebeApp() {
                     )}
 
                     {/* Day Navigation */}
-                    <div className="border-t pt-4 flex justify-between">
-                      <Button variant="outline" onClick={() => setCurrentDay(Math.max(1, currentDay - 1))} disabled={currentDay === 1}>
-                        ← Día anterior
+                    <div className="border-t pt-4 flex justify-between items-center">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setCurrentDay(Math.max(1, currentDay - 1))} 
+                        disabled={currentDay === 1}
+                        className="flex items-center gap-2"
+                      >
+                        <ChevronLeft className="w-4 h-4" /> Día anterior
                       </Button>
-                      <Button variant="outline" onClick={() => setCurrentDay(Math.min(totalDays, currentDay + 1))} disabled={currentDay === totalDays}>
-                        Día siguiente →
+                      <span className="text-lg font-bold text-orange-600">Día {currentDay}</span>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setCurrentDay(Math.min(totalDays, currentDay + 1))} 
+                        disabled={currentDay === totalDays}
+                        className="flex items-center gap-2"
+                      >
+                        Día siguiente <ChevronRight className="w-4 h-4" />
                       </Button>
                     </div>
                   </CardContent>
@@ -937,23 +814,6 @@ export default function NutriBebeApp() {
                   Marcar todo
                 </Button>
               </div>
-
-              {/* Tips Card */}
-              <Card className="border-blue-200 bg-blue-50">
-                <CardContent className="pt-4 pb-4">
-                  <div className="flex items-start gap-3">
-                    <Sparkles className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-medium text-blue-800">Consejos de Compra</p>
-                      <ul className="text-sm text-blue-700 mt-2 space-y-1">
-                        <li>• Compra frutas y verduras frescas en pequeñas cantidades</li>
-                        <li>• Las proteínas puedes congelarlas en porciones</li>
-                        <li>• Los cereales tienen larga duración</li>
-                      </ul>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </motion.div>
           )}
 
@@ -962,103 +822,117 @@ export default function NutriBebeApp() {
             <motion.div key="guide" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold text-gray-800">Información Médica</h2>
-                <p className="text-gray-500">Basada en recomendaciones de la OMS, UNICEF y AEPAP</p>
+                <p className="text-gray-500">Guía basada en recomendaciones de la OMS, UNICEF y AEPAP</p>
               </div>
 
-              <Tabs defaultValue="recommendations">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="recommendations">Recomendaciones</TabsTrigger>
-                  <TabsTrigger value="allergens">Alérgenos</TabsTrigger>
-                  <TabsTrigger value="prohibited">Prohibidos</TabsTrigger>
-                </TabsList>
+              {/* Age Guidelines */}
+              <Card className="border-orange-200">
+                <CardHeader>
+                  <CardTitle className="text-lg text-orange-700">Guía por Edad</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 bg-orange-50 rounded-lg">
+                    <h4 className="font-medium text-orange-800">6-8 meses</h4>
+                    <ul className="text-sm text-orange-700 mt-2 space-y-1">
+                      <li>• Una comida al día (almuerzo)</li>
+                      <li>• Textura: purés muy líquidos</li>
+                      <li>• Introducir: verduras suaves, frutas</li>
+                    </ul>
+                  </div>
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <h4 className="font-medium text-green-800">8-10 meses</h4>
+                    <ul className="text-sm text-green-700 mt-2 space-y-1">
+                      <li>• Dos comidas al día</li>
+                      <li>• Textura: purés con grumos pequeños</li>
+                      <li>• Introducir: proteínas (pollo, ternera)</li>
+                    </ul>
+                  </div>
+                  <div className="p-4 bg-blue-50 rounded-lg">
+                    <h4 className="font-medium text-blue-800">10-12 meses</h4>
+                    <ul className="text-sm text-blue-700 mt-2 space-y-1">
+                      <li>• Tres comidas al día</li>
+                      <li>• Textura: trocitos blandos</li>
+                      <li>• Introducir: huevo, pescado, lácteos</li>
+                    </ul>
+                  </div>
+                </CardContent>
+              </Card>
 
-                <TabsContent value="recommendations" className="space-y-4 mt-4">
-                  <Card className="border-green-100">
-                    <CardHeader><CardTitle className="text-green-700">Recomendaciones Generales</CardTitle></CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="p-4 bg-green-50 rounded-lg">
-                        <h4 className="font-medium text-green-800 mb-2">Edad de inicio</h4>
-                        <p className="text-sm text-green-600">La OMS recomienda iniciar la alimentación complementaria a los 6 meses, manteniendo la lactancia materna hasta al menos los 2 años.</p>
-                      </div>
-                      <div className="p-4 bg-blue-50 rounded-lg">
-                        <h4 className="font-medium text-blue-800 mb-2">Introducción gradual</h4>
-                        <p className="text-sm text-blue-600">Introduce un solo alimento nuevo cada 3-4 días para identificar posibles reacciones alérgicas.</p>
-                      </div>
-                      <div className="p-4 bg-orange-50 rounded-lg">
-                        <h4 className="font-medium text-orange-800 mb-2">Texturas</h4>
-                        <p className="text-sm text-orange-600">Comienza con purés muy líquidos y ve aumentando la consistencia gradualmente.</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
+              {/* Warning Signs */}
+              <Card className="border-red-200">
+                <CardHeader>
+                  <CardTitle className="text-lg text-red-700 flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5" /> Signos de Alerta
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-gray-600 mb-3">Consulta al pediatra si notas:</p>
+                  <ul className="space-y-2">
+                    {[
+                      'Sarpullido o ronchas en la piel',
+                      'Hinchazón de labios, lengua o cara',
+                      'Vómitos repetidos',
+                      'Diarrea severa o con sangre',
+                      'Dificultad para respirar',
+                      'Tos persistente después de comer'
+                    ].map((sign, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-red-600">
+                        <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                        <span>{sign}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
 
-                <TabsContent value="allergens" className="space-y-4 mt-4">
-                  <Card className="border-orange-100">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-orange-600">
-                        <AlertTriangle className="w-5 h-5" /> Introducción de Alérgenos
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
-                        <p className="font-medium text-yellow-800">Importante</p>
-                        <p className="text-sm text-yellow-700 mt-1">Introduce alérgenos comunes (huevo, pescado, frutos secos) a partir de los 6 meses, sin retrasar su introducción.</p>
-                      </div>
-                      <div className="p-4 bg-gray-50 rounded-lg">
-                        <h4 className="font-medium text-gray-800 mb-2">Alérgenos comunes:</h4>
-                        <ul className="text-sm text-gray-600 space-y-1">
-                          <li>🥚 Huevo (yema desde los 6-7 meses, clara desde los 12 meses)</li>
-                          <li>🐟 Pescado (desde los 9-10 meses)</li>
-                          <li>🥜 Frutos secos (en forma de crema, desde los 12 meses)</li>
-                          <li>🥛 Lácteos (yogur y queso desde los 9-12 meses)</li>
-                        </ul>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="prohibited" className="space-y-4 mt-4">
-                  <Card className="border-red-100">
-                    <CardHeader>
-                      <CardTitle className="text-red-600">Alimentos Prohibidos antes de los 12 meses</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="p-4 bg-red-50 rounded-lg">
-                        <ul className="text-sm text-red-700 space-y-2">
-                          <li className="flex items-start gap-2">
-                            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                            <span><strong>Miel:</strong> Riesgo de botulismo infantil</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                            <span><strong>Sal:</strong> Los riñones del bebé no están preparados</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                            <span><strong>Azúcar:</strong> No aporta nutrientes, crea malos hábitos</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                            <span><strong>Leche de vaca:</strong> Como bebida principal (puede usarse en preparaciones)</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
+              {/* Foods to Avoid */}
+              <Card className="border-yellow-200">
+                <CardHeader>
+                  <CardTitle className="text-lg text-yellow-700">Alimentos a Evitar</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {[
+                    { food: 'Miel', reason: 'Riesgo de botulismo (hasta 12 meses)' },
+                    { food: 'Sal', reason: 'Los riñones del bebé no la procesan bien' },
+                    { food: 'Azúcar', reason: 'No aporta nutrientes y crea malos hábitos' },
+                    { food: 'Leche de vaca', reason: 'Como bebida principal (hasta 12 meses)' },
+                    { food: 'Frutos secos enteros', reason: 'Riesgo de atragantamiento' },
+                    { food: 'Pescado crudo', reason: 'Riesgo de parásitos' }
+                  ].map((item, i) => (
+                    <div key={i} className="flex justify-between items-center p-2 bg-yellow-50 rounded">
+                      <span className="font-medium text-yellow-800">{item.food}</span>
+                      <span className="text-xs text-yellow-700">{item.reason}</span>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
             </motion.div>
           )}
         </AnimatePresence>
       </main>
 
-      {/* Footer */}
-      <footer className="text-center py-6 text-gray-500 text-sm border-t border-gray-100 mt-8">
-        <p className="flex items-center justify-center gap-2">
-          <Heart className="w-4 h-4 text-pink-500" />
-          Diseñada por <strong className="text-orange-600">Javi Design</strong>
-        </p>
-      </footer>
+      {/* Bottom Navigation for Mobile */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2 md:hidden z-50">
+        <div className="flex justify-around">
+          {[
+            { id: 'intro', label: 'Guía', icon: Utensils },
+            { id: 'shopping', label: 'Compras', icon: ShoppingCart },
+            { id: 'guide', label: 'Info', icon: BookOpen },
+          ].map(item => (
+            <Button
+              key={item.id}
+              variant={activeSection === item.id ? 'default' : 'ghost'}
+              className={`flex flex-col items-center gap-1 ${
+                activeSection === item.id ? 'bg-orange-500 text-white' : 'text-gray-600'
+              }`}
+              onClick={() => setActiveSection(item.id)}
+            >
+              <item.icon className="w-5 h-5" />
+              <span className="text-xs">{item.label}</span>
+            </Button>
+          ))}
+        </div>
+      </nav>
     </div>
   )
 }
