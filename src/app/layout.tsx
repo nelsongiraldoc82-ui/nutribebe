@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -13,24 +13,39 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#10b981",
+};
+
 export const metadata: Metadata = {
-  title: "NutriBebé - Guía de Alimentación Complementaria",
-  description: "Guía de alimentación complementaria para bebés de 6+ meses. Basada en recomendaciones de la OMS, UNICEF y AEPAP. Introducción gradual de alimentos con seguimiento de reacciones.",
-  keywords: ["NutriBebé", "alimentación complementaria", "bebés", "introducción alimentos", "WHO", "UNICEF", "AEPAP", "pediatría", "nutrición infantil"],
-  authors: [{ name: "NutriBebé Team" }],
+  title: "NutriBebé - Guía de Alimentación Infantil",
+  description: "Guía completa de alimentación para bebés de 6 a 24 meses. Recetas, calendario de comidas y lista de compras personalizada.",
+  keywords: ["bebé", "alimentación", "nutrición infantil", "comida bebé", "destete", "alimentación complementaria", "recetas bebé"],
+  authors: [{ name: "NutriBebé" }],
+  manifest: "/manifest.json",
   icons: {
-    icon: "/nutribebe-logo.png",
+    icon: "/favicon.png",
+    apple: "/apple-touch-icon.png",
   },
   openGraph: {
-    title: "NutriBebé - Guía de Alimentación Complementaria",
-    description: "Guía de alimentación complementaria para bebés de 6+ meses siguiendo recomendaciones de la OMS",
-    siteName: "NutriBebé",
+    title: "NutriBebé - Guía de Alimentación Infantil",
+    description: "Guía completa de alimentación para bebés de 6 a 24 meses",
     type: "website",
+    locale: "es_ES",
   },
   twitter: {
     card: "summary_large_image",
-    title: "NutriBebé - Guía de Alimentación Complementaria",
-    description: "Guía de alimentación complementaria para bebés de 6+ meses",
+    title: "NutriBebé - Guía de Alimentación Infantil",
+    description: "Guía completa de alimentación para bebés de 6 a 24 meses",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "NutriBebé",
   },
 };
 
@@ -41,6 +56,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
+      <head>
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >

@@ -1,15 +1,10 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  output: 'export',
-  basePath: '/nutribebe',
+  output: 'standalone',
   images: {
-    unoptimized: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  reactStrictMode: false,
-};
+    unoptimized: true
+  }
+}
 
-export default nextConfig;
+export default nextConfig
