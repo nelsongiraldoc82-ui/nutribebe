@@ -21,7 +21,7 @@ import { Progress } from '@/components/ui/progress'
 import { Input } from '@/components/ui/input'
 import { Loader2 } from 'lucide-react'
 import { introStepsData, groupStepsByMonth, getAgeRangeForMonth, type IntroStep, ageRangeInfo } from '@/lib/intro-steps-data'
-import { calculateShoppingListByMonth, getAvailableMonths, type ShoppingItem } from '@/lib/shopping-list'
+import { calculateShoppingListByMonth, getAvailableMonths, categoryIcons, type ShoppingItem } from '@/lib/shopping-list'
 
 // Types
 interface BabyReaction {
@@ -778,93 +778,135 @@ export default function NutriBebeApp() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <ShoppingCart className="w-5 h-5 text-orange-500" />
-                  Lista de Compras
+                  Lista de Compras - Mes {selectedShoppingMonth}
                 </CardTitle>
                 <CardDescription>
-                  Organizada por mes - selecciona el mes para planificar tus compras
+                  Todos los ingredientes necesarios para el mes seleccionado
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {/* Month Selector for Shopping */}
                 <div className="mb-6">
-                  <h4 className="font-medium text-gray-700 mb-3">Selecciona el Mes:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {availableMonths.map(month => (
-                      <Button
-                        key={month}
-                        variant={selectedShoppingMonth === month ? 'default' : 'outline'}
-                        className={selectedShoppingMonth === month ? 'bg-orange-500 hover:bg-orange-600' : ''}
-                        onClick={() => setSelectedShoppingMonth(month)}
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-medium text-gray-700">Selecciona el Mes:</h4>
+                    {family?.baby_birth_date && babyAgeMonths && babyAgeMonths >= 6 && babyAgeMonths <= 24 && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="text-orange-600 border-orange-300"
+                        onClick={() => setSelectedShoppingMonth(babyAgeMonths!)}
                       >
-                        Mes {month}
+                        📍 Mi mes actual
                       </Button>
-                    ))}
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {availableMonths.map(month => {
+                      const isCurrentMonth = babyAgeMonths === month
+                      return (
+                        <Button
+                          key={month}
+                          variant={selectedShoppingMonth === month ? 'default' : 'outline'}
+                          className={`${selectedShoppingMonth === month ? 'bg-orange-500 hover:bg-orange-600' : ''} ${isCurrentMonth && selectedShoppingMonth !== month ? 'border-green-400 border-2' : ''} relative`}
+                          onClick={() => setSelectedShoppingMonth(month)}
+                        >
+                          {isCurrentMonth && <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full" />}
+                          Mes {month}
+                        </Button>
+                      )
+                    })}
                   </div>
                 </div>
 
                 {/* Shopping List Summary */}
-                <div className="flex items-center justify-between mb-4 p-3 bg-orange-50 rounded-lg">
-                  <span className="text-orange-700 font-medium">
-                    Mes {selectedShoppingMonth} - {shoppingList.length} productos
-                  </span>
-                  <Badge variant="secondary" className="bg-orange-100">
-                    {checkedItems.size}/{shoppingList.length} completados
-                  </Badge>
-                </div>
+                {shoppingList.length > 0 && (
+                  <div className="mb-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg border border-orange-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-orange-700 font-semibold text-lg">
+                        {shoppingList.length} productos necesarios
+                      </span>
+                      <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                        {checkedItems.size}/{shoppingList.length} ✓
+                      </Badge>
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-sm">
+                      {categories.map(cat => {
+                        const count = shoppingList.filter(i => i.category === cat).length
+                        if (count === 0) return null
+                        return (
+                          <Badge key={cat} variant="outline" className="bg-white">
+                            {categoryIcons[cat]} {cat}: {count}
+                          </Badge>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Shopping List by Category */}
                 {shoppingList.length === 0 ? (
                   <Card className="border-orange-200 bg-orange-50">
                     <CardContent className="p-6 text-center">
-                      <p className="text-orange-700 font-medium">No hay alimentos programados para este mes</p>
+                      <ShoppingCart className="w-12 h-12 mx-auto text-orange-300 mb-3" />
+                      <p className="text-orange-700 font-medium">No hay datos de alimentos para este mes</p>
+                      <p className="text-sm text-orange-600 mt-1">Selecciona otro mes o verifica los datos</p>
                     </CardContent>
                   </Card>
                 ) : (
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     {categories.map(category => {
                       const categoryItems = shoppingList.filter(item => item.category === category)
                       if (categoryItems.length === 0) return null
                       
                       return (
-                        <Card key={category} className="border-gray-200">
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-lg flex items-center gap-2">
-                              <span className="text-2xl">{categoryItems[0].icon}</span>
+                        <Card key={category} className="border-gray-200 shadow-sm">
+                          <CardHeader className="pb-2 bg-gray-50">
+                            <CardTitle className="text-base flex items-center gap-2">
+                              <span className="text-2xl">{categoryIcons[category]}</span>
                               {category}
-                              <Badge variant="secondary" className="ml-auto">{categoryItems.length}</Badge>
+                              <Badge variant="secondary" className="ml-auto">{categoryItems.length} items</Badge>
                             </CardTitle>
                           </CardHeader>
-                          <CardContent className="space-y-2">
+                          <CardContent className="pt-3 space-y-2">
                             {categoryItems.map((item) => (
                               <div
                                 key={item.name}
-                                className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${
+                                className={`p-3 rounded-lg cursor-pointer transition-all ${
                                   checkedItems.has(item.name) 
                                     ? 'bg-green-50 border border-green-200' 
-                                    : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
+                                    : 'bg-white border border-gray-200 hover:border-orange-300 hover:bg-orange-50'
                                 }`}
                                 onClick={() => toggleItem(item.name)}
                               >
-                                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                                  checkedItems.has(item.name) 
-                                    ? 'bg-green-500 border-green-500' 
-                                    : 'border-gray-300'
-                                }`}>
-                                  {checkedItems.has(item.name) && <Check className="w-4 h-4 text-white" />}
+                                <div className="flex items-start gap-3">
+                                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                                    checkedItems.has(item.name) 
+                                      ? 'bg-green-500 border-green-500' 
+                                      : 'border-gray-300'
+                                  }`}>
+                                    {checkedItems.has(item.name) && <Check className="w-4 h-4 text-white" />}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <p className={`font-medium ${checkedItems.has(item.name) ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                                        {item.icon} {item.name}
+                                      </p>
+                                    </div>
+                                    <p className={`text-sm font-medium ${checkedItems.has(item.name) ? 'text-gray-400' : 'text-orange-600'}`}>
+                                      {item.quantity}
+                                    </p>
+                                    {item.daysUsed && item.daysUsed.length > 0 && (
+                                      <p className="text-xs text-gray-500 mt-1">
+                                        📅 Días: {item.daysUsed.slice(0, 5).join(', ')}{item.daysUsed.length > 5 ? ` (+${item.daysUsed.length - 5} más)` : ''}
+                                      </p>
+                                    )}
+                                    {item.notes && (
+                                      <p className="text-xs text-gray-400 mt-1">
+                                        💡 {item.notes}
+                                      </p>
+                                    )}
+                                  </div>
                                 </div>
-                                <div className="flex-1">
-                                  <p className={`font-medium ${checkedItems.has(item.name) ? 'line-through text-gray-400' : 'text-gray-800'}`}>
-                                    {item.name}
-                                  </p>
-                                  <p className={`text-sm ${checkedItems.has(item.name) ? 'text-gray-400' : 'text-gray-600'}`}>
-                                    {item.quantity}
-                                  </p>
-                                </div>
-                                {item.notes && (
-                                  <Badge variant="outline" className="text-xs">
-                                    {item.notes}
-                                  </Badge>
-                                )}
                               </div>
                             ))}
                           </CardContent>
