@@ -179,6 +179,28 @@ export default function NutriBebeApp() {
     setGroupedSteps(groupStepsByMonth(introStepsData))
   }, [])
 
+  // Auto-sync with baby's birth date
+  useEffect(() => {
+    if (family?.baby_birth_date) {
+      const birthDate = new Date(family.baby_birth_date)
+      const ageInMonths = calculateBabyAgeInMonths(birthDate)
+      const currentDay = calculateCurrentDayFromBirth(birthDate)
+      
+      // Si el bebé tiene entre 6 y 24 meses, sincronizar automáticamente
+      if (ageInMonths >= 6 && ageInMonths <= 24) {
+        setSelectedMonth(ageInMonths)
+        setSelectedShoppingMonth(ageInMonths)
+        
+        // Calcular el día dentro del mes actual
+        // Ejemplo: si tiene 6 meses y 15 días, está en el día 15 del mes 6
+        if (currentDay > 0) {
+          const dayInMonth = ((currentDay - 1) % 30) + 1
+          setSelectedDay(dayInMonth)
+        }
+      }
+    }
+  }, [family?.baby_birth_date])
+
   // Get available months from the data
   const availableMonths = getAvailableMonths()
 
@@ -503,23 +525,52 @@ export default function NutriBebeApp() {
 
             {/* Month Selector */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-orange-500" />
-                Selecciona el Mes
-              </h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-orange-500" />
+                  Selecciona el Mes
+                </h3>
+                {family?.baby_birth_date && babyAgeMonths && babyAgeMonths >= 6 && babyAgeMonths <= 24 && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="text-orange-600 border-orange-300 hover:bg-orange-50"
+                    onClick={() => {
+                      const birthDate = new Date(family.baby_birth_date!)
+                      const currentDay = calculateCurrentDayFromBirth(birthDate)
+                      setSelectedMonth(babyAgeMonths)
+                      setSelectedShoppingMonth(babyAgeMonths)
+                      if (currentDay > 0) {
+                        const dayInMonth = ((currentDay - 1) % 30) + 1
+                        setSelectedDay(dayInMonth)
+                      }
+                    }}
+                  >
+                    📍 Ir a hoy
+                  </Button>
+                )}
+              </div>
+              {family?.baby_birth_date && babyAgeMonths && babyAgeMonths >= 6 && babyAgeMonths <= 24 && selectedMonth === babyAgeMonths && (
+                <div className="mb-3 p-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700 flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Sincronizado con la edad de {family.baby_name || 'tu bebé'} ({babyAgeMonths} meses)</span>
+                </div>
+              )}
               <div className="flex flex-wrap gap-2">
                 {availableMonths.map(month => {
                   const monthAgeRange = getAgeRangeForMonth(month)
                   const monthAgeInfo = ageRangeInfo[monthAgeRange]
                   const isSelected = selectedMonth === month
+                  const isCurrentMonth = babyAgeMonths === month
                   
                   return (
                     <Button
                       key={month}
                       variant={isSelected ? 'default' : 'outline'}
-                      className={`${isSelected ? 'bg-orange-500 hover:bg-orange-600' : ''} flex flex-col items-center py-2 h-auto`}
+                      className={`${isSelected ? 'bg-orange-500 hover:bg-orange-600' : ''} ${isCurrentMonth && !isSelected ? 'border-green-400 border-2' : ''} flex flex-col items-center py-2 h-auto relative`}
                       onClick={() => setSelectedMonth(month)}
                     >
+                      {isCurrentMonth && <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full" />}
                       <span className="font-semibold">Mes {month}</span>
                       <span className="text-xs opacity-75">{monthAgeInfo?.subtitle}</span>
                     </Button>
@@ -533,17 +584,25 @@ export default function NutriBebeApp() {
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-700 mb-3">Día del Mes</h3>
                 <div className="flex flex-wrap gap-2">
-                  {groupedSteps[selectedMonth].map((step, index) => (
-                    <Button
-                      key={step.id}
-                      variant={selectedDay === index + 1 ? 'default' : 'outline'}
-                      size="sm"
-                      className={selectedDay === index + 1 ? 'bg-orange-500 hover:bg-orange-600' : ''}
-                      onClick={() => setSelectedDay(index + 1)}
-                    >
-                      Día {index + 1}
-                    </Button>
-                  ))}
+                  {groupedSteps[selectedMonth].map((step, index) => {
+                    const birthDate = family?.baby_birth_date ? new Date(family.baby_birth_date) : null
+                    const currentDay = birthDate ? calculateCurrentDayFromBirth(birthDate) : null
+                    const currentDayInMonth = currentDay ? ((currentDay - 1) % 30) + 1 : null
+                    const isCurrentDay = currentDayInMonth === index + 1 && selectedMonth === babyAgeMonths
+                    
+                    return (
+                      <Button
+                        key={step.id}
+                        variant={selectedDay === index + 1 ? 'default' : 'outline'}
+                        size="sm"
+                        className={`${selectedDay === index + 1 ? 'bg-orange-500 hover:bg-orange-600' : ''} ${isCurrentDay && selectedDay !== index + 1 ? 'border-green-400 border-2' : ''} relative`}
+                        onClick={() => setSelectedDay(index + 1)}
+                      >
+                        {isCurrentDay && <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full" />}
+                        Día {index + 1}
+                      </Button>
+                    )
+                  })}
                 </div>
               </div>
             )}
