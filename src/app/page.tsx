@@ -21,7 +21,7 @@ import { Progress } from '@/components/ui/progress'
 import { Input } from '@/components/ui/input'
 import { Loader2 } from 'lucide-react'
 import { introStepsData, groupStepsByMonth, getAgeRangeForMonth, type IntroStep, ageRangeInfo } from '@/lib/intro-steps-data'
-import { calculateShoppingListByMonth, getAvailableMonths, categoryIcons, type ShoppingItem } from '@/lib/shopping-list'
+import { calculateShoppingListByMonth, getAvailableMonths, categoryIcons, getMonthSummary, type ShoppingItem } from '@/lib/shopping-list'
 
 // Types
 interface BabyReaction {
@@ -823,19 +823,35 @@ export default function NutriBebeApp() {
                   <div className="mb-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg border border-orange-200">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-orange-700 font-semibold text-lg">
-                        {shoppingList.length} productos necesarios
+                        {shoppingList.length} productos para el mes completo
                       </span>
                       <Badge variant="secondary" className="bg-orange-100 text-orange-700">
                         {checkedItems.size}/{shoppingList.length} ✓
                       </Badge>
                     </div>
+                    {/* Total estimado */}
+                    {(() => {
+                      const summary = getMonthSummary(selectedShoppingMonth, introSteps)
+                      const totalKg = (summary.totalGrams / 1000).toFixed(1)
+                      return (
+                        <div className="mb-3 p-2 bg-white rounded-lg border border-orange-100">
+                          <p className="text-sm text-orange-700">
+                            📊 <strong>Total estimado:</strong> {summary.uniqueFoods} alimentos diferentes | ~{totalKg}kg de comida
+                          </p>
+                          <p className="text-xs text-orange-600 mt-1">
+                            {summary.totalDays} días | {summary.totalMeals} comidas
+                          </p>
+                        </div>
+                      )
+                    })()}
                     <div className="flex flex-wrap gap-2 text-sm">
                       {categories.map(cat => {
-                        const count = shoppingList.filter(i => i.category === cat).length
-                        if (count === 0) return null
+                        const categoryItems = shoppingList.filter(i => i.category === cat)
+                        const totalCatGrams = categoryItems.reduce((sum, i) => sum + (i.totalGrams || i.quantityGrams), 0)
+                        if (categoryItems.length === 0) return null
                         return (
                           <Badge key={cat} variant="outline" className="bg-white">
-                            {categoryIcons[cat]} {cat}: {count}
+                            {categoryIcons[cat]} {cat}: {categoryItems.length} ({(totalCatGrams/1000).toFixed(1)}kg)
                           </Badge>
                         )
                       })}

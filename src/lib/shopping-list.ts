@@ -10,6 +10,8 @@ export interface ShoppingItem {
   icon: string
   month?: number
   daysUsed?: string[] // Días del mes en que se usa
+  totalGrams?: number // Cantidad total en gramos para el mes
+  weeklyGrams?: number // Cantidad semanal promedio
 }
 
 // Categorías con iconos
@@ -48,6 +50,7 @@ export const foodShoppingInfo: Record<string, {
   'Pepino': { unitWeight: 200, unit: 'unidad', shelfLife: '5-7 días refrigerado', category: 'Verduras', icon: '🥒' },
   'Remolacha': { unitWeight: 150, unit: 'unidad', shelfLife: '10-14 días refrigerado', category: 'Verduras', icon: '🍠' },
   'Calabacín italiano': { unitWeight: 200, unit: 'unidad mediana', shelfLife: '5-7 días refrigerado', category: 'Verduras', icon: '🥒' },
+  'Berenjena': { unitWeight: 250, unit: 'unidad mediana', shelfLife: '5-7 días refrigerado', category: 'Verduras', icon: '🍆' },
   
   // ==================== FRUTAS ====================
   'Pera': { unitWeight: 180, unit: 'unidad mediana', shelfLife: '3-5 días maduro', category: 'Frutas', icon: '🍐' },
@@ -70,7 +73,7 @@ export const foodShoppingInfo: Record<string, {
   
   // ==================== PROTEÍNAS ====================
   'Pollo': { unitWeight: 150, unit: 'pechuga', shelfLife: '2-3 días (congelar si es más)', category: 'Proteínas', icon: '🍗' },
-  'Pechuga de pollo': { unitWeight: 150, unit: 'pechuga', shelfLife: '2-3 días (congelar)', category: 'Proteínas', icon: '🍗' },
+  'Pechuga de pollo': { unitWeight: 150, unit: 'pechaga', shelfLife: '2-3 días (congelar)', category: 'Proteínas', icon: '🍗' },
   'Ternera': { unitWeight: 150, unit: 'trozo magro', shelfLife: '2-3 días (congelar si es más)', category: 'Proteínas', icon: '🥩' },
   'Carne magra': { unitWeight: 150, unit: 'trozo 150g', shelfLife: '2-3 días (congelar)', category: 'Proteínas', icon: '🥩' },
   'Cordero': { unitWeight: 150, unit: 'trozo magro', shelfLife: '2-3 días (congelar)', category: 'Proteínas', icon: '🍖' },
@@ -143,8 +146,111 @@ const foodAliases: Record<string, string> = {
   'Pechuga': 'Pollo',
   'Carne picada': 'Ternera',
   'Pescado': 'Pescado blanco',
-  'Verdura': 'Verduras variadas',
-  'Fruta': 'Frutas variadas',
+  'Yogur natural entero': 'Yogur natural',
+  'Yogur': 'Yogur natural',
+  'Frutas o verduras': null, // Skip this
+  'Verduras': null, // Skip this as generic
+  'Frutas': null, // Skip this as generic
+}
+
+// Cantidades típicas por ingrediente en las recetas (en gramos)
+const typicalAmounts: Record<string, number> = {
+  // Verduras
+  'Calabacín': 100,
+  'Calabaza': 100,
+  'Zanahoria': 80,
+  'Patata': 100,
+  'Judías verdes': 80,
+  'Puerro': 50,
+  'Espinacas': 50,
+  'Acelgas': 50,
+  'Brócoli': 80,
+  'Coliflor': 80,
+  'Guisantes': 50,
+  'Pimiento': 50,
+  'Tomate': 80,
+  'Pepino': 50,
+  'Remolacha': 60,
+  'Berenjena': 80,
+  
+  // Frutas
+  'Pera': 100,
+  'Manzana': 100,
+  'Plátano': 60,
+  'Aguacate': 50,
+  'Melocotón': 80,
+  'Fresa': 50,
+  'Naranja': 100,
+  'Mandarina': 60,
+  'Uva': 40,
+  'Melón': 80,
+  'Sandía': 80,
+  'Mango': 80,
+  'Piña': 60,
+  'Kiwi': 50,
+  
+  // Proteínas
+  'Pollo': 40,
+  'Ternera': 35,
+  'Merluza': 40,
+  'Bacalao': 40,
+  'Pescado blanco': 40,
+  'Lenguado': 35,
+  'Lubina': 40,
+  'Salmón': 40,
+  'Huevo': 60,
+  'Yema de huevo': 20,
+  'Cordero': 35,
+  'Cerdo': 35,
+  'Jamón serrano': 20,
+  'Jamón cocido': 20,
+  
+  // Lácteos
+  'Yogur natural': 125,
+  'Yogur': 125,
+  'Queso fresco': 30,
+  'Queso tipo burgos': 30,
+  
+  // Cereales
+  'Arroz': 40,
+  'Avena': 15,
+  'Pasta': 30,
+  'Pan integral': 25,
+  'Pan de molde': 25,
+  'Cuscús': 30,
+  'Quinoa': 30,
+  'Maíz': 40,
+  
+  // Legumbres
+  'Lentejas': 40,
+  'Garbanzos': 40,
+  'Alubias blancas': 40,
+  
+  // Otros
+  'Aceite de oliva': 5,
+  'Mantequilla': 5,
+  'Canela': 1,
+}
+
+// Extraer cantidad en gramos del texto de la receta
+function extractGramsFromRecipe(recipeText: string, foodName: string): number {
+  // Patrones para buscar cantidades
+  const patterns = [
+    new RegExp(`(\\d+)\\s*g\\s*(?:de\\s+)?${foodName}`, 'i'),
+    new RegExp(`(\\d+)\\s*gramos\\s*(?:de\\s+)?${foodName}`, 'i'),
+    new RegExp(`${foodName}[^\\d]*(\\d+)\\s*g`, 'i'),
+    new RegExp(`(\\d+)\\s*${foodName}`, 'i'),
+  ]
+  
+  for (const pattern of patterns) {
+    const match = recipeText.match(pattern)
+    if (match) {
+      return parseInt(match[1])
+    }
+  }
+  
+  // Si no encontramos cantidad, usar valor típico
+  return typicalAmounts[foodName] || 50
 }
 
 // Lista de compras organizada por MES (6-24 meses)
@@ -167,29 +273,51 @@ export function calculateShoppingListByMonth(
     return []
   }
   
-  // Obtener los alimentos de ese mes con los días en que se usan
-  const foodsNeeded: Record<string, { count: number; category: string; days: string[] }> = {}
+  // Obtener los alimentos de ese mes con cantidades
+  const foodsNeeded: Record<string, { 
+    totalGrams: number
+    count: number
+    category: string
+    days: string[]
+    recipes: string[]
+  }> = {}
   
   monthSteps.forEach(step => {
     const dayLabel = step.dayNumber ? `Día ${step.dayNumber}` : step.id
     
-    // Obtener alimentos de las comidas (nueva estructura)
+    // Obtener alimentos de las comidas
     if (step.meals && step.meals.length > 0) {
       step.meals.forEach(meal => {
-        if (meal.food) {
+        if (meal.food && meal.recipe) {
           // Separar alimentos por + o ,
           const foods = meal.food.split(/[+,]/).map(f => f.trim()).filter(f => f.length > 0)
+          
           foods.forEach(food => {
             if (food && !shouldSkipFood(food)) {
               const normalizedFood = normalizeFoodName(food)
+              if (!normalizedFood) return // Skip if null
+              
               const category = determineCategory(normalizedFood)
               
+              // Extraer gramos de la receta o usar valor típico
+              const grams = extractGramsFromRecipe(meal.recipe, normalizedFood)
+              
               if (!foodsNeeded[normalizedFood]) {
-                foodsNeeded[normalizedFood] = { count: 0, category, days: [] }
+                foodsNeeded[normalizedFood] = { 
+                  totalGrams: 0, 
+                  count: 0, 
+                  category, 
+                  days: [],
+                  recipes: []
+                }
               }
+              foodsNeeded[normalizedFood].totalGrams += grams
               foodsNeeded[normalizedFood].count++
               if (!foodsNeeded[normalizedFood].days.includes(dayLabel)) {
                 foodsNeeded[normalizedFood].days.push(dayLabel)
+              }
+              if (!foodsNeeded[normalizedFood].recipes.includes(meal.title)) {
+                foodsNeeded[normalizedFood].recipes.push(meal.title)
               }
             }
           })
@@ -203,11 +331,21 @@ export function calculateShoppingListByMonth(
       foods.forEach(food => {
         if (food && !shouldSkipFood(food)) {
           const normalizedFood = normalizeFoodName(food)
+          if (!normalizedFood) return // Skip if null
+          
           const category = step.foodGroup || determineCategory(normalizedFood)
+          const grams = typicalAmounts[normalizedFood] || 50
           
           if (!foodsNeeded[normalizedFood]) {
-            foodsNeeded[normalizedFood] = { count: 0, category, days: [] }
+            foodsNeeded[normalizedFood] = { 
+              totalGrams: 0, 
+              count: 0, 
+              category, 
+              days: [],
+              recipes: []
+            }
           }
+          foodsNeeded[normalizedFood].totalGrams += grams
           foodsNeeded[normalizedFood].count++
           if (!foodsNeeded[normalizedFood].days.includes(dayLabel)) {
             foodsNeeded[normalizedFood].days.push(dayLabel)
@@ -217,60 +355,89 @@ export function calculateShoppingListByMonth(
     }
   })
   
-  // Convertir a lista de compra con cantidades
+  // Convertir a lista de compra con cantidades precisas
   const shoppingList: ShoppingItem[] = []
   
   Object.entries(foodsNeeded).forEach(([food, info]) => {
-    if (info.count === 0) return
+    if (info.totalGrams === 0) return
     
     const shopInfo = foodShoppingInfo[food]
+    const totalGrams = info.totalGrams
+    const usageCount = info.count
+    const uniqueDays = info.days.length
+    
     if (shopInfo) {
-      // Calcular cantidad necesaria (aprox 50g por comida para bebé)
-      const gramsPerMeal = 50
-      const totalGrams = info.count * gramsPerMeal
-      const units = Math.ceil(totalGrams / shopInfo.unitWeight)
+      // Calcular unidades necesarias (con un 20% extra por seguridad)
+      const adjustedGrams = Math.ceil(totalGrams * 1.2)
+      const units = Math.ceil(adjustedGrams / shopInfo.unitWeight)
+      const weeklyGrams = Math.round(totalGrams / 4)
+      
+      // Formatear cantidad de forma clara
+      let quantityText = ''
+      if (shopInfo.unit.includes('unidad') || shopInfo.unit.includes('trozo') || shopInfo.unit.includes('filete') || shopInfo.unit.includes('pechuga')) {
+        quantityText = `${units} ${shopInfo.unit}${units > 1 ? 's' : ''} (~${adjustedGrams}g total)`
+      } else if (shopInfo.unit.includes('paquete') || shopInfo.unit.includes('bote') || shopInfo.unit.includes('caja')) {
+        quantityText = `${units} ${shopInfo.unit}${units > 1 ? 's' : ''} (${adjustedGrams}g para el mes)`
+      } else {
+        quantityText = `${adjustedGrams}g (~${units} ${shopInfo.unit}${units > 1 ? 's' : ''})`
+      }
       
       shoppingList.push({
         name: food,
         category: shopInfo.category as ShoppingItem['category'],
-        quantity: `${units} ${shopInfo.unit}${units > 1 ? 's' : ''} (~${totalGrams}g total)`,
-        quantityGrams: totalGrams,
-        notes: `Conservación: ${shopInfo.shelfLife}`,
+        quantity: quantityText,
+        quantityGrams: adjustedGrams,
+        totalGrams: adjustedGrams,
+        weeklyGrams,
+        notes: `${uniqueDays} días | ${usageCount} usos | ${shopInfo.shelfLife}`,
         icon: shopInfo.icon,
         month,
         daysUsed: info.days,
       })
     } else {
-      // Si no tenemos info, agregar igualmente con estimación
+      // Si no tenemos info específica, agregar con estimación
+      const adjustedGrams = Math.ceil(totalGrams * 1.2)
+      const weeklyGrams = Math.round(totalGrams / 4)
+      
       shoppingList.push({
         name: food,
         category: info.category as ShoppingItem['category'],
-        quantity: `${info.count} porciones (~${info.count * 50}g)`,
-        quantityGrams: info.count * 50,
+        quantity: `${adjustedGrams}g (${uniqueDays} días del mes)`,
+        quantityGrams: adjustedGrams,
+        totalGrams: adjustedGrams,
+        weeklyGrams,
         icon: categoryIcons[info.category] || '🥣',
         month,
         daysUsed: info.days,
+        notes: `${uniqueDays} días | ${usageCount} usos`,
       })
     }
   })
   
-  // Ordenar por categoría
+  // Ordenar por categoría y luego por cantidad total (descendente)
   const categoryOrder = ['Verduras', 'Frutas', 'Proteínas', 'Lácteos', 'Cereales', 'Legumbres', 'Otros']
   shoppingList.sort((a, b) => {
-    return categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category)
+    const catA = categoryOrder.indexOf(a.category)
+    const catB = categoryOrder.indexOf(b.category)
+    if (catA !== catB) return catA - catB
+    return (b.totalGrams || 0) - (a.totalGrams || 0)
   })
   
   return shoppingList
 }
 
 // Normalizar nombre del alimento
-function normalizeFoodName(food: string): string {
+function normalizeFoodName(food: string): string | null {
   // Eliminar prefijos comunes
   let normalized = food
     .replace(/^(puré de|crema de|compota de|papilla de|trozos de|filete de)\s*/i, '')
+    .replace(/^(medio|media|un|una|el|la)\s*/i, '')
     .trim()
   
   // Verificar aliases
+  if (foodAliases[normalized] === null) {
+    return null // Skip this food
+  }
   if (foodAliases[normalized]) {
     return foodAliases[normalized]
   }
@@ -287,13 +454,38 @@ function shouldSkipFood(food: string): boolean {
     'Frutas variadas', 'Verduras variadas', 'Lo que come la familia',
     'Opciones variadas', 'Huevo completo', 'Pescado blanco genérico',
     'al gusto', 'opcional', 'o bien', 'Opción', 'Agua', 'Sal',
-    'Leche materna a demanda', 'Pecho', 'Lactancia'
+    'Leche materna a demanda', 'Pecho', 'Lactancia', 'Proteína',
+    'Nuevos alimentos', 'Nuevos', 'Alimentos', 'Variedad',
+    'Aceite de oliva virgen', 'Leche materna', 'Leche de fórmula',
+    'Frutas o verduras', 'Fruta o verdura'
   ]
   
-  const lowerFood = food.toLowerCase()
-  return skipPatterns.some(pattern => lowerFood.includes(pattern.toLowerCase())) ||
-         food.length < 2 ||
-         /^\d/.test(food)
+  const lowerFood = food.toLowerCase().trim()
+  
+  // Skip if matches pattern
+  if (skipPatterns.some(pattern => lowerFood.includes(pattern.toLowerCase()))) {
+    return true
+  }
+  
+  // Skip if too short
+  if (food.length < 3) {
+    return true
+  }
+  
+  // Skip if starts with number
+  if (/^\d/.test(food)) {
+    return true
+  }
+  
+  // Skip generic single words that are categories
+  const genericWords = ['fruta', 'frutas', 'verdura', 'verduras', 'carne', 'pescado', 
+                        'leche', 'yema', 'clara', 'cereal', 'cereales', 'aceite',
+                        'proteínas', 'lácteos', 'legumbres', 'otros']
+  if (genericWords.includes(lowerFood)) {
+    return true
+  }
+  
+  return false
 }
 
 // Función auxiliar para determinar la categoría de un alimento
@@ -342,6 +534,7 @@ export function getMonthSummary(month: number, introSteps: Array<any>): {
   totalMeals: number
   uniqueFoods: number
   categories: Record<string, number>
+  totalGrams: number
 } {
   const monthSteps = introSteps.filter(step => step.monthNumber === month)
   const shoppingList = calculateShoppingListByMonth(month, introSteps)
@@ -352,14 +545,42 @@ export function getMonthSummary(month: number, introSteps: Array<any>): {
   })
   
   const categories: Record<string, number> = {}
+  let totalGrams = 0
   shoppingList.forEach(item => {
     categories[item.category] = (categories[item.category] || 0) + 1
+    totalGrams += item.totalGrams || item.quantityGrams
   })
   
   return {
     totalDays: monthSteps.length,
     totalMeals,
     uniqueFoods: shoppingList.length,
-    categories
+    categories,
+    totalGrams
   }
+}
+
+// Función para obtener un resumen textual de la lista
+export function getShoppingListSummary(shoppingList: ShoppingItem[]): string {
+  const categories: Record<string, { items: ShoppingItem[], totalGrams: number }> = {}
+  
+  shoppingList.forEach(item => {
+    if (!categories[item.category]) {
+      categories[item.category] = { items: [], totalGrams: 0 }
+    }
+    categories[item.category].items.push(item)
+    categories[item.category].totalGrams += item.totalGrams || item.quantityGrams
+  })
+  
+  let summary = '📋 LISTA DE COMPRAS MENSUAL\n\n'
+  
+  Object.entries(categories).forEach(([category, data]) => {
+    summary += `${categoryIcons[category]} ${category.toUpperCase()}\n`
+    data.items.forEach(item => {
+      summary += `  • ${item.icon} ${item.name}: ${item.quantity}\n`
+    })
+    summary += '\n'
+  })
+  
+  return summary
 }
