@@ -5,9 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Baby, Utensils, ChefHat, BookOpen, Sparkles, 
   Clock, AlertTriangle, CheckCircle,
-  Heart, ThumbsUp, ThumbsDown, AlertCircle,
+  Calendar, Heart, ThumbsUp, ThumbsDown, AlertCircle,
   MinusCircle, MessageSquare, LogOut, Copy, Share2,
-  Key, Plus, ShoppingCart, Check, ChevronLeft, ChevronRight
+  Key, Plus, ShoppingCart, Check
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,12 +15,13 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import { Input } from '@/components/ui/input'
 import { Loader2 } from 'lucide-react'
-import { introStepsData, type IntroStep, ageRangeInfo, getAgeRangeForDay } from '@/lib/intro-steps-data'
-import { calculateShoppingList, calculateShoppingListByAgeRange, calculateShoppingListByMonth, getShoppingPeriod, shoppingAgeRanges, monthShoppingInfo, type ShoppingItem } from '@/lib/shopping-list'
+import { introStepsData, groupStepsByWeek, type IntroStep } from '@/lib/intro-steps-data'
+import { calculateShoppingList, getShoppingPeriod, type ShoppingItem } from '@/lib/shopping-list'
 
 // Types
 interface BabyReaction {
@@ -39,15 +40,12 @@ interface Family {
   code: string
   name: string
   baby_name?: string
-  baby_birth_date?: string // Fecha de nacimiento del bebé
-  feeding_start_date?: string // Fecha de inicio de alimentación complementaria (6 meses)
   created_at: string
 }
 
 // Storage keys
 const FAMILY_STORAGE_KEY = 'nutribebe_family'
 const REACTIONS_STORAGE_KEY = 'nutribebe_reactions'
-const CURRENT_DAY_STORAGE_KEY = 'nutribebe_current_day'
 
 // Generate random family code
 function generateFamilyCode(): string {
@@ -64,6 +62,13 @@ function generateId(): string {
   return `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }
 
+// Age stages
+const ageStages = [
+  { value: '6', label: '6-8 meses', description: 'Iniciación' },
+  { value: '8', label: '8-10 meses', description: 'Exploración' },
+  { value: '10', label: '10-12 meses', description: 'Transición' },
+]
+
 // Reaction options
 const reactionOptions = [
   { value: 'liked', label: 'Le gustó', icon: ThumbsUp, color: 'text-green-600', bg: 'bg-green-50' },
@@ -71,6 +76,31 @@ const reactionOptions = [
   { value: 'disliked', label: 'No le gustó', icon: ThumbsDown, color: 'text-orange-600', bg: 'bg-orange-50' },
   { value: 'allergic', label: 'Reacción alérgica', icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-50' },
 ]
+
+// Predefined recipes for common ingredients
+const predefinedRecipes: Record<string, Array<{name: string, ingredients: string[], instructions: string[]}>> = {
+  'Calabacín': [
+    { name: 'Puré de Calabacín', ingredients: ['Calabacín', 'Agua'], instructions: ['Lavar y pelar el calabacín', 'Cortar en trozos pequeños', 'Cocinar al vapor 10-15 min', 'Triturar hasta obtener puré suave'] }
+  ],
+  'Calabaza': [
+    { name: 'Crema de Calabaza', ingredients: ['Calabaza', 'Agua'], instructions: ['Pelar y cortar la calabaza', 'Cocinar al vapor 20 min', 'Triturar con un poco de agua de cocción', 'Servir tibio'] }
+  ],
+  'Zanahoria': [
+    { name: 'Puré de Zanahoria', ingredients: ['Zanahoria', 'Agua'], instructions: ['Pelar y cortar la zanahoria', 'Hervir o cocinar al vapor 25 min', 'Triturar muy bien', 'Dejar enfriar antes de servir'] }
+  ],
+  'Pera': [
+    { name: 'Compota de Pera', ingredients: ['Pera madura'], instructions: ['Pelar y quitar semillas', 'Cortar en trozos', 'Cocinar con poca agua 10 min', 'Triturar hasta obtener puré'] }
+  ],
+  'Manzana': [
+    { name: 'Puré de Manzana', ingredients: ['Manzana', 'Agua'], instructions: ['Pelar y quitar el corazón', 'Cortar en trozos', 'Cocinar al vapor 15 min', 'Triturar hasta obtener textura suave'] }
+  ],
+  'Plátano': [
+    { name: 'Papilla de Plátano', ingredients: ['Plátano maduro'], instructions: ['Pelar el plátano', 'Aplastar con un tenedor', 'Mezclar hasta obtener puré', 'Servir inmediatamente'] }
+  ],
+  'Pollo': [
+    { name: 'Puré de Pollo con Verduras', ingredients: ['Pollo', 'Calabacín', 'Zanahoria'], instructions: ['Cocinar el pollo a la plancha o hervido', 'Cocinar las verduras al vapor', 'Triturar todo junto', 'Añadir agua si es necesario'] }
+  ],
+}
 
 export default function NutriBebeApp() {
   // Family/Auth state
@@ -83,11 +113,13 @@ export default function NutriBebeApp() {
   const [authError, setAuthError] = useState('')
   
   // App state
+  const [selectedAge, setSelectedAge] = useState('6')
   const [activeSection, setActiveSection] = useState('intro')
   const [introSteps, setIntroSteps] = useState<IntroStep[]>([])
+  const [groupedSteps, setGroupedSteps] = useState<Record<number, IntroStep[]>>({})
+  const [selectedWeek, setSelectedWeek] = useState(1)
   const [currentDay, setCurrentDay] = useState(1)
-  const [selectedAgeRange, setSelectedAgeRange] = useState<'6-8m' | '8-12m' | '12-24m'>('6-8m')
-  const [babyBirthDate, setBabyBirthDate] = useState('')
+  const [ingredientInput, setIngredientInput] = useState('')
   
   // Reaction state
   const [showReactionForm, setShowReactionForm] = useState(false)
@@ -105,9 +137,6 @@ export default function NutriBebeApp() {
       try {
         const parsed = JSON.parse(stored)
         setFamily(parsed)
-        if (parsed.baby_birth_date) {
-          setBabyBirthDate(parsed.baby_birth_date)
-        }
       } catch (e) {
         console.error('Error loading family:', e)
       }
@@ -115,47 +144,11 @@ export default function NutriBebeApp() {
     setIsLoadingAuth(false)
   }, [])
 
-  // Load intro steps and calculate current day based on baby's age
+  // Load intro steps
   useEffect(() => {
     setIntroSteps(introStepsData)
+    setGroupedSteps(groupStepsByWeek(introStepsData))
   }, [])
-
-  // Calculate current feeding day based on baby's birth date
-  useEffect(() => {
-    if (family?.baby_birth_date && introSteps.length > 0) {
-      const birthDate = new Date(family.baby_birth_date)
-      const today = new Date()
-      
-      // Calculate baby's age in months
-      const ageInMonths = (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth())
-      
-      // Feeding starts at 6 months (180 days)
-      const sixMonthsInDays = 180
-      const daysSinceBirth = Math.floor((today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24))
-      
-      // If baby is younger than 6 months, show day 1 as preview
-      if (daysSinceBirth < sixMonthsInDays) {
-        setCurrentDay(1)
-        return
-      }
-      
-      // Calculate feeding day (day 1 = 6 months old)
-      const feedingDay = daysSinceBirth - sixMonthsInDays + 1
-      
-      // Cap at total available days
-      const cappedDay = Math.min(Math.max(1, feedingDay), introSteps.length)
-      setCurrentDay(cappedDay)
-      
-      // Update selected age range based on current day
-      if (cappedDay <= 30) {
-        setSelectedAgeRange('6-8m')
-      } else if (cappedDay <= 60) {
-        setSelectedAgeRange('8-12m')
-      } else {
-        setSelectedAgeRange('12-24m')
-      }
-    }
-  }, [family?.baby_birth_date, introSteps.length])
 
   // Load reactions when family changes
   useEffect(() => {
@@ -176,28 +169,10 @@ export default function NutriBebeApp() {
     }
   }, [family])
 
-  // Save current day whenever it changes
-  useEffect(() => {
-    localStorage.setItem(CURRENT_DAY_STORAGE_KEY, currentDay.toString())
-  }, [currentDay])
-
   // Create new family (localStorage only)
   const createFamily = () => {
     if (!familyName.trim()) {
       setAuthError('Por favor ingresa un nombre para tu familia')
-      return
-    }
-    
-    if (!babyBirthDate) {
-      setAuthError('Por favor ingresa la fecha de nacimiento del bebé')
-      return
-    }
-    
-    // Validate birth date is not in the future
-    const birthDate = new Date(babyBirthDate)
-    const today = new Date()
-    if (birthDate > today) {
-      setAuthError('La fecha de nacimiento no puede ser en el futuro')
       return
     }
     
@@ -208,7 +183,6 @@ export default function NutriBebeApp() {
       code: generateFamilyCode(),
       name: familyName,
       baby_name: babyName || undefined,
-      baby_birth_date: babyBirthDate,
       created_at: new Date().toISOString(),
     }
     
@@ -216,7 +190,7 @@ export default function NutriBebeApp() {
     localStorage.setItem(FAMILY_STORAGE_KEY, JSON.stringify(newFamily))
   }
 
-  // Join existing family
+  // Join existing family (creates local copy with same code)
   const joinFamily = () => {
     if (!joinCode.trim()) {
       setAuthError('Por favor ingresa el código de tu familia')
@@ -225,6 +199,7 @@ export default function NutriBebeApp() {
     
     setAuthError('')
     
+    // Check if we have this family code stored locally
     const stored = localStorage.getItem(FAMILY_STORAGE_KEY)
     if (stored) {
       const existingFamily: Family = JSON.parse(stored)
@@ -234,6 +209,8 @@ export default function NutriBebeApp() {
       }
     }
     
+    // If not found locally, create a new family with the provided code
+    // This allows using the same code across devices
     const newFamily: Family = {
       id: generateId(),
       code: joinCode.toUpperCase(),
@@ -251,7 +228,6 @@ export default function NutriBebeApp() {
     setFamily(null)
     setSavedReactions({})
     localStorage.removeItem(FAMILY_STORAGE_KEY)
-    localStorage.removeItem(CURRENT_DAY_STORAGE_KEY)
   }
 
   // Copy family code
@@ -276,12 +252,14 @@ export default function NutriBebeApp() {
       reaction_date: new Date().toISOString(),
     }
     
+    // Save to localStorage
     const stored = localStorage.getItem(REACTIONS_STORAGE_KEY)
     let reactions: BabyReaction[] = stored ? JSON.parse(stored) : []
     reactions = reactions.filter(r => !(r.intro_step_id === stepId && r.food_name === foodName))
     reactions.push(reaction)
     localStorage.setItem(REACTIONS_STORAGE_KEY, JSON.stringify(reactions))
     
+    // Update state
     setSavedReactions(prev => ({
       ...prev,
       [`${stepId}-${foodName}`]: reaction
@@ -296,6 +274,7 @@ export default function NutriBebeApp() {
   const toggleIncludeInDiet = (reaction: BabyReaction) => {
     const updatedReaction = { ...reaction, include_in_diet: !reaction.include_in_diet }
     
+    // Update localStorage
     const stored = localStorage.getItem(REACTIONS_STORAGE_KEY)
     if (stored) {
       let reactions: BabyReaction[] = JSON.parse(stored)
@@ -303,6 +282,7 @@ export default function NutriBebeApp() {
       localStorage.setItem(REACTIONS_STORAGE_KEY, JSON.stringify(reactions))
     }
     
+    // Update state
     setSavedReactions(prev => ({
       ...prev,
       [`${reaction.intro_step_id}-${reaction.food_name}`]: updatedReaction
@@ -329,55 +309,33 @@ export default function NutriBebeApp() {
     })
   }
 
-  // Helper function: Calculate baby's age in months
-  const getBabyAgeInMonths = (): number => {
-    if (!family?.baby_birth_date) return 0
-    const birthDate = new Date(family.baby_birth_date)
-    const today = new Date()
-    return (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth())
-  }
-
-  // Helper function: Format baby's age display
-  const getBabyAgeDisplay = (): string => {
-    const months = getBabyAgeInMonths()
-    if (months < 1) return 'Recién nacido'
-    if (months === 1) return '1 mes'
-    return `${months} meses`
-  }
-
-  // Helper function: Get current feeding month (Mes 6, Mes 7, etc.)
-  const getCurrentFeedingMonth = (): number => {
-    return getBabyAgeInMonths()
-  }
-
-  // Helper function: Check if baby has started solids
-  const hasStartedSolids = (): boolean => {
-    return getBabyAgeInMonths() >= 6
-  }
-
-  // Helper function: Days until solids
-  const getDaysUntilSolids = (): number => {
-    if (!family?.baby_birth_date) return 0
-    const birthDate = new Date(family.baby_birth_date)
-    const sixMonthsDate = new Date(birthDate)
-    sixMonthsDate.setMonth(sixMonthsDate.getMonth() + 6)
-    const today = new Date()
-    const diffTime = sixMonthsDate.getTime() - today.getTime()
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  // Get recipes for food
+  const getRecipesForFood = (food: string) => {
+    const foods = food.split('+').map(f => f.trim())
+    const recipes: Array<{name: string, ingredients: string[], instructions: string[]}> = []
+    
+    for (const f of foods) {
+      if (predefinedRecipes[f]) {
+        recipes.push(...predefinedRecipes[f])
+      }
+    }
+    
+    return recipes.slice(0, 2)
   }
 
   // Calculations
   const totalDays = introSteps.length
   const progressPercentage = totalDays > 0 ? (currentDay / totalDays) * 100 : 0
-  const currentStep = introSteps.find(s => s.dayNumber === currentDay) || introSteps[0]
-  const currentAgeRange = currentStep?.ageRange || '6-8m'
-  const currentRangeInfo = ageRangeInfo[currentAgeRange]
-  const daysInRange = introSteps.filter(s => s.ageRange === selectedAgeRange)
+  const currentStep = groupedSteps[selectedWeek]?.find(s => s.dayNumber === (currentDay % 7 || 7)) || groupedSteps[selectedWeek]?.[0]
+  const availableWeeks = Object.keys(groupedSteps).map(Number).sort((a, b) => a - b)
   const getCurrentReaction = (step: IntroStep): BabyReaction | null => 
     step.specificFood ? savedReactions[`${step.id}-${step.specificFood}`] || null : null
   
-  // Shopping list calculation - por rango de edad
-  const shoppingListsByAge = calculateShoppingListByAgeRange(introSteps)
+  // Shopping list calculation
+  const shoppingPeriod = getShoppingPeriod(currentDay)
+  const shoppingList = calculateShoppingList(currentDay, 15, introSteps)
+  const totalItems = shoppingList.length
+  const checkedCount = shoppingList.filter(item => checkedItems.has(item.name)).length
 
   // Loading screen
   if (isLoadingAuth) {
@@ -421,7 +379,7 @@ export default function NutriBebeApp() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="babyName">Nombre del bebé</Label>
+                  <Label htmlFor="babyName">Nombre del bebé (opcional)</Label>
                   <Input
                     id="babyName"
                     placeholder="Ej: Sofía"
@@ -429,20 +387,6 @@ export default function NutriBebeApp() {
                     onChange={(e) => setBabyName(e.target.value)}
                     className="mt-1"
                   />
-                </div>
-                <div>
-                  <Label htmlFor="babyBirthDate">Fecha de nacimiento del bebé *</Label>
-                  <Input
-                    id="babyBirthDate"
-                    type="date"
-                    value={babyBirthDate}
-                    onChange={(e) => setBabyBirthDate(e.target.value)}
-                    className="mt-1"
-                    max={new Date().toISOString().split('T')[0]}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Esta fecha se usará para calcular automáticamente el plan de alimentación
-                  </p>
                 </div>
                 <Button onClick={createFamily} className="w-full bg-orange-500 hover:bg-orange-600">
                   <Plus className="w-4 h-4 mr-2" />
@@ -496,16 +440,7 @@ export default function NutriBebeApp() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-orange-600">NutriBebé</h1>
-                <div className="flex items-center gap-2">
-                  {family.baby_name && (
-                    <span className="text-sm font-medium text-gray-700">{family.baby_name}</span>
-                  )}
-                  {family.baby_birth_date && (
-                    <Badge variant="secondary" className="text-xs">
-                      {getBabyAgeDisplay()}
-                    </Badge>
-                  )}
-                </div>
+                <p className="text-xs text-gray-500">{family.name}</p>
               </div>
             </div>
             
@@ -519,6 +454,20 @@ export default function NutriBebeApp() {
                 </Button>
               </div>
               
+              {/* Age Selector */}
+              <Select value={selectedAge} onValueChange={setSelectedAge}>
+                <SelectTrigger className="w-32 bg-white border-orange-200">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ageStages.map(stage => (
+                    <SelectItem key={stage.value} value={stage.value}>
+                      {stage.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
               {/* Logout */}
               <Button variant="ghost" size="sm" onClick={logout} className="text-gray-500">
                 <LogOut className="w-4 h-4" />
@@ -529,7 +478,7 @@ export default function NutriBebeApp() {
           {/* Navigation */}
           <nav className="mt-3 flex gap-2 overflow-x-auto pb-2">
             {[
-              { id: 'intro', label: 'Guía Día a Día', icon: Utensils },
+              { id: 'intro', label: 'Guía Día a Día', icon: Calendar },
               { id: 'shopping', label: 'Lista de Compras', icon: ShoppingCart },
               { id: 'guide', label: 'Info Médica', icon: BookOpen },
             ].map(item => (
@@ -601,34 +550,6 @@ export default function NutriBebeApp() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {/* Age Range Tabs */}
-                    <div className="flex gap-2 flex-wrap">
-                      {(['6-8m', '8-12m', '12-24m'] as const).map(range => (
-                        <Button
-                          key={range}
-                          variant={selectedAgeRange === range ? 'default' : 'outline'}
-                          className={`flex-1 ${selectedAgeRange === range ? 'bg-orange-500 hover:bg-orange-600' : ''}`}
-                          onClick={() => {
-                            setSelectedAgeRange(range)
-                            const firstDayInRange = introSteps.find(s => s.ageRange === range)
-                            if (firstDayInRange) setCurrentDay(firstDayInRange.dayNumber)
-                          }}
-                        >
-                          {ageRangeInfo[range].title}
-                        </Button>
-                      ))}
-                    </div>
-                    
-                    {/* Current Range Info */}
-                    <div className="p-3 bg-white/50 rounded-lg border border-orange-200">
-                      <p className="text-sm font-medium text-orange-800">{currentRangeInfo.title}</p>
-                      <p className="text-xs text-gray-600 mt-1">{currentRangeInfo.description}</p>
-                      <div className="flex gap-4 mt-2 text-xs text-gray-500">
-                        <span>📅 Días {currentRangeInfo.startDay}-{currentRangeInfo.endDay}</span>
-                        <span>🍽️ {currentRangeInfo.mealsPerDay}</span>
-                      </div>
-                    </div>
-                    
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Día {currentDay} de {totalDays}</span>
                       <span className="text-sm font-medium text-orange-600">{Math.round(progressPercentage)}% completado</span>
@@ -638,16 +559,27 @@ export default function NutriBebeApp() {
                 </CardContent>
               </Card>
 
+              {/* Week Selector */}
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {availableWeeks.map(week => (
+                  <Button
+                    key={week}
+                    variant={selectedWeek === week ? 'default' : 'outline'}
+                    className={selectedWeek === week ? 'bg-orange-500 hover:bg-orange-600' : ''}
+                    onClick={() => { setSelectedWeek(week); setCurrentDay(1); }}
+                  >
+                    Semana {week}
+                  </Button>
+                ))}
+              </div>
+
               {/* Current Day Card */}
               {currentStep && (
                 <Card className="border-green-200 bg-white shadow-lg">
                   <CardHeader className="bg-gradient-to-r from-green-100 to-orange-50">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="secondary">Día {currentStep.dayNumber}</Badge>
-                          <Badge className="bg-purple-500 text-white text-xs">{ageRangeInfo[currentStep.ageRange].title}</Badge>
-                        </div>
+                        <Badge variant="secondary" className="mb-2">Día {currentStep.dayNumber} - Semana {currentStep.weekNumber}</Badge>
                         <CardTitle className="text-xl text-green-700">{currentStep.title}</CardTitle>
                       </div>
                       {currentStep.specificFood && (
@@ -682,16 +614,6 @@ export default function NutriBebeApp() {
                       )}
                     </div>
 
-                    {/* Recipe */}
-                    {currentStep.recipe && (
-                      <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-                        <h4 className="font-medium text-purple-700 mb-2 flex items-center gap-2">
-                          <ChefHat className="w-4 h-4" /> Cómo prepararlo
-                        </h4>
-                        <p className="text-sm text-purple-600">{currentStep.recipe}</p>
-                      </div>
-                    )}
-
                     {/* Tips */}
                     {currentStep.tips && (
                       <div className="p-4 bg-green-50 rounded-lg">
@@ -723,6 +645,18 @@ export default function NutriBebeApp() {
                             </li>
                           ))}
                         </ul>
+                      </div>
+                    )}
+
+                    {/* Recipe */}
+                    {currentStep.recipe && (
+                      <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
+                        <h4 className="font-medium text-amber-800 mb-3 flex items-center gap-2">
+                          <ChefHat className="w-4 h-4" /> Receta
+                        </h4>
+                        <div className="text-sm text-amber-900 whitespace-pre-line leading-relaxed">
+                          {currentStep.recipe}
+                        </div>
                       </div>
                     )}
 
@@ -813,23 +747,12 @@ export default function NutriBebeApp() {
                     )}
 
                     {/* Day Navigation */}
-                    <div className="border-t pt-4 flex justify-between items-center">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setCurrentDay(Math.max(1, currentDay - 1))} 
-                        disabled={currentDay === 1}
-                        className="flex items-center gap-2"
-                      >
-                        <ChevronLeft className="w-4 h-4" /> Día anterior
+                    <div className="border-t pt-4 flex justify-between">
+                      <Button variant="outline" onClick={() => setCurrentDay(Math.max(1, currentDay - 1))} disabled={currentDay === 1}>
+                        ← Día anterior
                       </Button>
-                      <span className="text-lg font-bold text-orange-600">Día {currentDay}</span>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => setCurrentDay(Math.min(totalDays, currentDay + 1))} 
-                        disabled={currentDay === totalDays}
-                        className="flex items-center gap-2"
-                      >
-                        Día siguiente <ChevronRight className="w-4 h-4" />
+                      <Button variant="outline" onClick={() => setCurrentDay(Math.min(totalDays, currentDay + 1))} disabled={currentDay === totalDays}>
+                        Día siguiente →
                       </Button>
                     </div>
                   </CardContent>
@@ -838,155 +761,102 @@ export default function NutriBebeApp() {
             </motion.div>
           )}
 
-          {/* Shopping List Section - Por Mes */}
+          {/* Shopping List Section */}
           {activeSection === 'shopping' && (
             <motion.div key="shopping" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">Lista de Compras por Mes</h2>
-                <p className="text-gray-500">Alimentos necesarios para cada mes de alimentación complementaria</p>
-                {family.baby_birth_date && (
-                  <p className="text-sm text-orange-600 mt-1">
-                    {family.baby_name ? `${family.baby_name}` : 'Tu bebé'} tiene {getBabyAgeDisplay()} 
-                    {hasStartedSolids() ? ' - Mes actual de alimentación: Mes ' + getCurrentFeedingMonth() : ` - Faltan ${getDaysUntilSolids()} días para iniciar alimentos sólidos`}
-                  </p>
-                )}
+                <h2 className="text-2xl font-bold text-gray-800">Lista de Compras</h2>
+                <p className="text-gray-500">Alimentos necesarios para los próximos 15 días según tu progreso</p>
               </div>
 
-              {/* Calculate monthly shopping lists */}
-              {(() => {
-                const shoppingListsByMonth = calculateShoppingListByMonth(introSteps)
-                const currentMonth = getCurrentFeedingMonth()
-                
-                // Show months from 6 to 24, highlighting current month
-                const monthsToShow = Array.from({ length: 19 }, (_, i) => i + 6) // 6 to 24
-                
-                return monthsToShow.map(month => {
-                  const monthInfo = monthShoppingInfo[month]
-                  const monthList = shoppingListsByMonth[month] || []
-                  const isCurrentMonth = month === currentMonth && hasStartedSolids()
-                  const isPastMonth = month < currentMonth && hasStartedSolids()
-                  const isFutureMonth = month > currentMonth || !hasStartedSolids()
-                  
-                  return (
-                    <div key={month} className="space-y-3">
-                      {/* Month Header */}
-                      <Card className={`${monthInfo.borderClass} ${monthInfo.bgClass} ${isCurrentMonth ? 'ring-2 ring-orange-400 ring-offset-2' : ''} ${isPastMonth ? 'opacity-60' : ''}`}>
-                        <CardContent className="pt-4 pb-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <span className="text-3xl">{monthInfo.icon}</span>
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <p className="font-bold text-lg text-gray-800">{monthInfo.title}</p>
-                                  {isCurrentMonth && (
-                                    <Badge className="bg-orange-500 text-white text-xs">Mes actual</Badge>
-                                  )}
-                                  {isPastMonth && (
-                                    <Badge variant="outline" className="text-xs">Completado</Badge>
-                                  )}
-                                </div>
-                                <p className="text-sm text-gray-600">
-                                  Bebé de {month} meses de edad
+              {/* Period Info */}
+              <Card className="border-green-200 bg-gradient-to-r from-green-50 to-blue-50">
+                <CardContent className="pt-4 pb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <ShoppingCart className="w-6 h-6 text-green-600" />
+                      <div>
+                        <p className="font-medium text-green-800">Período de Compra #{shoppingPeriod.period}</p>
+                        <p className="text-sm text-green-600">Días {shoppingPeriod.start} - {shoppingPeriod.end} (15 días)</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-green-700">{checkedCount}/{totalItems}</p>
+                      <p className="text-xs text-gray-500">items comprados</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Progress */}
+              <Progress value={(checkedCount / totalItems) * 100} className="h-2" />
+
+              {/* Empty state */}
+              {shoppingList.length === 0 && (
+                <Card className="border-orange-200 bg-orange-50">
+                  <CardContent className="pt-6 pb-6 text-center">
+                    <ShoppingCart className="w-12 h-12 mx-auto text-orange-400 mb-3" />
+                    <p className="text-orange-700 font-medium">No hay alimentos programados para este período</p>
+                    <p className="text-sm text-orange-600 mt-1">Continúa avanzando en la guía de introducción</p>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Shopping List by Category */}
+              {shoppingList.length > 0 && (
+                <div className="space-y-6">
+                  {['Verduras', 'Frutas', 'Proteínas', 'Cereales', 'Otros'].map(category => {
+                    const categoryItems = shoppingList.filter(item => item.category === category)
+                    if (categoryItems.length === 0) return null
+                    
+                    return (
+                      <Card key={category} className="border-gray-200">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            <span className="text-2xl">{categoryItems[0].icon}</span>
+                            {category}
+                            <Badge variant="secondary" className="ml-auto">{categoryItems.length}</Badge>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          {categoryItems.map((item) => (
+                            <div
+                              key={item.name}
+                              className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all ${
+                                checkedItems.has(item.name) 
+                                  ? 'bg-green-50 border border-green-200' 
+                                  : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
+                              }`}
+                              onClick={() => toggleItem(item.name)}
+                            >
+                              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                                checkedItems.has(item.name) 
+                                  ? 'bg-green-500 border-green-500' 
+                                  : 'border-gray-300'
+                              }`}>
+                                {checkedItems.has(item.name) && <Check className="w-4 h-4 text-white" />}
+                              </div>
+                              <div className="flex-1">
+                                <p className={`font-medium ${checkedItems.has(item.name) ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                                  {item.name}
                                 </p>
-                                <p className="text-xs text-gray-500 mt-1">
-                                  {monthList.length} alimentos
+                                <p className={`text-sm ${checkedItems.has(item.name) ? 'text-gray-400' : 'text-gray-600'}`}>
+                                  {item.quantity}
                                 </p>
                               </div>
+                              {item.notes && (
+                                <Badge variant="outline" className="text-xs">
+                                  {item.notes}
+                                </Badge>
+                              )}
                             </div>
-                          </div>
+                          ))}
                         </CardContent>
                       </Card>
-
-                      {/* Shopping Items by Category - Only show for current/past months or expand manually */}
-                      {(isCurrentMonth || isPastMonth) && monthList.length > 0 && (
-                        <div className="space-y-3 pl-2">
-                          {['Verduras', 'Frutas', 'Proteínas', 'Lácteos', 'Legumbres', 'Cereales', 'Otros'].map(category => {
-                            const categoryItems = monthList.filter(item => item.category === category)
-                            if (categoryItems.length === 0) return null
-                            
-                            return (
-                              <Card key={`month${month}-${category}`} className="border-gray-200">
-                                <CardHeader className="pb-2 pt-3">
-                                  <CardTitle className="text-base flex items-center gap-2">
-                                    <span className="text-xl">{categoryItems[0].icon}</span>
-                                    {category}
-                                    <Badge variant="secondary" className="ml-auto">{categoryItems.length}</Badge>
-                                  </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-2 pb-3">
-                                  {categoryItems.map((item) => {
-                                    const itemKey = `month${month}-${item.name}`
-                                    const isChecked = checkedItems.has(itemKey)
-                                    return (
-                                      <div
-                                        key={item.name}
-                                        className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all ${
-                                          isChecked 
-                                            ? 'bg-green-50 border border-green-200' 
-                                            : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
-                                        }`}
-                                        onClick={() => {
-                                          setCheckedItems(prev => {
-                                            const newSet = new Set(prev)
-                                            if (newSet.has(itemKey)) {
-                                              newSet.delete(itemKey)
-                                            } else {
-                                              newSet.add(itemKey)
-                                            }
-                                            return newSet
-                                          })
-                                        }}
-                                      >
-                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                                          isChecked 
-                                            ? 'bg-green-500 border-green-500' 
-                                            : 'border-gray-300'
-                                        }`}>
-                                          {isChecked && <Check className="w-3 h-3 text-white" />}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                          <p className={`font-medium text-sm ${isChecked ? 'line-through text-gray-400' : 'text-gray-800'}`}>
-                                            {item.name}
-                                          </p>
-                                          <p className={`text-xs ${isChecked ? 'text-gray-400' : 'text-gray-500'}`}>
-                                            {item.quantity}
-                                          </p>
-                                        </div>
-                                        {item.notes && (
-                                          <Badge variant="outline" className="text-xs flex-shrink-0">
-                                            {item.notes}
-                                          </Badge>
-                                        )}
-                                      </div>
-                                    )
-                                  })}
-                                </CardContent>
-                              </Card>
-                            )
-                          })}
-                        </div>
-                      )}
-
-                      {/* Empty state */}
-                      {(isCurrentMonth || isPastMonth) && monthList.length === 0 && (
-                        <Card className="border-orange-200 bg-orange-50 ml-2">
-                          <CardContent className="pt-4 pb-4 text-center">
-                            <ShoppingCart className="w-8 h-8 mx-auto text-orange-400 mb-2" />
-                            <p className="text-orange-700 text-sm font-medium">No hay alimentos específicos para este mes</p>
-                          </CardContent>
-                        </Card>
-                      )}
-
-                      {/* Future month preview */}
-                      {isFutureMonth && !isPastMonth && !isCurrentMonth && (
-                        <div className="ml-2 text-sm text-gray-500 italic pl-4">
-                          Lista disponible cuando el bebé tenga {month} meses
-                        </div>
-                      )}
-                    </div>
-                  )
-                })
-              })()}
+                    )
+                  })}
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex gap-3">
@@ -1000,19 +870,30 @@ export default function NutriBebeApp() {
                 <Button 
                   className="flex-1 bg-green-500 hover:bg-green-600"
                   onClick={() => {
-                    const shoppingListsByMonth = calculateShoppingListByMonth(introSteps)
-                    const allItems = new Set<string>()
-                    Object.entries(shoppingListsByMonth).forEach(([month, items]) => {
-                      items.forEach(item => {
-                        allItems.add(`month${month}-${item.name}`)
-                      })
-                    })
+                    const allItems = new Set(shoppingList.map(item => item.name))
                     setCheckedItems(allItems)
                   }}
                 >
                   Marcar todo
                 </Button>
               </div>
+
+              {/* Tips Card */}
+              <Card className="border-blue-200 bg-blue-50">
+                <CardContent className="pt-4 pb-4">
+                  <div className="flex items-start gap-3">
+                    <Sparkles className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-blue-800">Consejos de Compra</p>
+                      <ul className="text-sm text-blue-700 mt-2 space-y-1">
+                        <li>• Compra frutas y verduras frescas en pequeñas cantidades</li>
+                        <li>• Las proteínas puedes congelarlas en porciones</li>
+                        <li>• Los cereales tienen larga duración</li>
+                      </ul>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </motion.div>
           )}
 
@@ -1021,117 +902,103 @@ export default function NutriBebeApp() {
             <motion.div key="guide" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-6">
               <div>
                 <h2 className="text-2xl font-bold text-gray-800">Información Médica</h2>
-                <p className="text-gray-500">Guía basada en recomendaciones de la OMS, UNICEF y AEPAP</p>
+                <p className="text-gray-500">Basada en recomendaciones de la OMS, UNICEF y AEPAP</p>
               </div>
 
-              {/* Age Guidelines */}
-              <Card className="border-orange-200">
-                <CardHeader>
-                  <CardTitle className="text-lg text-orange-700">Guía por Edad</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-4 bg-orange-50 rounded-lg">
-                    <h4 className="font-medium text-orange-800">6-8 meses</h4>
-                    <ul className="text-sm text-orange-700 mt-2 space-y-1">
-                      <li>• Una comida al día (almuerzo)</li>
-                      <li>• Textura: purés muy líquidos</li>
-                      <li>• Introducir: verduras suaves, frutas</li>
-                    </ul>
-                  </div>
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <h4 className="font-medium text-green-800">8-10 meses</h4>
-                    <ul className="text-sm text-green-700 mt-2 space-y-1">
-                      <li>• Dos comidas al día</li>
-                      <li>• Textura: purés con grumos pequeños</li>
-                      <li>• Introducir: proteínas (pollo, ternera)</li>
-                    </ul>
-                  </div>
-                  <div className="p-4 bg-blue-50 rounded-lg">
-                    <h4 className="font-medium text-blue-800">10-12 meses</h4>
-                    <ul className="text-sm text-blue-700 mt-2 space-y-1">
-                      <li>• Tres comidas al día</li>
-                      <li>• Textura: trocitos blandos</li>
-                      <li>• Introducir: huevo, pescado, lácteos</li>
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
+              <Tabs defaultValue="recommendations">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="recommendations">Recomendaciones</TabsTrigger>
+                  <TabsTrigger value="allergens">Alérgenos</TabsTrigger>
+                  <TabsTrigger value="prohibited">Prohibidos</TabsTrigger>
+                </TabsList>
 
-              {/* Warning Signs */}
-              <Card className="border-red-200">
-                <CardHeader>
-                  <CardTitle className="text-lg text-red-700 flex items-center gap-2">
-                    <AlertTriangle className="w-5 h-5" /> Signos de Alerta
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-600 mb-3">Consulta al pediatra si notas:</p>
-                  <ul className="space-y-2">
-                    {[
-                      'Sarpullido o ronchas en la piel',
-                      'Hinchazón de labios, lengua o cara',
-                      'Vómitos repetidos',
-                      'Diarrea severa o con sangre',
-                      'Dificultad para respirar',
-                      'Tos persistente después de comer'
-                    ].map((sign, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-red-600">
-                        <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                        <span>{sign}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
+                <TabsContent value="recommendations" className="space-y-4 mt-4">
+                  <Card className="border-green-100">
+                    <CardHeader><CardTitle className="text-green-700">Recomendaciones Generales</CardTitle></CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="p-4 bg-green-50 rounded-lg">
+                        <h4 className="font-medium text-green-800 mb-2">Edad de inicio</h4>
+                        <p className="text-sm text-green-600">La OMS recomienda iniciar la alimentación complementaria a los 6 meses, manteniendo la lactancia materna hasta al menos los 2 años.</p>
+                      </div>
+                      <div className="p-4 bg-blue-50 rounded-lg">
+                        <h4 className="font-medium text-blue-800 mb-2">Introducción gradual</h4>
+                        <p className="text-sm text-blue-600">Introduce un solo alimento nuevo cada 3-4 días para identificar posibles reacciones alérgicas.</p>
+                      </div>
+                      <div className="p-4 bg-orange-50 rounded-lg">
+                        <h4 className="font-medium text-orange-800 mb-2">Texturas</h4>
+                        <p className="text-sm text-orange-600">Comienza con purés muy líquidos y ve aumentando la consistencia gradualmente.</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
 
-              {/* Foods to Avoid */}
-              <Card className="border-yellow-200">
-                <CardHeader>
-                  <CardTitle className="text-lg text-yellow-700">Alimentos a Evitar</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {[
-                    { food: 'Miel', reason: 'Riesgo de botulismo (hasta 12 meses)' },
-                    { food: 'Sal', reason: 'Los riñones del bebé no la procesan bien' },
-                    { food: 'Azúcar', reason: 'No aporta nutrientes y crea malos hábitos' },
-                    { food: 'Leche de vaca', reason: 'Como bebida principal (hasta 12 meses)' },
-                    { food: 'Frutos secos enteros', reason: 'Riesgo de atragantamiento' },
-                    { food: 'Pescado crudo', reason: 'Riesgo de parásitos' }
-                  ].map((item, i) => (
-                    <div key={i} className="flex justify-between items-center p-2 bg-yellow-50 rounded">
-                      <span className="font-medium text-yellow-800">{item.food}</span>
-                      <span className="text-xs text-yellow-700">{item.reason}</span>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
+                <TabsContent value="allergens" className="space-y-4 mt-4">
+                  <Card className="border-orange-100">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2 text-orange-600">
+                        <AlertTriangle className="w-5 h-5" /> Introducción de Alérgenos
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
+                        <p className="font-medium text-yellow-800">Importante</p>
+                        <p className="text-sm text-yellow-700 mt-1">Introduce alérgenos comunes (huevo, pescado, frutos secos) a partir de los 6 meses, sin retrasar su introducción.</p>
+                      </div>
+                      <div className="p-4 bg-gray-50 rounded-lg">
+                        <h4 className="font-medium text-gray-800 mb-2">Alérgenos comunes:</h4>
+                        <ul className="text-sm text-gray-600 space-y-1">
+                          <li>🥚 Huevo (yema desde los 6-7 meses, clara desde los 12 meses)</li>
+                          <li>🐟 Pescado (desde los 9-10 meses)</li>
+                          <li>🥜 Frutos secos (en forma de crema, desde los 12 meses)</li>
+                          <li>🥛 Lácteos (yogur y queso desde los 9-12 meses)</li>
+                        </ul>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="prohibited" className="space-y-4 mt-4">
+                  <Card className="border-red-100">
+                    <CardHeader>
+                      <CardTitle className="text-red-600">Alimentos Prohibidos antes de los 12 meses</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="p-4 bg-red-50 rounded-lg">
+                        <ul className="text-sm text-red-700 space-y-2">
+                          <li className="flex items-start gap-2">
+                            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                            <span><strong>Miel:</strong> Riesgo de botulismo infantil</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                            <span><strong>Sal:</strong> Los riñones del bebé no están preparados</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                            <span><strong>Azúcar:</strong> No aporta nutrientes, crea malos hábitos</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                            <span><strong>Leche de vaca:</strong> Como bebida principal (puede usarse en preparaciones)</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
             </motion.div>
           )}
         </AnimatePresence>
       </main>
 
-      {/* Bottom Navigation for Mobile */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2 md:hidden z-50">
-        <div className="flex justify-around">
-          {[
-            { id: 'intro', label: 'Guía', icon: Utensils },
-            { id: 'shopping', label: 'Compras', icon: ShoppingCart },
-            { id: 'guide', label: 'Info', icon: BookOpen },
-          ].map(item => (
-            <Button
-              key={item.id}
-              variant={activeSection === item.id ? 'default' : 'ghost'}
-              className={`flex flex-col items-center gap-1 ${
-                activeSection === item.id ? 'bg-orange-500 text-white' : 'text-gray-600'
-              }`}
-              onClick={() => setActiveSection(item.id)}
-            >
-              <item.icon className="w-5 h-5" />
-              <span className="text-xs">{item.label}</span>
-            </Button>
-          ))}
-        </div>
-      </nav>
+      {/* Footer */}
+      <footer className="text-center py-6 text-gray-500 text-sm border-t border-gray-100 mt-8">
+        <p className="flex items-center justify-center gap-2">
+          <Heart className="w-4 h-4 text-pink-500" />
+          Diseñada por <strong className="text-orange-600">Javi Design</strong>
+        </p>
+      </footer>
     </div>
   )
 }
