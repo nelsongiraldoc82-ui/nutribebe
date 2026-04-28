@@ -648,15 +648,61 @@ export default function NutriBebeApp() {
                       </div>
                     )}
 
-                    {/* Recipe */}
-                    {currentStep.recipe && (
-                      <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-                        <h4 className="font-medium text-amber-800 mb-3 flex items-center gap-2">
-                          <ChefHat className="w-4 h-4" /> Receta
-                        </h4>
-                        <div className="text-sm text-amber-900 whitespace-pre-line leading-relaxed">
-                          {currentStep.recipe}
+                    {/* Meals Section - Multiple Meals Per Day */}
+                    {currentStep.meals && currentStep.meals.length > 0 && (
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <ChefHat className="w-5 h-5 text-orange-600" />
+                          <h4 className="font-semibold text-lg text-gray-800">
+                            Comidas del día ({currentStep.mealsPerDay} {currentStep.mealsPerDay === 1 ? 'comida' : 'comidas'})
+                          </h4>
                         </div>
+                        
+                        {currentStep.meals.map((meal, mealIndex) => {
+                          const mealColors = {
+                            desayuno: { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-700', icon: '🌅' },
+                            almuerzo: { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700', icon: '🍽️' },
+                            merienda: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700', icon: '🥛' },
+                            cena: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', icon: '🌙' }
+                          }
+                          const colors = mealColors[meal.type] || mealColors.almuerzo
+                          
+                          return (
+                            <Card key={mealIndex} className={`${colors.bg} ${colors.border} border`}>
+                              <CardHeader className="pb-2">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-2xl">{colors.icon}</span>
+                                    <div>
+                                      <CardTitle className={`text-base ${colors.text} capitalize`}>
+                                        {meal.type}
+                                      </CardTitle>
+                                      <p className="text-sm font-medium text-gray-700">{meal.title}</p>
+                                    </div>
+                                  </div>
+                                  <Badge variant="outline" className="text-xs">
+                                    {meal.portion}
+                                  </Badge>
+                                </div>
+                              </CardHeader>
+                              <CardContent className="pt-2">
+                                <div className="mb-2">
+                                  <p className="text-sm text-gray-600">
+                                    <span className="font-medium">Alimentos:</span> {meal.food}
+                                  </p>
+                                </div>
+                                <div className="p-3 bg-white/60 rounded-lg">
+                                  <h5 className="font-medium text-gray-700 mb-2 text-sm flex items-center gap-1">
+                                    <ChefHat className="w-3 h-3" /> Receta
+                                  </h5>
+                                  <div className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
+                                    {meal.recipe}
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          )
+                        })}
                       </div>
                     )}
 
