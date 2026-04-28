@@ -8,9 +8,9 @@
     "start": "next start"
   },
   "dependencies": {
-    "next": "^16.0.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "next": "^14.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "framer-motion": "^11.0.0",
     "lucide-react": "^0.400.0",
     "class-variance-authority": "^0.7.0",
@@ -29,13 +29,13 @@
     "@radix-ui/react-toast": "^1.2.0",
     "@radix-ui/react-tooltip": "^1.1.0",
     "@supabase/supabase-js": "^2.39.0",
-    "z-ai-web-dev-sdk": "latest"
+    "date-fns": "^3.0.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20.0.0",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
     "tailwindcss": "^4",
     "typescript": "^5.0.0"
   }
