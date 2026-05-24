@@ -3177,6 +3177,271 @@ export function getDaysForMonth(month: number): IntroStep[] {
 
 // Función para obtener todos los meses disponibles
 export function getAvailableMonths(): number[] {
-  const months = new Set(introStepsData.map(step => step.monthNumber))
-  return Array.from(months).sort((a, b) => a - b)
+  // Retornar todos los meses de 6 a 24
+  return Array.from({ length: 19 }, (_, i) => i + 6) // [6, 7, 8, ..., 24]
+}
+
+// ==================== GENERADOR DE DATOS AUTOMÁTICO ====================
+// Para los meses que no tienen datos completos, generamos recetas automáticamente
+
+// Alimentos disponibles por rango de edad
+const foodsByAgeRange = {
+  '6-8m': {
+    verduras: ['Calabacín', 'Calabaza', 'Zanahoria', 'Patata', 'Judías verdes', 'Puerro'],
+    frutas: ['Pera', 'Manzana', 'Plátano', 'Aguacate'],
+    proteinas: ['Pollo'],
+    cereales: ['Arroz', 'Avena'],
+    lacteos: [] as string[],
+    legumbres: [] as string[]
+  },
+  '8-12m': {
+    verduras: ['Calabacín', 'Calabaza', 'Zanahoria', 'Patata', 'Judías verdes', 'Puerro', 'Espinacas', 'Brócoli', 'Coliflor', 'Guisantes', 'Tomate', 'Pimiento'],
+    frutas: ['Pera', 'Manzana', 'Plátano', 'Aguacate', 'Melocotón', 'Naranja', 'Mandarina', 'Mango', 'Fresa'],
+    proteinas: ['Pollo', 'Ternera', 'Merluza', 'Bacalao', 'Lenguado', 'Lubina', 'Salmón', 'Huevo', 'Jamón cocido'],
+    cereales: ['Arroz', 'Avena', 'Pasta', 'Pan integral', 'Cuscús', 'Quinoa'],
+    lacteos: ['Yogur natural', 'Queso fresco', 'Queso tipo burgos'],
+    legumbres: ['Lentejas', 'Garbanzos']
+  },
+  '12-24m': {
+    verduras: ['Calabacín', 'Calabaza', 'Zanahoria', 'Patata', 'Judías verdes', 'Puerro', 'Espinacas', 'Brócoli', 'Coliflor', 'Guisantes', 'Tomate', 'Pimiento', 'Berenjena', 'Remolacha', 'Acelgas'],
+    frutas: ['Pera', 'Manzana', 'Plátano', 'Aguacate', 'Melocotón', 'Naranja', 'Mandarina', 'Mango', 'Fresa', 'Uva', 'Melón', 'Sandía', 'Ciruela', 'Kiwi', 'Piña'],
+    proteinas: ['Pollo', 'Ternera', 'Cordero', 'Cerdo', 'Merluza', 'Bacalao', 'Lenguado', 'Lubina', 'Salmón', 'Atún', 'Sardinas', 'Huevo', 'Jamón serrano', 'Jamón cocido'],
+    cereales: ['Arroz', 'Arroz integral', 'Avena', 'Pasta', 'Pan integral', 'Pan de molde', 'Cuscús', 'Quinoa', 'Mijo', 'Maíz', 'Galletas integrales'],
+    lacteos: ['Yogur natural', 'Yogur griego', 'Queso fresco', 'Queso tipo burgos', 'Queso rallado'],
+    legumbres: ['Lentejas', 'Garbanzos', 'Alubias blancas']
+  }
+}
+
+// Recetas predefinidas por tipo de comida y edad
+const mealTemplates = {
+  desayuno: {
+    '6-8m': [
+      { title: 'Papilla de Avena con Pera', foods: ['Avena', 'Pera'], grams: [15, 80] },
+      { title: 'Compota de Manzana y Pera', foods: ['Manzana', 'Pera'], grams: [50, 50] },
+      { title: 'Puré de Plátano', foods: ['Plátano'], grams: [60] },
+      { title: 'Papilla de Arroz con Manzana', foods: ['Arroz', 'Manzana'], grams: [30, 70] },
+    ],
+    '8-12m': [
+      { title: 'Yogur con Avena y Plátano', foods: ['Yogur natural', 'Avena', 'Plátano'], grams: [100, 10, 30] },
+      { title: 'Papilla de Cereales con Frutas', foods: ['Avena', 'Manzana', 'Pera'], grams: [15, 50, 50] },
+      { title: 'Tostada de Pan con Aguacate', foods: ['Pan integral', 'Aguacate'], grams: [25, 40] },
+      { title: 'Compota de Frutas Variadas', foods: ['Manzana', 'Pera', 'Plátano'], grams: [40, 40, 30] },
+    ],
+    '12-24m': [
+      { title: 'Tortilla de Huevo con Pan', foods: ['Huevo', 'Pan integral'], grams: [60, 30] },
+      { title: 'Huevos Revueltos con Pan', foods: ['Huevo', 'Pan integral'], grams: [60, 30] },
+      { title: 'Yogur con Cereal y Frutas', foods: ['Yogur natural', 'Avena', 'Fresa', 'Plátano'], grams: [100, 15, 30, 30] },
+      { title: 'Papilla de Avena con Manzana', foods: ['Avena', 'Manzana', 'Canela'], grams: [25, 80, 1] },
+    ]
+  },
+  almuerzo: {
+    '6-8m': [
+      { title: 'Puré de Calabacín y Zanahoria', foods: ['Calabacín', 'Zanahoria'], grams: [60, 40] },
+      { title: 'Puré de Calabaza y Patata', foods: ['Calabaza', 'Patata'], grams: [60, 40] },
+      { title: 'Puré de Pollo con Verduras', foods: ['Pollo', 'Calabacín', 'Zanahoria'], grams: [30, 50, 30] },
+      { title: 'Puré de Tres Verduras', foods: ['Calabacín', 'Zanahoria', 'Patata'], grams: [40, 30, 40] },
+      { title: 'Puré de Pollo con Patata', foods: ['Pollo', 'Patata', 'Calabacín'], grams: [30, 50, 40] },
+    ],
+    '8-12m': [
+      { title: 'Pollo con Verduras y Arroz', foods: ['Pollo', 'Zanahoria', 'Patata', 'Arroz'], grams: [40, 30, 40, 30] },
+      { title: 'Ternera con Verduras', foods: ['Ternera', 'Calabacín', 'Patata'], grams: [35, 50, 50] },
+      { title: 'Merluza con Patata y Judías', foods: ['Merluza', 'Patata', 'Judías verdes'], grams: [40, 60, 40] },
+      { title: 'Lentejas con Verduras', foods: ['Lentejas', 'Zanahoria', 'Patata'], grams: [40, 30, 40] },
+      { title: 'Pollo con Espinacas y Patata', foods: ['Pollo', 'Espinacas', 'Patata'], grams: [40, 40, 50] },
+      { title: 'Arroz con Pollo y Verduras', foods: ['Arroz', 'Pollo', 'Zanahoria', 'Guisantes'], grams: [40, 35, 30, 20] },
+      { title: 'Pasta con Verduras y Queso', foods: ['Pasta', 'Calabacín', 'Queso fresco'], grams: [35, 50, 20] },
+      { title: 'Garbanzos con Verduras', foods: ['Garbanzos', 'Zanahoria', 'Patata'], grams: [40, 30, 40] },
+    ],
+    '12-24m': [
+      { title: 'Estofado de Pollo con Verduras', foods: ['Pollo', 'Patata', 'Zanahoria', 'Judías verdes'], grams: [50, 60, 40, 40] },
+      { title: 'Lentejas Estofadas', foods: ['Lentejas', 'Zanahoria', 'Patata', 'Puerro'], grams: [50, 40, 50, 30] },
+      { title: 'Arroz con Pollo', foods: ['Arroz', 'Pollo', 'Pimiento', 'Tomate'], grams: [50, 50, 30, 40] },
+      { title: 'Pasta con Salsa de Verduras', foods: ['Pasta', 'Tomate', 'Zanahoria', 'Ternera'], grams: [50, 50, 30, 40] },
+      { title: 'Merluza al Vapor con Verduras', foods: ['Merluza', 'Patata', 'Brócoli'], grams: [50, 60, 50] },
+      { title: 'Tortilla de Patata', foods: ['Huevo', 'Patata'], grams: [60, 100] },
+      { title: 'Garbanzos con Pollo', foods: ['Garbanzos', 'Pollo', 'Zanahoria'], grams: [50, 45, 40] },
+      { title: 'Salmón al Horno con Verduras', foods: ['Salmón', 'Patata', 'Brócoli'], grams: [50, 60, 50] },
+      { title: 'Quinoa con Verduras', foods: ['Quinoa', 'Calabacín', 'Pimiento', 'Queso fresco'], grams: [40, 50, 30, 25] },
+    ]
+  },
+  cena: {
+    '6-8m': [
+      { title: 'Compota de Manzana', foods: ['Manzana'], grams: [80] },
+      { title: 'Puré de Pera', foods: ['Pera'], grams: [80] },
+      { title: 'Puré de Plátano', foods: ['Plátano'], grams: [50] },
+      { title: 'Compota de Manzana y Pera', foods: ['Manzana', 'Pera'], grams: [50, 50] },
+    ],
+    '8-12m': [
+      { title: 'Crema de Verduras', foods: ['Calabacín', 'Patata', 'Puerro'], grams: [50, 40, 30] },
+      { title: 'Yogur con Manzana y Pera', foods: ['Yogur natural', 'Manzana', 'Pera'], grams: [100, 30, 30] },
+      { title: 'Puré de Verduras con Queso', foods: ['Calabacín', 'Zanahoria', 'Queso fresco'], grams: [50, 40, 20] },
+      { title: 'Crema de Calabaza', foods: ['Calabaza', 'Patata'], grams: [70, 40] },
+      { title: 'Yogur con Plátano', foods: ['Yogur natural', 'Plátano'], grams: [100, 40] },
+    ],
+    '12-24m': [
+      { title: 'Crema de Verduras Variadas', foods: ['Calabacín', 'Patata', 'Puerro', 'Zanahoria'], grams: [50, 50, 30, 40] },
+      { title: 'Yogur con Frutas', foods: ['Yogur natural', 'Fresa', 'Plátano'], grams: [100, 30, 40] },
+      { title: 'Queso Fresco con Fruta', foods: ['Queso fresco', 'Manzana', 'Uva'], grams: [40, 50, 30] },
+      { title: 'Tortilla de Verduras', foods: ['Huevo', 'Espinacas', 'Patata'], grams: [60, 40, 60] },
+      { title: 'Crema de Brócoli con Queso', foods: ['Brócoli', 'Patata', 'Queso fresco'], grams: [60, 50, 25] },
+    ]
+  },
+  merienda: {
+    '8-12m': [
+      { title: 'Fruta Triturada', foods: ['Manzana', 'Pera'], grams: [40, 40] },
+      { title: 'Yogur Natural', foods: ['Yogur natural'], grams: [60] },
+      { title: 'Trozos de Plátano', foods: ['Plátano'], grams: [40] },
+    ],
+    '12-24m': [
+      { title: 'Yogur con Fresa', foods: ['Yogur natural', 'Fresa'], grams: [80, 40] },
+      { title: 'Fruta en Trozos', foods: ['Plátano', 'Manzana'], grams: [40, 40] },
+      { title: 'Queso Fresco', foods: ['Queso fresco'], grams: [35] },
+      { title: 'Pan con Queso', foods: ['Pan integral', 'Queso fresco'], grams: [25, 30] },
+    ]
+  }
+}
+
+// Función para generar una receta
+function generateRecipe(title: string, foods: string[], grams: number[], mealType: string): string {
+  const emoji = mealType === 'desayuno' ? '🌅' : mealType === 'almuerzo' ? '🍽️' : mealType === 'merienda' ? '🍎' : '🌙'
+  const mealName = mealType.toUpperCase()
+  
+  const ingredients = foods.map((f, i) => `• ${grams[i]}g de ${f}`).join('\n')
+  
+  return `${emoji} ${mealName} - ${title.toUpperCase()}
+
+Ingredientes:
+${ingredients}
+
+Preparación:
+1. Lava y prepara todos los ingredientes
+2. Cocina al vapor hasta que estén blandos
+3. Tritura según la textura apropiada para la edad
+4. Sirve a temperatura ambiente
+
+💡 Receta nutritiva y equilibrada`
+}
+
+// Función para generar comidas de un día
+function generateMeals(month: number, dayInMonth: number): Meal[] {
+  const ageRange = getAgeRangeForMonth(month)
+  const meals: Meal[] = []
+  
+  const desayunoOptions = mealTemplates.desayuno[ageRange]
+  const almuerzoOptions = mealTemplates.almuerzo[ageRange]
+  const cenaOptions = mealTemplates.cena[ageRange]
+  const meriendaOptions = mealTemplates.merienda[ageRange] || []
+  
+  // Seleccionar recetas basadas en el día para variedad
+  const d = desayunoOptions[dayInMonth % desayunoOptions.length]
+  const a = almuerzoOptions[(dayInMonth + 2) % almuerzoOptions.length]
+  const c = cenaOptions[(dayInMonth + 5) % cenaOptions.length]
+  
+  // Desayuno
+  meals.push({
+    type: 'desayuno',
+    title: d.title,
+    food: d.foods.join(' + '),
+    portion: `${Math.round(d.grams.reduce((s, g) => s + g, 0) * 0.8)}-${Math.round(d.grams.reduce((s, g) => s + g, 0) * 1.2)}g`,
+    recipe: generateRecipe(d.title, d.foods, d.grams, 'desayuno')
+  })
+  
+  // Almuerzo
+  meals.push({
+    type: 'almuerzo',
+    title: a.title,
+    food: a.foods.join(' + '),
+    portion: `${Math.round(a.grams.reduce((s, g) => s + g, 0) * 0.8)}-${Math.round(a.grams.reduce((s, g) => s + g, 0) * 1.2)}g`,
+    recipe: generateRecipe(a.title, a.foods, a.grams, 'almuerzo')
+  })
+  
+  // Merienda (solo 8+ meses)
+  if (month >= 8 && meriendaOptions.length > 0) {
+    const m = meriendaOptions[dayInMonth % meriendaOptions.length]
+    meals.push({
+      type: 'merienda',
+      title: m.title,
+      food: m.foods.join(' + '),
+      portion: `${Math.round(m.grams.reduce((s, g) => s + g, 0) * 0.8)}-${Math.round(m.grams.reduce((s, g) => s + g, 0) * 1.2)}g`,
+      recipe: generateRecipe(m.title, m.foods, m.grams, 'merienda')
+    })
+  }
+  
+  // Cena
+  meals.push({
+    type: 'cena',
+    title: c.title,
+    food: c.foods.join(' + '),
+    portion: `${Math.round(c.grams.reduce((s, g) => s + g, 0) * 0.8)}-${Math.round(c.grams.reduce((s, g) => s + g, 0) * 1.2)}g`,
+    recipe: generateRecipe(c.title, c.foods, c.grams, 'cena')
+  })
+  
+  return meals
+}
+
+// Función para generar datos de un día
+function generateDayStep(month: number, dayInMonth: number): IntroStep {
+  const dayNumber = (month - 6) * 30 + dayInMonth
+  const ageRange = getAgeRangeForMonth(month)
+  const weekNumber = Math.ceil(dayNumber / 7)
+  const meals = generateMeals(month, dayInMonth)
+  const mealsPerDay = month <= 7 ? 2 : (month <= 10 ? 3 : 4)
+  
+  return {
+    id: `gen_day${dayNumber}`,
+    weekNumber,
+    dayNumber,
+    monthNumber: month,
+    ageRange,
+    title: `Día ${dayInMonth} - Mes ${month}`,
+    description: `Menú completo para bebé de ${month} meses.`,
+    foodGroup: 'Varios',
+    specificFood: meals[1]?.food || 'Menú variado',
+    portionSize: month <= 7 ? '150-200g diarios' : month <= 10 ? '300-400g diarios' : '400-500g diarios',
+    frequency: `${mealsPerDay} comidas al día`,
+    mealsPerDay,
+    meals,
+    breastmilkNote: month <= 8 
+      ? 'Continúa con la lactancia materna a demanda.'
+      : 'Mantén 2-3 tomas de leche al día.',
+    tips: JSON.stringify(['Ofrece agua en cada comida', 'Respeta el apetito del bebé', 'No fuerces a comer']),
+    warnings: JSON.stringify(['No añadas sal ni azúcar', 'Vigila posibles alergias'])
+  }
+}
+
+// Función para obtener datos completos (existentes + generados)
+export function getCompleteMonthData(month: number): IntroStep[] {
+  // Primero obtener datos existentes
+  const existingDays = introStepsData.filter(step => step.monthNumber === month)
+  const existingDayNumbers = new Set(existingDays.map(d => d.dayNumber))
+  
+  // Si ya hay 30 días, devolver los existentes
+  if (existingDays.length >= 30) {
+    return existingDays
+  }
+  
+  // Generar los días que faltan
+  const result: IntroStep[] = [...existingDays]
+  
+  for (let day = 1; day <= 30; day++) {
+    if (!existingDayNumbers.has(day)) {
+      result.push(generateDayStep(month, day))
+    }
+  }
+  
+  // Ordenar por día
+  result.sort((a, b) => (a.dayNumber || 0) - (b.dayNumber || 0))
+  
+  return result
+}
+
+// Función para obtener todos los datos completos (6-24 meses)
+export function getAllCompleteData(): IntroStep[] {
+  const allData: IntroStep[] = []
+  
+  for (let month = 6; month <= 24; month++) {
+    allData.push(...getCompleteMonthData(month))
+  }
+  
+  return allData
 }

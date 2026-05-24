@@ -73,7 +73,7 @@ export const foodShoppingInfo: Record<string, {
   
   // ==================== PROTEÍNAS ====================
   'Pollo': { unitWeight: 150, unit: 'pechuga', shelfLife: '2-3 días (congelar si es más)', category: 'Proteínas', icon: '🍗' },
-  'Pechuga de pollo': { unitWeight: 150, unit: 'pechaga', shelfLife: '2-3 días (congelar)', category: 'Proteínas', icon: '🍗' },
+  'Pechuga de pollo': { unitWeight: 150, unit: 'pechuga', shelfLife: '2-3 días (congelar)', category: 'Proteínas', icon: '🍗' },
   'Ternera': { unitWeight: 150, unit: 'trozo magro', shelfLife: '2-3 días (congelar si es más)', category: 'Proteínas', icon: '🥩' },
   'Carne magra': { unitWeight: 150, unit: 'trozo 150g', shelfLife: '2-3 días (congelar)', category: 'Proteínas', icon: '🥩' },
   'Cordero': { unitWeight: 150, unit: 'trozo magro', shelfLife: '2-3 días (congelar)', category: 'Proteínas', icon: '🍖' },
@@ -107,7 +107,7 @@ export const foodShoppingInfo: Record<string, {
   'Arroz integral': { unitWeight: 200, unit: 'paquete 500g', shelfLife: '30+ días lugar seco', category: 'Cereales', icon: '🍚' },
   'Avena': { unitWeight: 250, unit: 'paquete 500g', shelfLife: '30+ días lugar seco', category: 'Cereales', icon: '🌾' },
   'Pan integral': { unitWeight: 50, unit: 'rebanada', shelfLife: '2-3 días (congelar)', category: 'Cereales', icon: '🍞' },
-  'Pan de molde': { unitWeight: 50, unit: 'rebanada', shelfLife: '5-7 días (congelar)', category: 'Cereales', icon: '🍞' },
+  'Pan de molde': { unitWeight: 50, unit: 'rebenada', shelfLife: '5-7 días (congelar)', category: 'Cereales', icon: '🍞' },
   'Pasta': { unitWeight: 100, unit: 'paquete 500g', shelfLife: '30+ días lugar seco', category: 'Cereales', icon: '🍝' },
   'Macarrones': { unitWeight: 100, unit: 'paquete 500g', shelfLife: '30+ días lugar seco', category: 'Cereales', icon: '🍝' },
   'Espaguetis': { unitWeight: 100, unit: 'paquete 500g', shelfLife: '30+ días lugar seco', category: 'Cereales', icon: '🍝' },
@@ -232,6 +232,286 @@ const typicalAmounts: Record<string, number> = {
   'Canela': 1,
 }
 
+// Alimentos típicos por mes según la edad del bebé
+const monthlyFoodPlan: Record<number, {
+  verduras: { name: string; gramsPerDay: number; frequency: number }[]
+  frutas: { name: string; gramsPerDay: number; frequency: number }[]
+  proteinas: { name: string; gramsPerDay: number; frequency: number }[]
+  cereales: { name: string; gramsPerDay: number; frequency: number }[]
+  lacteos: { name: string; gramsPerDay: number; frequency: number }[]
+  legumbres: { name: string; gramsPerDay: number; frequency: number }[]
+}> = {
+  6: {
+    verduras: [
+      { name: 'Calabacín', gramsPerDay: 100, frequency: 12 },
+      { name: 'Calabaza', gramsPerDay: 100, frequency: 10 },
+      { name: 'Zanahoria', gramsPerDay: 80, frequency: 10 },
+      { name: 'Patata', gramsPerDay: 100, frequency: 8 },
+    ],
+    frutas: [
+      { name: 'Pera', gramsPerDay: 100, frequency: 10 },
+      { name: 'Manzana', gramsPerDay: 100, frequency: 10 },
+      { name: 'Plátano', gramsPerDay: 60, frequency: 8 },
+    ],
+    proteinas: [
+      { name: 'Pollo', gramsPerDay: 40, frequency: 8 },
+    ],
+    cereales: [
+      { name: 'Arroz', gramsPerDay: 40, frequency: 6 },
+      { name: 'Avena', gramsPerDay: 15, frequency: 4 },
+    ],
+    lacteos: [],
+    legumbres: [],
+  },
+  7: {
+    verduras: [
+      { name: 'Calabacín', gramsPerDay: 100, frequency: 10 },
+      { name: 'Calabaza', gramsPerDay: 100, frequency: 8 },
+      { name: 'Zanahoria', gramsPerDay: 80, frequency: 10 },
+      { name: 'Patata', gramsPerDay: 100, frequency: 10 },
+      { name: 'Judías verdes', gramsPerDay: 80, frequency: 6 },
+      { name: 'Puerro', gramsPerDay: 50, frequency: 4 },
+    ],
+    frutas: [
+      { name: 'Pera', gramsPerDay: 100, frequency: 8 },
+      { name: 'Manzana', gramsPerDay: 100, frequency: 8 },
+      { name: 'Plátano', gramsPerDay: 60, frequency: 10 },
+      { name: 'Aguacate', gramsPerDay: 50, frequency: 4 },
+    ],
+    proteinas: [
+      { name: 'Pollo', gramsPerDay: 50, frequency: 8 },
+      { name: 'Ternera', gramsPerDay: 40, frequency: 4 },
+    ],
+    cereales: [
+      { name: 'Arroz', gramsPerDay: 40, frequency: 8 },
+      { name: 'Avena', gramsPerDay: 15, frequency: 6 },
+    ],
+    lacteos: [],
+    legumbres: [],
+  },
+  8: {
+    verduras: [
+      { name: 'Calabacín', gramsPerDay: 100, frequency: 8 },
+      { name: 'Calabaza', gramsPerDay: 100, frequency: 6 },
+      { name: 'Zanahoria', gramsPerDay: 80, frequency: 8 },
+      { name: 'Patata', gramsPerDay: 100, frequency: 10 },
+      { name: 'Judías verdes', gramsPerDay: 80, frequency: 8 },
+      { name: 'Espinacas', gramsPerDay: 50, frequency: 4 },
+      { name: 'Brócoli', gramsPerDay: 80, frequency: 4 },
+    ],
+    frutas: [
+      { name: 'Pera', gramsPerDay: 100, frequency: 6 },
+      { name: 'Manzana', gramsPerDay: 100, frequency: 6 },
+      { name: 'Plátano', gramsPerDay: 60, frequency: 8 },
+      { name: 'Aguacate', gramsPerDay: 50, frequency: 6 },
+      { name: 'Melocotón', gramsPerDay: 80, frequency: 4 },
+    ],
+    proteinas: [
+      { name: 'Pollo', gramsPerDay: 50, frequency: 8 },
+      { name: 'Ternera', gramsPerDay: 45, frequency: 6 },
+      { name: 'Huevo', gramsPerDay: 60, frequency: 4 },
+      { name: 'Merluza', gramsPerDay: 40, frequency: 3 },
+    ],
+    cereales: [
+      { name: 'Arroz', gramsPerDay: 40, frequency: 8 },
+      { name: 'Avena', gramsPerDay: 20, frequency: 6 },
+      { name: 'Pasta', gramsPerDay: 30, frequency: 4 },
+    ],
+    lacteos: [
+      { name: 'Yogur natural', gramsPerDay: 125, frequency: 6 },
+    ],
+    legumbres: [
+      { name: 'Lentejas', gramsPerDay: 40, frequency: 4 },
+    ],
+  },
+  9: {
+    verduras: [
+      { name: 'Calabacín', gramsPerDay: 100, frequency: 6 },
+      { name: 'Zanahoria', gramsPerDay: 80, frequency: 8 },
+      { name: 'Patata', gramsPerDay: 100, frequency: 10 },
+      { name: 'Judías verdes', gramsPerDay: 80, frequency: 8 },
+      { name: 'Espinacas', gramsPerDay: 50, frequency: 6 },
+      { name: 'Brócoli', gramsPerDay: 80, frequency: 6 },
+      { name: 'Guisantes', gramsPerDay: 50, frequency: 4 },
+    ],
+    frutas: [
+      { name: 'Pera', gramsPerDay: 100, frequency: 5 },
+      { name: 'Manzana', gramsPerDay: 100, frequency: 5 },
+      { name: 'Plátano', gramsPerDay: 60, frequency: 10 },
+      { name: 'Aguacate', gramsPerDay: 50, frequency: 6 },
+      { name: 'Naranja', gramsPerDay: 100, frequency: 4 },
+    ],
+    proteinas: [
+      { name: 'Pollo', gramsPerDay: 50, frequency: 8 },
+      { name: 'Ternera', gramsPerDay: 45, frequency: 6 },
+      { name: 'Huevo', gramsPerDay: 60, frequency: 6 },
+      { name: 'Merluza', gramsPerDay: 45, frequency: 4 },
+      { name: 'Salmón', gramsPerDay: 40, frequency: 2 },
+    ],
+    cereales: [
+      { name: 'Arroz', gramsPerDay: 40, frequency: 8 },
+      { name: 'Avena', gramsPerDay: 20, frequency: 6 },
+      { name: 'Pasta', gramsPerDay: 30, frequency: 6 },
+      { name: 'Pan integral', gramsPerDay: 25, frequency: 4 },
+    ],
+    lacteos: [
+      { name: 'Yogur natural', gramsPerDay: 125, frequency: 8 },
+      { name: 'Queso fresco', gramsPerDay: 30, frequency: 4 },
+    ],
+    legumbres: [
+      { name: 'Lentejas', gramsPerDay: 50, frequency: 6 },
+      { name: 'Garbanzos', gramsPerDay: 40, frequency: 4 },
+    ],
+  },
+  10: {
+    verduras: [
+      { name: 'Calabacín', gramsPerDay: 100, frequency: 6 },
+      { name: 'Zanahoria', gramsPerDay: 80, frequency: 6 },
+      { name: 'Patata', gramsPerDay: 100, frequency: 8 },
+      { name: 'Judías verdes', gramsPerDay: 80, frequency: 6 },
+      { name: 'Espinacas', gramsPerDay: 60, frequency: 6 },
+      { name: 'Brócoli', gramsPerDay: 80, frequency: 6 },
+      { name: 'Tomate', gramsPerDay: 80, frequency: 4 },
+    ],
+    frutas: [
+      { name: 'Pera', gramsPerDay: 100, frequency: 4 },
+      { name: 'Manzana', gramsPerDay: 100, frequency: 4 },
+      { name: 'Plátano', gramsPerDay: 60, frequency: 10 },
+      { name: 'Naranja', gramsPerDay: 100, frequency: 6 },
+      { name: 'Mango', gramsPerDay: 80, frequency: 4 },
+    ],
+    proteinas: [
+      { name: 'Pollo', gramsPerDay: 55, frequency: 8 },
+      { name: 'Ternera', gramsPerDay: 50, frequency: 6 },
+      { name: 'Huevo', gramsPerDay: 60, frequency: 8 },
+      { name: 'Merluza', gramsPerDay: 50, frequency: 4 },
+      { name: 'Salmón', gramsPerDay: 45, frequency: 3 },
+    ],
+    cereales: [
+      { name: 'Arroz', gramsPerDay: 45, frequency: 8 },
+      { name: 'Avena', gramsPerDay: 20, frequency: 6 },
+      { name: 'Pasta', gramsPerDay: 35, frequency: 6 },
+      { name: 'Pan integral', gramsPerDay: 30, frequency: 6 },
+    ],
+    lacteos: [
+      { name: 'Yogur natural', gramsPerDay: 125, frequency: 10 },
+      { name: 'Queso fresco', gramsPerDay: 35, frequency: 6 },
+    ],
+    legumbres: [
+      { name: 'Lentejas', gramsPerDay: 50, frequency: 6 },
+      { name: 'Garbanzos', gramsPerDay: 50, frequency: 6 },
+    ],
+  },
+  11: {
+    verduras: [
+      { name: 'Calabacín', gramsPerDay: 100, frequency: 5 },
+      { name: 'Zanahoria', gramsPerDay: 80, frequency: 6 },
+      { name: 'Patata', gramsPerDay: 100, frequency: 8 },
+      { name: 'Judías verdes', gramsPerDay: 80, frequency: 6 },
+      { name: 'Espinacas', gramsPerDay: 60, frequency: 6 },
+      { name: 'Brócoli', gramsPerDay: 80, frequency: 6 },
+      { name: 'Tomate', gramsPerDay: 80, frequency: 6 },
+      { name: 'Pimiento', gramsPerDay: 50, frequency: 4 },
+    ],
+    frutas: [
+      { name: 'Plátano', gramsPerDay: 60, frequency: 10 },
+      { name: 'Naranja', gramsPerDay: 100, frequency: 8 },
+      { name: 'Manzana', gramsPerDay: 100, frequency: 6 },
+      { name: 'Mango', gramsPerDay: 80, frequency: 4 },
+      { name: 'Fresa', gramsPerDay: 50, frequency: 4 },
+    ],
+    proteinas: [
+      { name: 'Pollo', gramsPerDay: 60, frequency: 8 },
+      { name: 'Ternera', gramsPerDay: 50, frequency: 6 },
+      { name: 'Huevo', gramsPerDay: 60, frequency: 8 },
+      { name: 'Merluza', gramsPerDay: 50, frequency: 4 },
+      { name: 'Salmón', gramsPerDay: 50, frequency: 3 },
+      { name: 'Jamón cocido', gramsPerDay: 20, frequency: 4 },
+    ],
+    cereales: [
+      { name: 'Arroz', gramsPerDay: 50, frequency: 8 },
+      { name: 'Avena', gramsPerDay: 25, frequency: 6 },
+      { name: 'Pasta', gramsPerDay: 40, frequency: 8 },
+      { name: 'Pan integral', gramsPerDay: 30, frequency: 8 },
+    ],
+    lacteos: [
+      { name: 'Yogur natural', gramsPerDay: 125, frequency: 12 },
+      { name: 'Queso fresco', gramsPerDay: 40, frequency: 8 },
+    ],
+    legumbres: [
+      { name: 'Lentejas', gramsPerDay: 60, frequency: 6 },
+      { name: 'Garbanzos', gramsPerDay: 50, frequency: 6 },
+      { name: 'Alubias blancas', gramsPerDay: 40, frequency: 4 },
+    ],
+  },
+  12: {
+    verduras: [
+      { name: 'Calabacín', gramsPerDay: 100, frequency: 4 },
+      { name: 'Zanahoria', gramsPerDay: 80, frequency: 6 },
+      { name: 'Patata', gramsPerDay: 100, frequency: 6 },
+      { name: 'Judías verdes', gramsPerDay: 80, frequency: 6 },
+      { name: 'Espinacas', gramsPerDay: 60, frequency: 6 },
+      { name: 'Brócoli', gramsPerDay: 80, frequency: 6 },
+      { name: 'Tomate', gramsPerDay: 80, frequency: 8 },
+      { name: 'Pimiento', gramsPerDay: 50, frequency: 6 },
+    ],
+    frutas: [
+      { name: 'Plátano', gramsPerDay: 60, frequency: 12 },
+      { name: 'Naranja', gramsPerDay: 100, frequency: 10 },
+      { name: 'Manzana', gramsPerDay: 100, frequency: 6 },
+      { name: 'Mango', gramsPerDay: 80, frequency: 4 },
+      { name: 'Fresa', gramsPerDay: 50, frequency: 6 },
+      { name: 'Uva', gramsPerDay: 40, frequency: 4 },
+    ],
+    proteinas: [
+      { name: 'Pollo', gramsPerDay: 60, frequency: 8 },
+      { name: 'Ternera', gramsPerDay: 55, frequency: 6 },
+      { name: 'Huevo', gramsPerDay: 60, frequency: 10 },
+      { name: 'Merluza', gramsPerDay: 55, frequency: 4 },
+      { name: 'Salmón', gramsPerDay: 50, frequency: 4 },
+      { name: 'Jamón cocido', gramsPerDay: 25, frequency: 6 },
+    ],
+    cereales: [
+      { name: 'Arroz', gramsPerDay: 50, frequency: 8 },
+      { name: 'Avena', gramsPerDay: 25, frequency: 8 },
+      { name: 'Pasta', gramsPerDay: 45, frequency: 8 },
+      { name: 'Pan integral', gramsPerDay: 35, frequency: 10 },
+    ],
+    lacteos: [
+      { name: 'Yogur natural', gramsPerDay: 125, frequency: 14 },
+      { name: 'Queso fresco', gramsPerDay: 40, frequency: 10 },
+    ],
+    legumbres: [
+      { name: 'Lentejas', gramsPerDay: 60, frequency: 6 },
+      { name: 'Garbanzos', gramsPerDay: 55, frequency: 6 },
+      { name: 'Alubias blancas', gramsPerDay: 50, frequency: 4 },
+    ],
+  },
+}
+
+// Generar plan mensual para meses 13-24 basado en el mes 12 pero con más cantidad
+function generateMonthPlan(month: number): typeof monthlyFoodPlan[6] {
+  const basePlan = monthlyFoodPlan[12] || monthlyFoodPlan[6]
+  const multiplier = 1 + (month - 12) * 0.03 // Aumento gradual del 3% por mes
+  
+  return {
+    verduras: basePlan.verduras.map(v => ({ ...v, gramsPerDay: Math.round(v.gramsPerDay * multiplier) })),
+    frutas: basePlan.frutas.map(f => ({ ...f, gramsPerDay: Math.round(f.gramsPerDay * multiplier) })),
+    proteinas: basePlan.proteinas.map(p => ({ ...p, gramsPerDay: Math.round(p.gramsPerDay * multiplier) })),
+    cereales: basePlan.cereales.map(c => ({ ...c, gramsPerDay: Math.round(c.gramsPerDay * multiplier) })),
+    lacteos: basePlan.lacteos.map(l => ({ ...l, gramsPerDay: Math.round(l.gramsPerDay * multiplier) })),
+    legumbres: basePlan.legumbres.map(l => ({ ...l, gramsPerDay: Math.round(l.gramsPerDay * multiplier) })),
+  }
+}
+
+// Obtener el plan de alimentos para un mes específico
+function getMonthFoodPlan(month: number): typeof monthlyFoodPlan[6] {
+  if (monthlyFoodPlan[month]) {
+    return monthlyFoodPlan[month]
+  }
+  return generateMonthPlan(month)
+}
+
 // Extraer cantidad en gramos del texto de la receta
 function extractGramsFromRecipe(recipeText: string, foodName: string): number {
   // Patrones para buscar cantidades
@@ -266,12 +546,14 @@ export function calculateShoppingListByMonth(
   }>
 ): ShoppingItem[] {
   // Filtrar los días del mes específico
-  const monthSteps = introSteps.filter(step => step.monthNumber === month)
+  let monthSteps = introSteps.filter(step => step.monthNumber === month)
   
-  if (monthSteps.length === 0) {
-    console.log(`No hay datos para el mes ${month}`)
-    return []
-  }
+  // Si hay menos de 25 días para este mes, usamos el plan mensual predefinido
+  // para asegurar que la lista de compras esté completa
+  const usePredefinedPlan = monthSteps.length < 25
+  
+  // Usar el plan mensual predefinido para calcular las cantidades
+  const monthPlan = getMonthFoodPlan(month)
   
   // Obtener los alimentos de ese mes con cantidades
   const foodsNeeded: Record<string, { 
@@ -282,78 +564,115 @@ export function calculateShoppingListByMonth(
     recipes: string[]
   }> = {}
   
-  monthSteps.forEach(step => {
-    const dayLabel = step.dayNumber ? `Día ${step.dayNumber}` : step.id
-    
-    // Obtener alimentos de las comidas
-    if (step.meals && step.meals.length > 0) {
-      step.meals.forEach(meal => {
-        if (meal.food && meal.recipe) {
-          // Separar alimentos por + o ,
-          const foods = meal.food.split(/[+,]/).map(f => f.trim()).filter(f => f.length > 0)
-          
-          foods.forEach(food => {
-            if (food && !shouldSkipFood(food)) {
-              const normalizedFood = normalizeFoodName(food)
-              if (!normalizedFood) return // Skip if null
-              
-              const category = determineCategory(normalizedFood)
-              
-              // Extraer gramos de la receta o usar valor típico
-              const grams = extractGramsFromRecipe(meal.recipe, normalizedFood)
-              
-              if (!foodsNeeded[normalizedFood]) {
-                foodsNeeded[normalizedFood] = { 
-                  totalGrams: 0, 
-                  count: 0, 
-                  category, 
-                  days: [],
-                  recipes: []
-                }
-              }
-              foodsNeeded[normalizedFood].totalGrams += grams
-              foodsNeeded[normalizedFood].count++
-              if (!foodsNeeded[normalizedFood].days.includes(dayLabel)) {
-                foodsNeeded[normalizedFood].days.push(dayLabel)
-              }
-              if (!foodsNeeded[normalizedFood].recipes.includes(meal.title)) {
-                foodsNeeded[normalizedFood].recipes.push(meal.title)
-              }
-            }
-          })
-        }
-      })
-    }
-    
-    // También verificar specificFood para compatibilidad
-    if (step.specificFood) {
-      const foods = step.specificFood.split(/[+,]/).map(f => f.trim()).filter(f => f.length > 0)
-      foods.forEach(food => {
-        if (food && !shouldSkipFood(food)) {
-          const normalizedFood = normalizeFoodName(food)
-          if (!normalizedFood) return // Skip if null
-          
-          const category = step.foodGroup || determineCategory(normalizedFood)
-          const grams = typicalAmounts[normalizedFood] || 50
-          
-          if (!foodsNeeded[normalizedFood]) {
-            foodsNeeded[normalizedFood] = { 
-              totalGrams: 0, 
-              count: 0, 
-              category, 
-              days: [],
-              recipes: []
-            }
-          }
-          foodsNeeded[normalizedFood].totalGrams += grams
-          foodsNeeded[normalizedFood].count++
-          if (!foodsNeeded[normalizedFood].days.includes(dayLabel)) {
-            foodsNeeded[normalizedFood].days.push(dayLabel)
+  // Procesar el plan mensual (SIEMPRE usar para asegurar lista completa)
+  const allCategories = ['verduras', 'frutas', 'proteinas', 'cereales', 'lacteos', 'legumbres'] as const
+  const categoryMapping: Record<string, string> = {
+    verduras: 'Verduras',
+    frutas: 'Frutas',
+    proteinas: 'Proteínas',
+    cereales: 'Cereales',
+    lacteos: 'Lácteos',
+    legumbres: 'Legumbres',
+  }
+  
+  // SIEMPRE procesar el plan mensual para tener lista de compras completa
+  allCategories.forEach(cat => {
+    const items = monthPlan[cat]
+    if (items) {
+      items.forEach(item => {
+        // Calcular gramos totales = gramos por día × frecuencia en el mes
+        const totalGramsForMonth = item.gramsPerDay * item.frequency
+        
+        if (!foodsNeeded[item.name]) {
+          foodsNeeded[item.name] = { 
+            totalGrams: 0, 
+            count: 0, 
+            category: categoryMapping[cat], 
+            days: [],
+            recipes: []
           }
         }
+        foodsNeeded[item.name].totalGrams += totalGramsForMonth
+        foodsNeeded[item.name].count += item.frequency
       })
     }
   })
+  
+  // También procesar los datos de introSteps si están disponibles
+  if (monthSteps.length > 0) {
+    monthSteps.forEach(step => {
+      const dayLabel = step.dayNumber ? `Día ${step.dayNumber}` : step.id
+      
+      // Obtener alimentos de las comidas
+      if (step.meals && step.meals.length > 0) {
+        step.meals.forEach(meal => {
+          if (meal.food && meal.recipe) {
+            // Separar alimentos por + o ,
+            const foods = meal.food.split(/[+,]/).map(f => f.trim()).filter(f => f.length > 0)
+            
+            foods.forEach(food => {
+              if (food && !shouldSkipFood(food)) {
+                const normalizedFood = normalizeFoodName(food)
+                if (!normalizedFood) return // Skip if null
+                
+                const category = determineCategory(normalizedFood)
+                
+                // Extraer gramos de la receta o usar valor típico
+                const grams = extractGramsFromRecipe(meal.recipe, normalizedFood)
+                
+                if (!foodsNeeded[normalizedFood]) {
+                  foodsNeeded[normalizedFood] = { 
+                    totalGrams: 0, 
+                    count: 0, 
+                    category, 
+                    days: [],
+                    recipes: []
+                  }
+                }
+                foodsNeeded[normalizedFood].totalGrams += grams
+                foodsNeeded[normalizedFood].count++
+                if (!foodsNeeded[normalizedFood].days.includes(dayLabel)) {
+                  foodsNeeded[normalizedFood].days.push(dayLabel)
+                }
+                if (!foodsNeeded[normalizedFood].recipes.includes(meal.title)) {
+                  foodsNeeded[normalizedFood].recipes.push(meal.title)
+                }
+              }
+            })
+          }
+        })
+      }
+      
+      // También verificar specificFood para compatibilidad
+      if (step.specificFood) {
+        const foods = step.specificFood.split(/[+,]/).map(f => f.trim()).filter(f => f.length > 0)
+        foods.forEach(food => {
+          if (food && !shouldSkipFood(food)) {
+            const normalizedFood = normalizeFoodName(food)
+            if (!normalizedFood) return // Skip if null
+            
+            const category = step.foodGroup || determineCategory(normalizedFood)
+            const grams = typicalAmounts[normalizedFood] || 50
+            
+            if (!foodsNeeded[normalizedFood]) {
+              foodsNeeded[normalizedFood] = { 
+                totalGrams: 0, 
+                count: 0, 
+                category, 
+                days: [],
+                recipes: []
+              }
+            }
+            foodsNeeded[normalizedFood].totalGrams += grams
+            foodsNeeded[normalizedFood].count++
+            if (!foodsNeeded[normalizedFood].days.includes(dayLabel)) {
+              foodsNeeded[normalizedFood].days.push(dayLabel)
+            }
+          }
+        })
+      }
+    })
+  }
   
   // Convertir a lista de compra con cantidades precisas
   const shoppingList: ShoppingItem[] = []
@@ -372,14 +691,14 @@ export function calculateShoppingListByMonth(
       const units = Math.ceil(adjustedGrams / shopInfo.unitWeight)
       const weeklyGrams = Math.round(totalGrams / 4)
       
-      // Formatear cantidad de forma clara
+      // Formatear cantidad de forma clara - DESTACAR CANTIDAD TOTAL DEL MES
       let quantityText = ''
       if (shopInfo.unit.includes('unidad') || shopInfo.unit.includes('trozo') || shopInfo.unit.includes('filete') || shopInfo.unit.includes('pechuga')) {
-        quantityText = `${units} ${shopInfo.unit}${units > 1 ? 's' : ''} (~${adjustedGrams}g total)`
-      } else if (shopInfo.unit.includes('paquete') || shopInfo.unit.includes('bote') || shopInfo.unit.includes('caja')) {
-        quantityText = `${units} ${shopInfo.unit}${units > 1 ? 's' : ''} (${adjustedGrams}g para el mes)`
+        quantityText = `${units} ${shopInfo.unit}${units > 1 ? 'es' : ''} = ${adjustedGrams}g TOTAL MES`
+      } else if (shopInfo.unit.includes('paquete') || shopInfo.unit.includes('bote') || shopInfo.unit.includes('caja') || shopInfo.unit.includes('botella')) {
+        quantityText = `${units} ${shopInfo.unit}${units > 1 ? 's' : ''} = ${adjustedGrams}g TOTAL MES`
       } else {
-        quantityText = `${adjustedGrams}g (~${units} ${shopInfo.unit}${units > 1 ? 's' : ''})`
+        quantityText = `${adjustedGrams}g TOTAL MES (~${units} ${shopInfo.unit}${units > 1 ? 's' : ''})`
       }
       
       shoppingList.push({
@@ -389,10 +708,10 @@ export function calculateShoppingListByMonth(
         quantityGrams: adjustedGrams,
         totalGrams: adjustedGrams,
         weeklyGrams,
-        notes: `${uniqueDays} días | ${usageCount} usos | ${shopInfo.shelfLife}`,
+        notes: `${usageCount} veces al mes | ${shopInfo.shelfLife}`,
         icon: shopInfo.icon,
         month,
-        daysUsed: info.days,
+        daysUsed: info.days.length > 0 ? info.days : undefined,
       })
     } else {
       // Si no tenemos info específica, agregar con estimación
@@ -402,14 +721,14 @@ export function calculateShoppingListByMonth(
       shoppingList.push({
         name: food,
         category: info.category as ShoppingItem['category'],
-        quantity: `${adjustedGrams}g (${uniqueDays} días del mes)`,
+        quantity: `${adjustedGrams}g TOTAL MES`,
         quantityGrams: adjustedGrams,
         totalGrams: adjustedGrams,
         weeklyGrams,
         icon: categoryIcons[info.category] || '🥣',
         month,
-        daysUsed: info.days,
-        notes: `${uniqueDays} días | ${usageCount} usos`,
+        daysUsed: info.days.length > 0 ? info.days : undefined,
+        notes: `${usageCount} veces al mes`,
       })
     }
   })
@@ -457,7 +776,7 @@ function shouldSkipFood(food: string): boolean {
     'Leche materna a demanda', 'Pecho', 'Lactancia', 'Proteína',
     'Nuevos alimentos', 'Nuevos', 'Alimentos', 'Variedad',
     'Aceite de oliva virgen', 'Leche materna', 'Leche de fórmula',
-    'Frutas o verduras', 'Fruta o verdura'
+    'Frutas o verduras', 'Fruta o verdura', 'Verduras variadas'
   ]
   
   const lowerFood = food.toLowerCase().trim()
@@ -544,6 +863,13 @@ export function getMonthSummary(month: number, introSteps: Array<any>): {
     if (step.meals) totalMeals += step.meals.length
   })
   
+  // Si no hay datos de pasos, estimar comidas según el mes
+  if (totalMeals === 0) {
+    // Mes 6: ~30 días × 1-2 comidas = 45 comidas
+    // Mes 7+: ~30 días × 2-3 comidas = 75 comidas
+    totalMeals = month <= 7 ? 45 : 75
+  }
+  
   const categories: Record<string, number> = {}
   let totalGrams = 0
   shoppingList.forEach(item => {
@@ -552,7 +878,7 @@ export function getMonthSummary(month: number, introSteps: Array<any>): {
   })
   
   return {
-    totalDays: monthSteps.length,
+    totalDays: 30, // Mes estándar de 30 días
     totalMeals,
     uniqueFoods: shoppingList.length,
     categories,
