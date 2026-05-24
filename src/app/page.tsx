@@ -1,986 +1,1028 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { toast, Toaster } from 'sonner'
-import { format } from 'date-fns'
-import { es as esLocale, enUS } from 'date-fns/locale'
-import {
-  ArrowLeft,
-  Plus,
-  Trash2,
-  Camera,
-  X,
-  Eye,
-  Calendar,
-  Building2,
-  Loader2,
-  RotateCcw,
-  Globe,
-  ClipboardList,
-  Download
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  Baby, Utensils, ChefHat, BookOpen, Sparkles, 
+  Clock, AlertTriangle, CheckCircle,
+  Calendar, Heart, ThumbsUp, ThumbsDown, AlertCircle,
+  MinusCircle, MessageSquare, LogOut, Copy, Share2,
+  Key, Plus, ShoppingCart, Check, Settings, Sun, Moon
 } from 'lucide-react'
-
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
+import { Textarea } from '@/components/ui/textarea'
+import { Progress } from '@/components/ui/progress'
+import { Input } from '@/components/ui/input'
+import { Loader2 } from 'lucide-react'
+import { introStepsData, groupStepsByMonth, getAgeRangeForMonth, type IntroStep, ageRangeInfo } from '@/lib/intro-steps-data'
+import { calculateShoppingListByMonth, getAvailableMonths, categoryIcons, getMonthSummary, type ShoppingItem } from '@/lib/shopping-list'
 
-// Traducciones simples
-const t = {
-  es: {
-    hotelName: 'Los Rubiales',
-    hotelSubtitle: 'Hotel Rural',
-    home: 'Inicio',
-    admin: 'Admin',
-    welcome: 'Bienvenido',
-    selectApartment: 'Seleccione un apartamento para registrar huéspedes',
-    noApartments: 'No hay apartamentos disponibles',
-    apartment: 'Apartamento',
-    backToApartments: 'Volver',
-    addGuestData: 'Añada los datos de cada huésped',
-    firstName: 'Nombre',
-    firstNamePlaceholder: 'Juan',
-    lastName: 'Apellidos',
-    lastNamePlaceholder: 'García López',
-    documentType: 'Tipo de documento',
-    documentNumber: 'Número de documento',
-    documentNumberPlaceholder: '12345678A',
-    nationality: 'Nacionalidad',
-    nationalityPlaceholder: 'Española',
-    email: 'Email',
-    emailPlaceholder: 'juan@email.com',
-    phone: 'Teléfono',
-    phonePlaceholder: '+34 612 345 678',
-    dni: 'DNI',
-    passport: 'Pasaporte',
-    nie: 'NIE',
-    documentPhoto: 'Foto del documento',
-    takePhoto: 'Capturar foto',
-    changePhoto: 'Cambiar foto',
-    mainGuest: 'Marcar como huésped principal',
-    principal: 'Principal',
-    addGuest: 'Añadir huésped',
-    guests: 'Huéspedes',
-    noGuests: 'No hay huéspedes añadidos',
-    saveRegistration: 'Guardar registro',
-    signature: 'Firma del huésped',
-    signaturePlaceholder: 'Firme aquí',
-    clear: 'Limpiar',
-    stayDates: 'Fechas de estancia',
-    checkInDate: 'Fecha de entrada',
-    checkOutDate: 'Fecha de salida',
-    selectDate: 'Seleccionar fecha',
-    checkIn: 'Entrada',
-    checkOut: 'Salida',
-    status: 'Estado',
-    active: 'Activo',
-    checkedOut: 'Finalizado',
-    checkout: 'Realizar checkout',
-    registrationDetails: 'Detalles del Registro',
-    adminPanel: 'Panel de Administración',
-    noRegistrations: 'No hay registros todavía',
-    errorLoadingApartments: 'Error al cargar los apartamentos',
-    errorLoadingRegistrations: 'Error al cargar los registros',
-    guestAdded: 'Huésped añadido',
-    registrationSaved: 'Registro guardado correctamente',
-    errorSaving: 'Error al guardar el registro',
-    selectApartmentError: 'Selecciona un apartamento',
-    addAtLeastOneGuest: 'Añade al menos un huésped',
-    signatureRequired: 'La firma es requerida',
-    checkoutDone: 'Checkout realizado correctamente',
-    checkoutError: 'Error al realizar el checkout',
-    registrationDeleted: 'Registro eliminado correctamente',
-    deleteError: 'Error al eliminar el registro',
-    deleteConfirmTitle: '¿Eliminar registro?',
-    deleteConfirmDescription: 'Esta acción no se puede deshacer.',
-    cancel: 'Cancelar',
-    delete: 'Eliminar',
-  },
-  en: {
-    hotelName: 'Los Rubiales',
-    hotelSubtitle: 'Rural Hotel',
-    home: 'Home',
-    admin: 'Admin',
-    welcome: 'Welcome',
-    selectApartment: 'Select an apartment to register guests',
-    noApartments: 'No apartments available',
-    apartment: 'Apartment',
-    backToApartments: 'Back',
-    addGuestData: 'Add guest details',
-    firstName: 'First Name',
-    firstNamePlaceholder: 'John',
-    lastName: 'Last Name',
-    lastNamePlaceholder: 'Smith',
-    documentType: 'Document Type',
-    documentNumber: 'Document Number',
-    documentNumberPlaceholder: '12345678A',
-    nationality: 'Nationality',
-    nationalityPlaceholder: 'Spanish',
-    email: 'Email',
-    emailPlaceholder: 'john@email.com',
-    phone: 'Phone',
-    phonePlaceholder: '+34 612 345 678',
-    dni: 'ID Card',
-    passport: 'Passport',
-    nie: 'NIE',
-    documentPhoto: 'Document Photo',
-    takePhoto: 'Take photo',
-    changePhoto: 'Change photo',
-    mainGuest: 'Mark as main guest',
-    principal: 'Main',
-    addGuest: 'Add Guest',
-    guests: 'Guests',
-    noGuests: 'No guests added',
-    saveRegistration: 'Save Registration',
-    signature: 'Guest Signature',
-    signaturePlaceholder: 'Sign here',
-    clear: 'Clear',
-    stayDates: 'Stay Dates',
-    checkInDate: 'Check-in Date',
-    checkOutDate: 'Check-out Date',
-    selectDate: 'Select date',
-    checkIn: 'Check-in',
-    checkOut: 'Check-out',
-    status: 'Status',
-    active: 'Active',
-    checkedOut: 'Finished',
-    checkout: 'Check-out',
-    registrationDetails: 'Registration Details',
-    adminPanel: 'Admin Panel',
-    noRegistrations: 'No registrations yet',
-    errorLoadingApartments: 'Error loading apartments',
-    errorLoadingRegistrations: 'Error loading registrations',
-    guestAdded: 'Guest added',
-    registrationSaved: 'Registration saved successfully',
-    errorSaving: 'Error saving registration',
-    selectApartmentError: 'Select an apartment',
-    addAtLeastOneGuest: 'Add at least one guest',
-    signatureRequired: 'Signature is required',
-    checkoutDone: 'Check-out completed successfully',
-    checkoutError: 'Error performing check-out',
-    registrationDeleted: 'Registration deleted successfully',
-    deleteError: 'Error deleting registration',
-    deleteConfirmTitle: 'Delete registration?',
-    deleteConfirmDescription: 'This action cannot be undone.',
-    cancel: 'Cancel',
-    delete: 'Delete',
-  }
+// Types
+interface BabyReaction {
+  id: string
+  family_id: string
+  intro_step_id: string
+  food_name: string
+  reaction: 'liked' | 'neutral' | 'disliked' | 'allergic'
+  notes?: string
+  include_in_diet: boolean
+  reaction_date: string
 }
 
-type Language = 'es' | 'en'
-type View = 'selection' | 'registration' | 'signature' | 'admin'
-
-interface Apartment {
+interface Family {
   id: string
+  code: string
   name: string
-  description?: string | null
-  capacity?: number
+  baby_name?: string
+  baby_birth_date?: string // Fecha de nacimiento del bebé
+  created_at: string
 }
 
-interface Guest {
-  firstName: string
-  lastName: string
-  documentType: string
-  documentNumber: string
-  documentPhoto?: string
-  nationality?: string
-  email?: string
-  phone?: string
-  isMainGuest: boolean
+// Storage keys
+const FAMILY_STORAGE_KEY = 'nutribebe_family'
+const REACTIONS_STORAGE_KEY = 'nutribebe_reactions'
+
+// Generate random family code
+function generateFamilyCode(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  let code = ''
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return code
 }
 
-interface Registration {
-  id: string
-  apartmentId: string
-  apartment: Apartment
-  checkInDate: string
-  checkOutDate?: string | null
-  guests: Guest[]
-  status: string
-  notes?: string | null
-  signature?: string | null
+// Generate unique ID
+function generateId(): string {
+  return `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }
 
-const guestSchema = z.object({
-  firstName: z.string().min(1, 'Nombre requerido'),
-  lastName: z.string().min(1, 'Apellidos requeridos'),
-  documentType: z.string().default('DNI'),
-  documentNumber: z.string().min(1, 'Número requerido'),
-  nationality: z.string().optional(),
-  email: z.string().optional(),
-  phone: z.string().optional(),
-  isMainGuest: z.boolean().default(false)
-})
+// Reaction options
+const reactionOptions = [
+  { value: 'liked', label: 'Le gustó', icon: ThumbsUp, color: 'text-green-600', bg: 'bg-green-50' },
+  { value: 'neutral', label: 'Neutral', icon: MinusCircle, color: 'text-gray-600', bg: 'bg-gray-50' },
+  { value: 'disliked', label: 'No le gustó', icon: ThumbsDown, color: 'text-orange-600', bg: 'bg-orange-50' },
+  { value: 'allergic', label: 'Reacción alérgica', icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-50' },
+]
 
-type GuestFormData = z.infer<typeof guestSchema>
+// Predefined recipes for common ingredients
+const predefinedRecipes: Record<string, Array<{name: string, ingredients: string[], instructions: string[]}>> = {
+  'Calabacín': [
+    { name: 'Puré de Calabacín', ingredients: ['Calabacín', 'Agua'], instructions: ['Lavar y pelar el calabacín', 'Cortar en trozos pequeños', 'Cocinar al vapor 10-15 min', 'Triturar hasta obtener puré suave'] }
+  ],
+  'Calabaza': [
+    { name: 'Crema de Calabaza', ingredients: ['Calabaza', 'Agua'], instructions: ['Pelar y cortar la calabaza', 'Cocinar al vapor 20 min', 'Triturar con un poco de agua de cocción', 'Servir tibio'] }
+  ],
+  'Zanahoria': [
+    { name: 'Puré de Zanahoria', ingredients: ['Zanahoria', 'Agua'], instructions: ['Pelar y cortar la zanahoria', 'Hervir o cocinar al vapor 25 min', 'Triturar muy bien', 'Dejar enfriar antes de servir'] }
+  ],
+  'Pera': [
+    { name: 'Compota de Pera', ingredients: ['Pera madura'], instructions: ['Pelar y quitar semillas', 'Cortar en trozos', 'Cocinar con poca agua 10 min', 'Triturar hasta obtener puré'] }
+  ],
+  'Manzana': [
+    { name: 'Puré de Manzana', ingredients: ['Manzana', 'Agua'], instructions: ['Pelar y quitar el corazón', 'Cortar en trozos', 'Cocinar al vapor 15 min', 'Triturar hasta obtener textura suave'] }
+  ],
+  'Plátano': [
+    { name: 'Papilla de Plátano', ingredients: ['Plátano maduro'], instructions: ['Pelar el plátano', 'Aplastar con un tenedor', 'Mezclar hasta obtener puré', 'Servir inmediatamente'] }
+  ],
+  'Pollo': [
+    { name: 'Puré de Pollo con Verduras', ingredients: ['Pollo', 'Calabacín', 'Zanahoria'], instructions: ['Cocinar el pollo a la plancha o hervido', 'Cocinar las verduras al vapor', 'Triturar todo junto', 'Añadir agua si es necesario'] }
+  ],
+  'Pechuga de pollo': [
+    { name: 'Puré de Pollo', ingredients: ['Pechuga de pollo', 'Agua'], instructions: ['Cocinar la pechuga al vapor o hervida', 'Desmenuzar bien', 'Triturar con caldo o agua', 'Servir tibio'] }
+  ],
+  'Merluza': [
+    { name: 'Puré de Merluza', ingredients: ['Merluza', 'Patata', 'Agua'], instructions: ['Cocinar el pescado al vapor 8-10 min', 'Cocinar patata aparte', 'Triturar todo junto', 'Verificar que no haya espinas'] }
+  ],
+  'Yogur natural': [
+    { name: 'Yogur con Frutas', ingredients: ['Yogur natural', 'Fruta triturada'], instructions: ['Elegir yogur natural sin azúcar', 'Añadir fruta triturada', 'Mezclar bien', 'Servir fresco'] }
+  ],
+  'Lentejas': [
+    { name: 'Puré de Lentejas', ingredients: ['Lentejas', 'Zanahoria', 'Patata'], instructions: ['Cocer lentejas 30 min', 'Añadir verduras troceadas', 'Cocinar hasta que estén blandas', 'Triturar hasta obtener puré'] }
+  ],
+  'Huevo': [
+    { name: 'Yema de Huevo Cocida', ingredients: ['Huevo'], instructions: ['Hervir el huevo 10 minutos', 'Separar la yema', 'Aplastar con tenedor', 'Mezclar con puré o caldo'] }
+  ],
+}
 
-export default function Page() {
-  const [language, setLanguage] = useState<Language>('es')
-  const tr = t[language]
-  const dateLocale = language === 'es' ? esLocale : enUS
+// Calcular edad del bebé en meses
+function calculateBabyAgeInMonths(birthDate: Date): number {
+  const today = new Date()
+  const monthsDiff = (today.getFullYear() - birthDate.getFullYear()) * 12 + (today.getMonth() - birthDate.getMonth())
+  return monthsDiff
+}
 
-  const [view, setView] = useState<View>('selection')
-  const [apartments, setApartments] = useState<Apartment[]>([])
-  const [selectedApartment, setSelectedApartment] = useState<Apartment | null>(null)
-  const [guests, setGuests] = useState<Guest[]>([])
-  const [registrations, setRegistrations] = useState<Registration[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [isDataLoading, setIsDataLoading] = useState(true)
-  const [signature, setSignature] = useState<string | null>(null)
-  const [checkInDate, setCheckInDate] = useState<Date>(new Date())
-  const [checkOutDate, setCheckOutDate] = useState<Date | undefined>(undefined)
-
-  const [showDetailsModal, setShowDetailsModal] = useState(false)
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [showPhotoModal, setShowPhotoModal] = useState(false)
-  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null)
-  const [selectedReg, setSelectedReg] = useState<Registration | null>(null)
-  const [regToDelete, setRegToDelete] = useState<string | null>(null)
-
-  const photoInputRef = useRef<HTMLInputElement>(null)
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [isDrawing, setIsDrawing] = useState(false)
-  const [hasSignature, setHasSignature] = useState(false)
-
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<GuestFormData>({
-    resolver: zodResolver(guestSchema),
-    defaultValues: { firstName: '', lastName: '', documentType: 'DNI', documentNumber: '', isMainGuest: false }
-  })
-
-  useEffect(() => { fetchApartments() }, [])
-  useEffect(() => { if (view === 'admin') fetchRegistrations() }, [view])
-  useEffect(() => { if (view === 'signature') setTimeout(initCanvas, 100) }, [view])
-
-  const initCanvas = () => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    canvas.width = canvas.offsetWidth || 300
-    canvas.height = 150
-    const ctx = canvas.getContext('2d')
-    if (ctx) {
-      ctx.fillStyle = '#ffffff'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
-      ctx.strokeStyle = '#e5e7eb'
-      ctx.lineWidth = 1
-      ctx.beginPath()
-      ctx.moveTo(20, canvas.height - 30)
-      ctx.lineTo(canvas.width - 20, canvas.height - 30)
-      ctx.stroke()
-      ctx.strokeStyle = '#1e40af'
-      ctx.lineWidth = 3.5
-      ctx.lineCap = 'round'
-      ctx.lineJoin = 'round'
-    }
-    setHasSignature(false)
-    setSignature(null)
+// Calcular día actual basado en la fecha de nacimiento
+function calculateCurrentDayFromBirth(birthDate: Date): number {
+  const today = new Date()
+  const sixMonthsOld = new Date(birthDate)
+  sixMonthsOld.setMonth(sixMonthsOld.getMonth() + 6)
+  
+  if (today < sixMonthsOld) {
+    return 0 // Aún no cumplió 6 meses
   }
+  
+  const daysSinceSixMonths = Math.floor((today.getTime() - sixMonthsOld.getTime()) / (1000 * 60 * 60 * 24))
+  return daysSinceSixMonths + 1
+}
 
-  const getCoords = (e: React.MouseEvent | React.TouchEvent) => {
-    const canvas = canvasRef.current
-    if (!canvas) return null
-    const rect = canvas.getBoundingClientRect()
-    const scaleX = canvas.width / rect.width
-    const scaleY = canvas.height / rect.height
-    const touch = 'touches' in e ? e.touches[0] : e
-    return { x: (touch.clientX - rect.left) * scaleX, y: (touch.clientY - rect.top) * scaleY }
-  }
+export default function NutriBebeApp() {
+  // Family/Auth state
+  const [family, setFamily] = useState<Family | null>(null)
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true)
+  const [loginMode, setLoginMode] = useState<'create' | 'join'>('create')
+  const [familyName, setFamilyName] = useState('')
+  const [babyName, setBabyName] = useState('')
+  const [joinCode, setJoinCode] = useState('')
+  const [authError, setAuthError] = useState('')
+  
+  // App state
+  const [activeSection, setActiveSection] = useState('intro')
+  const [introSteps, setIntroSteps] = useState<IntroStep[]>([])
+  const [groupedSteps, setGroupedSteps] = useState<Record<number, IntroStep[]>>({})
+  const [selectedMonth, setSelectedMonth] = useState(6) // Mes seleccionado (6-24)
+  const [selectedDay, setSelectedDay] = useState(1)
+  const [ingredientInput, setIngredientInput] = useState('')
+  const [showSettings, setShowSettings] = useState(false)
+  const [tempBirthDate, setTempBirthDate] = useState('')
+  
+  // Shopping list state
+  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
+  const [selectedShoppingMonth, setSelectedShoppingMonth] = useState(6)
 
-  const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault()
-    const coords = getCoords(e)
-    if (!coords) return
-    setIsDrawing(true)
-    const ctx = canvasRef.current?.getContext('2d')
-    if (ctx) { ctx.beginPath(); ctx.moveTo(coords.x, coords.y) }
-  }
-
-  const draw = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isDrawing) return
-    e.preventDefault()
-    const coords = getCoords(e)
-    if (!coords) return
-    const ctx = canvasRef.current?.getContext('2d')
-    if (ctx) {
-      ctx.lineTo(coords.x, coords.y)
-      ctx.stroke()
-      ctx.beginPath()
-      ctx.moveTo(coords.x, coords.y)
-    }
-    setHasSignature(true)
-  }
-
-  const stopDrawing = () => {
-    if (isDrawing && hasSignature) {
-      setSignature(canvasRef.current?.toDataURL('image/png') || null)
-    }
-    setIsDrawing(false)
-  }
-
-  const clearSignature = () => initCanvas()
-
-  const fetchApartments = async () => {
-    setIsDataLoading(true)
-    try {
-      const res = await fetch('/api/apartments')
-      if (res.ok) {
-        const data = await res.json()
-        setApartments(Array.isArray(data) ? data : [])
-      }
-    } catch { toast.error(tr.errorLoadingApartments) }
-    finally { setIsDataLoading(false) }
-  }
-
-  const fetchRegistrations = async () => {
-    setIsDataLoading(true)
-    try {
-      const res = await fetch('/api/registrations')
-      if (res.ok) {
-        const data = await res.json()
-        setRegistrations(Array.isArray(data) ? data : [])
-      }
-    } catch { toast.error(tr.errorLoadingRegistrations) }
-    finally { setIsDataLoading(false) }
-  }
-
-  const selectApartment = (apt: Apartment) => {
-    setSelectedApartment(apt)
-    setGuests([])
-    setPhotoPreview(null)
-    setSignature(null)
-    setCheckInDate(new Date())
-    setCheckOutDate(undefined)
-    reset({ firstName: '', lastName: '', documentType: 'DNI', documentNumber: '', isMainGuest: false })
-    setView('registration')
-  }
-
-  const handleAddGuest = (data: GuestFormData) => {
-    const newGuest: Guest = { ...data, documentPhoto: photoPreview || undefined }
-    if (guests.length === 0) newGuest.isMainGuest = true
-    if (newGuest.isMainGuest) setGuests(guests.map(g => ({ ...g, isMainGuest: false })))
-    setGuests([...guests, newGuest])
-    setPhotoPreview(null)
-    reset({ firstName: '', lastName: '', documentType: 'DNI', documentNumber: '', isMainGuest: false })
-    toast.success(tr.guestAdded)
-  }
-
-  const removeGuest = (i: number) => {
-    const newGuests = guests.filter((_, idx) => idx !== i)
-    if (guests[i].isMainGuest && newGuests.length > 0) newGuests[0].isMainGuest = true
-    setGuests(newGuests)
-  }
-
-  const goToSignature = () => {
-    if (!selectedApartment) { toast.error(tr.selectApartmentError); return }
-    if (guests.length === 0) { toast.error(tr.addAtLeastOneGuest); return }
-    setView('signature')
-  }
-
-  const handleSaveRegistration = async () => {
-    if (!signature) { toast.error(tr.signatureRequired); return }
-    setIsLoading(true)
-    try {
-      const res = await fetch('/api/registrations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          apartmentId: selectedApartment?.id,
-          guests: guests.map(g => ({ ...g, documentPhoto: g.documentPhoto || null })),
-          signature,
-          checkInDate: checkInDate.toISOString(),
-          checkOutDate: checkOutDate?.toISOString() || null
-        })
-      })
-      if (!res.ok) throw new Error()
-      toast.success(tr.registrationSaved)
-      setView('selection')
-      setGuests([])
-      setSelectedApartment(null)
-      setSignature(null)
-    } catch { toast.error(tr.errorSaving) }
-    finally { setIsLoading(false) }
-  }
-
-  const handleCheckout = async (id: string) => {
-    setIsLoading(true)
-    try {
-      await fetch(`/api/registrations/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'checked_out' })
-      })
-      toast.success(tr.checkoutDone)
-      setShowDetailsModal(false)
-      fetchRegistrations()
-    } catch { toast.error(tr.checkoutError) }
-    finally { setIsLoading(false) }
-  }
-
-  const handleDelete = async () => {
-    if (!regToDelete) return
-    setIsLoading(true)
-    try {
-      await fetch(`/api/registrations/${regToDelete}`, { method: 'DELETE' })
-      toast.success(tr.registrationDeleted)
-      setShowDeleteDialog(false)
-      setRegToDelete(null)
-      fetchRegistrations()
-    } catch { toast.error(tr.deleteError) }
-    finally { setIsLoading(false) }
-  }
-
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => setPhotoPreview(reader.result as string)
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const openPhotoModal = (photo: string) => {
-    setSelectedPhoto(photo)
-    setShowPhotoModal(true)
-  }
-
-  const exportAsImage = async (reg: Registration) => {
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    // Calcular altura dinámica basada en número de huéspedes y si tienen fotos
-    const guestsWithPhotos = reg.guests.filter(g => g.documentPhoto)
-    const extraHeightForPhotos = guestsWithPhotos.length * 180
-    const baseHeight = 450
-    const totalHeight = baseHeight + (reg.guests.length * 30) + extraHeightForPhotos + 100
-
-    canvas.width = 800
-    canvas.height = totalHeight
-
-    // Fondo blanco
-    ctx.fillStyle = '#ffffff'
-    ctx.fillRect(0, 0, 800, totalHeight)
-    
-    // Cabecera verde
-    ctx.fillStyle = '#166534'
-    ctx.fillRect(0, 0, 800, 60)
-    ctx.fillStyle = '#ffffff'
-    ctx.font = 'bold 24px Arial'
-    ctx.fillText(tr.hotelName, 20, 40)
-
-    // Título
-    ctx.fillStyle = '#166534'
-    ctx.font = 'bold 18px Arial'
-    ctx.fillText(tr.registrationDetails, 20, 100)
-
-    // Información del registro
-    ctx.fillStyle = '#374151'
-    ctx.font = '14px Arial'
-    ctx.fillText(`${tr.apartment}: ${reg.apartment.name}`, 20, 140)
-    ctx.fillText(`${tr.checkIn}: ${format(new Date(reg.checkInDate), 'PPP', { locale: dateLocale })}`, 20, 170)
-    ctx.fillText(`${tr.status}: ${reg.status === 'active' ? tr.active : tr.checkedOut}`, 20, 200)
-
-    // Sección de huéspedes
-    ctx.fillStyle = '#166534'
-    ctx.font = 'bold 16px Arial'
-    ctx.fillText(`${tr.guests}:`, 20, 240)
-
-    let y = 270
-    
-    for (let i = 0; i < reg.guests.length; i++) {
-      const g = reg.guests[i]
-      
-      // Nombre del huésped
-      ctx.fillStyle = '#374151'
-      ctx.font = 'bold 14px Arial'
-      const guestLabel = g.isMainGuest ? `${g.firstName} ${g.lastName} ★ (${g.documentType}: ${g.documentNumber})` : `${g.firstName} ${g.lastName} (${g.documentType}: ${g.documentNumber})`
-      ctx.fillText(guestLabel, 40, y)
-      
-      // Nacionalidad, email, teléfono si existen
-      ctx.font = '12px Arial'
-      ctx.fillStyle = '#6b7280'
-      let infoY = y + 18
-      if (g.nationality) {
-        ctx.fillText(`${tr.nationality}: ${g.nationality}`, 50, infoY)
-        infoY += 16
-      }
-      if (g.email || g.phone) {
-        ctx.fillText(`${g.email || ''} ${g.phone || ''}`.trim(), 50, infoY)
-        infoY += 16
-      }
-      
-      // Foto del documento si existe
-      if (g.documentPhoto) {
-        try {
-          const photoImg = new window.Image()
-          photoImg.src = g.documentPhoto
-          await new Promise<void>((resolve) => {
-            photoImg.onload = () => resolve()
-            photoImg.onerror = () => resolve()
-          })
-          
-          if (photoImg.complete && photoImg.naturalWidth > 0) {
-            // Marco para la foto
-            ctx.strokeStyle = '#d1d5db'
-            ctx.lineWidth = 1
-            ctx.strokeRect(450, y - 20, 150, 100)
-            
-            // Dibujar foto
-            ctx.drawImage(photoImg, 451, y - 19, 148, 98)
-            
-            // Etiqueta
-            ctx.fillStyle = '#6b7280'
-            ctx.font = '10px Arial'
-            ctx.fillText(tr.documentPhoto, 450, y + 95)
-          }
-        } catch (e) {
-          console.error('Error loading photo:', e)
+  // Load family from storage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem(FAMILY_STORAGE_KEY)
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored)
+        setFamily(parsed)
+        if (parsed.baby_birth_date) {
+          setTempBirthDate(parsed.baby_birth_date)
         }
-        y += 130 // Espacio extra para la foto
+      } catch (e) {
+        console.error('Error loading family:', e)
       }
+    }
+    setIsLoadingAuth(false)
+  }, [])
+
+  // Load intro steps and group by month
+  useEffect(() => {
+    setIntroSteps(introStepsData)
+    setGroupedSteps(groupStepsByMonth(introStepsData))
+  }, [])
+
+  // Auto-sync with baby's birth date
+  useEffect(() => {
+    if (family?.baby_birth_date) {
+      const birthDate = new Date(family.baby_birth_date)
+      const ageInMonths = calculateBabyAgeInMonths(birthDate)
+      const currentDay = calculateCurrentDayFromBirth(birthDate)
       
-      y += 45
-    }
-
-    // Sección de firma
-    y += 20
-    ctx.fillStyle = '#166534'
-    ctx.font = 'bold 14px Arial'
-    ctx.fillText(tr.signature + ':', 20, y)
-    
-    if (reg.signature) {
-      const img = new window.Image()
-      img.src = reg.signature
-      await new Promise<void>((r) => { img.onload = () => r(); img.onerror = () => r() })
-      if (img.complete && img.naturalWidth > 0) {
-        ctx.drawImage(img, 20, y + 10, 250, 80)
+      // Si el bebé tiene entre 6 y 24 meses, sincronizar automáticamente
+      if (ageInMonths >= 6 && ageInMonths <= 24) {
+        setSelectedMonth(ageInMonths)
+        setSelectedShoppingMonth(ageInMonths)
+        
+        // Calcular el día dentro del mes actual
+        // Ejemplo: si tiene 6 meses y 15 días, está en el día 15 del mes 6
+        if (currentDay > 0) {
+          const dayInMonth = ((currentDay - 1) % 30) + 1
+          setSelectedDay(dayInMonth)
+        }
       }
-      y += 100
-    } else {
-      y += 20
     }
+  }, [family?.baby_birth_date])
 
-    // Pie de página
-    ctx.fillStyle = '#9ca3af'
-    ctx.font = '10px Arial'
-    ctx.fillText(`Generado: ${format(new Date(), 'PPP HH:mm', { locale: dateLocale })}`, 20, totalHeight - 20)
+  // Get available months from the data
+  const availableMonths = getAvailableMonths()
 
-    // Descargar
-    const link = document.createElement('a')
-    link.download = `registro-${reg.apartment.name}-${format(new Date(reg.checkInDate), 'yyyy-MM-dd')}.png`
-    link.href = canvas.toDataURL('image/png')
-    link.click()
+  // Get current step based on selected month/day
+  const getCurrentStep = (): IntroStep | null => {
+    const monthSteps = groupedSteps[selectedMonth] || []
+    // Encontrar el paso para el día específico dentro del mes
+    const stepIndex = selectedDay - 1
+    return monthSteps[stepIndex] || monthSteps[0] || null
   }
 
-  const documentType = watch('documentType')
-  const isMainGuest = watch('isMainGuest')
+  const currentStep = getCurrentStep()
+
+  // Get age range info for current month
+  const currentAgeRange = getAgeRangeForMonth(selectedMonth)
+  const ageInfo = ageRangeInfo[currentAgeRange]
+
+  // Calculate shopping list for selected month
+  const shoppingList = calculateShoppingListByMonth(selectedShoppingMonth, introSteps)
+  
+  // Group shopping list by category
+  const categories = ['Verduras', 'Frutas', 'Proteínas', 'Lácteos', 'Cereales', 'Legumbres', 'Otros']
+
+  // Parse JSON strings
+  const parseJson = (str: string | undefined): string[] => {
+    if (!str) return []
+    try {
+      return JSON.parse(str)
+    } catch {
+      return [str]
+    }
+  }
+
+  // Toggle shopping item
+  const toggleItem = (itemName: string) => {
+    setCheckedItems(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(itemName)) {
+        newSet.delete(itemName)
+      } else {
+        newSet.add(itemName)
+      }
+      return newSet
+    })
+  }
+
+  // Save family to storage
+  const saveFamily = (familyData: Family) => {
+    localStorage.setItem(FAMILY_STORAGE_KEY, JSON.stringify(familyData))
+    setFamily(familyData)
+  }
+
+  // Create family
+  const handleCreateFamily = () => {
+    if (!familyName.trim()) {
+      setAuthError('Por favor ingresa un nombre para la familia')
+      return
+    }
+    
+    const newFamily: Family = {
+      id: generateId(),
+      code: generateFamilyCode(),
+      name: familyName.trim(),
+      baby_name: babyName.trim() || undefined,
+      baby_birth_date: tempBirthDate || undefined,
+      created_at: new Date().toISOString()
+    }
+    
+    saveFamily(newFamily)
+    setAuthError('')
+  }
+
+  // Join family
+  const handleJoinFamily = () => {
+    if (!joinCode.trim()) {
+      setAuthError('Por favor ingresa el código de familia')
+      return
+    }
+    
+    // For demo, just create a family with the code
+    const newFamily: Family = {
+      id: generateId(),
+      code: joinCode.trim().toUpperCase(),
+      name: `Familia ${joinCode.trim().toUpperCase()}`,
+      baby_birth_date: tempBirthDate || undefined,
+      created_at: new Date().toISOString()
+    }
+    
+    saveFamily(newFamily)
+    setAuthError('')
+  }
+
+  // Update baby birth date
+  const handleUpdateBirthDate = () => {
+    if (family && tempBirthDate) {
+      const updatedFamily = { ...family, baby_birth_date: tempBirthDate }
+      saveFamily(updatedFamily)
+      setShowSettings(false)
+      
+      // Calcular mes basado en la edad
+      const birthDate = new Date(tempBirthDate)
+      const ageMonths = calculateBabyAgeInMonths(birthDate)
+      if (ageMonths >= 6 && ageMonths <= 24) {
+        setSelectedMonth(ageMonths)
+        setSelectedShoppingMonth(ageMonths)
+      }
+    }
+  }
+
+  // Logout
+  const handleLogout = () => {
+    localStorage.removeItem(FAMILY_STORAGE_KEY)
+    localStorage.removeItem(REACTIONS_STORAGE_KEY)
+    setFamily(null)
+  }
+
+  // Calculate baby's age if birth date is set
+  const babyAgeMonths = family?.baby_birth_date ? calculateBabyAgeInMonths(new Date(family.baby_birth_date)) : null
+  const babyCurrentDay = family?.baby_birth_date ? calculateCurrentDayFromBirth(new Date(family.baby_birth_date)) : null
+
+  // Auth Screen
+  if (isLoadingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+      </div>
+    )
+  }
+
+  if (!family) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white p-4 flex flex-col items-center justify-center">
+        <div className="max-w-md w-full">
+          <div className="text-center mb-8">
+            <Baby className="w-16 h-16 mx-auto text-orange-500 mb-4" />
+            <h1 className="text-3xl font-bold text-gray-800">NutriBebé</h1>
+            <p className="text-gray-600 mt-2">Guía de alimentación para tu bebé</p>
+          </div>
+
+          <Card className="border-orange-200">
+            <CardHeader>
+              <Tabs value={loginMode} onValueChange={(v) => setLoginMode(v as 'create' | 'join')}>
+                <TabsList className="grid grid-cols-2 w-full">
+                  <TabsTrigger value="create">Crear Familia</TabsTrigger>
+                  <TabsTrigger value="join">Unirse</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {loginMode === 'create' ? (
+                <>
+                  <div>
+                    <Label htmlFor="familyName">Nombre de la familia</Label>
+                    <Input
+                      id="familyName"
+                      value={familyName}
+                      onChange={(e) => setFamilyName(e.target.value)}
+                      placeholder="Ej: Familia García"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="babyName">Nombre del bebé (opcional)</Label>
+                    <Input
+                      id="babyName"
+                      value={babyName}
+                      onChange={(e) => setBabyName(e.target.value)}
+                      placeholder="Ej: Sofía"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="birthDate">Fecha de nacimiento del bebé</Label>
+                    <Input
+                      id="birthDate"
+                      type="date"
+                      value={tempBirthDate}
+                      onChange={(e) => setTempBirthDate(e.target.value)}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Para sincronizar la guía con la edad de tu bebé</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <Label htmlFor="joinCode">Código de familia</Label>
+                    <Input
+                      id="joinCode"
+                      value={joinCode}
+                      onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                      placeholder="Ej: ABC123"
+                      maxLength={6}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="birthDate2">Fecha de nacimiento del bebé</Label>
+                    <Input
+                      id="birthDate2"
+                      type="date"
+                      value={tempBirthDate}
+                      onChange={(e) => setTempBirthDate(e.target.value)}
+                    />
+                  </div>
+                </>
+              )}
+
+              {authError && (
+                <p className="text-red-500 text-sm">{authError}</p>
+              )}
+
+              <Button 
+                className="w-full bg-orange-500 hover:bg-orange-600"
+                onClick={loginMode === 'create' ? handleCreateFamily : handleJoinFamily}
+              >
+                {loginMode === 'create' ? 'Crear Familia' : 'Unirse'}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50 flex flex-col">
-      <Toaster position="top-center" richColors />
-
-      <header className="bg-gradient-to-r from-green-800 to-green-700 text-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-3 py-3 sm:px-4 sm:py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-4">
-            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/20 flex items-center justify-center border-2 border-white/30">
-              <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-            </div>
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
+      {/* Header */}
+      <header className="bg-white border-b border-orange-100 sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Baby className="w-8 h-8 text-orange-500" />
             <div>
-              <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight">{tr.hotelName}</h1>
-              <p className="text-xs sm:text-sm text-green-100 hidden sm:block">{tr.hotelSubtitle}</p>
+              <h1 className="text-xl font-bold text-gray-800">NutriBebé</h1>
+              <p className="text-xs text-gray-500">{family.name}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
-              <SelectTrigger className="w-[70px] sm:w-28 bg-white/10 border-white/30 text-white text-sm">
-                <Globe className="h-4 w-4 sm:mr-1" />
-                <span className="hidden sm:inline"><SelectValue /></span>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="es">Español</SelectItem>
-                <SelectItem value="en">English</SelectItem>
-              </SelectContent>
-            </Select>
-            {view !== 'selection' && (
-              <Button variant="ghost" onClick={() => setView('selection')} className="text-white hover:bg-white/10 px-2 sm:px-4">
-                {tr.home}
-              </Button>
+            {family.baby_name && (
+              <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                {family.baby_name}
+                {babyAgeMonths !== null && babyAgeMonths >= 6 && ` - ${babyAgeMonths} meses`}
+              </Badge>
             )}
-            <Button variant="ghost" onClick={() => setView('admin')} className="text-white hover:bg-white/10 px-2 sm:px-4">
-              <ClipboardList className="h-4 w-4 sm:mr-2" />
-              {tr.admin}
+            <Button variant="ghost" size="icon" onClick={() => setShowSettings(!showSettings)}>
+              <Settings className="w-5 h-5" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={handleLogout}>
+              <LogOut className="w-5 h-5" />
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8 flex-1">
-        {view === 'selection' && (
-          <div>
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-green-800 mb-2">{tr.welcome}</h2>
-              <p className="text-muted-foreground">{tr.selectApartment}</p>
-            </div>
-            {isDataLoading ? (
-              <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-green-600" /></div>
-            ) : apartments.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">{tr.noApartments}</p>
-                <Button onClick={fetchApartments} className="mt-4">Reintentar</Button>
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <Card className="max-w-md w-full">
+            <CardHeader>
+              <CardTitle>Configuración</CardTitle>
+              <CardDescription>Actualiza la información de tu bebé</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="settingsBirthDate">Fecha de nacimiento del bebé</Label>
+                <Input
+                  id="settingsBirthDate"
+                  type="date"
+                  value={tempBirthDate}
+                  onChange={(e) => setTempBirthDate(e.target.value)}
+                />
               </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-                {apartments.map((apt) => (
-                  <Card key={apt.id} className="cursor-pointer hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-green-500 bg-white/80 backdrop-blur" onClick={() => selectApartment(apt)}>
-                    <CardContent className="p-4 sm:p-6">
-                      <div className="flex flex-col items-center gap-3 sm:gap-4">
-                        <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full bg-gradient-to-br from-green-600 to-green-800 flex items-center justify-center shadow-lg">
-                          <Building2 className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
-                        </div>
-                        <CardTitle className="text-lg sm:text-xl text-green-800 text-center">{apt.name}</CardTitle>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {view === 'registration' && (
-          <div>
-            <Button variant="ghost" onClick={() => setView('selection')} className="mb-6 text-green-700">
-              <ArrowLeft className="h-4 w-4 mr-2" />{tr.backToApartments}
-            </Button>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2">
-                <Card className="bg-white/80 backdrop-blur">
-                  <CardHeader>
-                    <CardTitle className="text-green-800 flex items-center gap-2">
-                      <Building2 className="h-5 w-5" />{selectedApartment?.name}
-                    </CardTitle>
-                    <CardDescription>{tr.addGuestData}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <form onSubmit={handleSubmit(handleAddGuest)} className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>{tr.firstName} *</Label>
-                          <Input {...register('firstName')} placeholder={tr.firstNamePlaceholder} className="border-green-200" />
-                          {errors.firstName && <p className="text-sm text-red-500">{errors.firstName.message}</p>}
-                        </div>
-                        <div className="space-y-2">
-                          <Label>{tr.lastName} *</Label>
-                          <Input {...register('lastName')} placeholder={tr.lastNamePlaceholder} className="border-green-200" />
-                          {errors.lastName && <p className="text-sm text-red-500">{errors.lastName.message}</p>}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>{tr.documentType}</Label>
-                          <Select value={documentType} onValueChange={(v) => setValue('documentType', v)}>
-                            <SelectTrigger className="border-green-200"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="DNI">{tr.dni}</SelectItem>
-                              <SelectItem value="Pasaporte">{tr.passport}</SelectItem>
-                              <SelectItem value="NIE">{tr.nie}</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>{tr.documentNumber} *</Label>
-                          <Input {...register('documentNumber')} placeholder={tr.documentNumberPlaceholder} className="border-green-200" />
-                          {errors.documentNumber && <p className="text-sm text-red-500">{errors.documentNumber.message}</p>}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>{tr.nationality}</Label>
-                          <Input {...register('nationality')} placeholder={tr.nationalityPlaceholder} className="border-green-200" />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>{tr.email}</Label>
-                          <Input type="email" {...register('email')} placeholder={tr.emailPlaceholder} className="border-green-200" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>{tr.phone}</Label>
-                          <Input {...register('phone')} placeholder={tr.phonePlaceholder} className="border-green-200" />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>{tr.documentPhoto}</Label>
-                        <div className="flex items-center gap-4">
-                          <input ref={photoInputRef} type="file" accept="image/*" capture="environment" onChange={handlePhotoChange} className="hidden" />
-                          <Button type="button" variant="outline" onClick={() => photoInputRef.current?.click()}>
-                            <Camera className="h-4 w-4 mr-2" />{photoPreview ? tr.changePhoto : tr.takePhoto}
-                          </Button>
-                          {photoPreview && (
-                            <div className="relative">
-                              <img src={photoPreview} alt="Preview" className="h-16 w-16 object-cover rounded-md border" />
-                              <button type="button" onClick={() => setPhotoPreview(null)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><X className="h-3 w-3" /></button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox id="isMainGuest" checked={isMainGuest} onCheckedChange={(c) => setValue('isMainGuest', c === true)} />
-                        <Label htmlFor="isMainGuest" className="cursor-pointer">{tr.mainGuest}</Label>
-                      </div>
-                      <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white">
-                        <Plus className="h-4 w-4 mr-2" />{tr.addGuest}
-                      </Button>
-                    </form>
-                  </CardContent>
-                </Card>
-              </div>
-              <div className="lg:col-span-1">
-                <Card className="bg-white/80 backdrop-blur sticky top-4">
-                  <CardHeader>
-                    <CardTitle className="text-green-800 flex items-center justify-between">
-                      <span>{tr.guests}</span>
-                      <Badge variant="secondary">{guests.length}</Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {guests.length === 0 ? (
-                      <p className="text-center text-muted-foreground py-8">{tr.noGuests}</p>
-                    ) : (
-                      <ScrollArea className="max-h-96">
-                        <div className="space-y-3">
-                          {guests.map((g, i) => (
-                            <div key={i} className="flex items-start justify-between p-3 bg-green-50 rounded-lg">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium text-green-800">{g.firstName} {g.lastName}</span>
-                                  {g.isMainGuest && <Badge className="bg-amber-500 text-white text-xs">{tr.principal}</Badge>}
-                                </div>
-                                <p className="text-sm text-muted-foreground">{g.documentType}: {g.documentNumber}</p>
-                              </div>
-                              <Button variant="ghost" size="sm" onClick={() => removeGuest(i)} className="text-red-500">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      </ScrollArea>
-                    )}
-                    <Separator className="my-4" />
-                    <Button onClick={goToSignature} disabled={guests.length === 0} className="w-full bg-green-600 hover:bg-green-700 text-white">
-                      {tr.saveRegistration}
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {view === 'signature' && (
-          <div>
-            <Button variant="ghost" onClick={() => setView('registration')} className="mb-6 text-green-700">
-              <ArrowLeft className="h-4 w-4 mr-2" />{tr.backToApartments}
-            </Button>
-            <Card className="max-w-2xl mx-auto bg-white/80 backdrop-blur">
-              <CardHeader>
-                <CardTitle className="text-green-800">{tr.signature}</CardTitle>
-                <CardDescription>{selectedApartment?.name} - {guests.length} {tr.guests.toLowerCase()}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
-                  <h4 className="font-medium text-amber-800 mb-4 flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />{tr.stayDates}
-                  </h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-amber-700">{tr.checkInDate} *</Label>
-                      <Input type="date" value={format(checkInDate, 'yyyy-MM-dd')} onChange={(e) => setCheckInDate(new Date(e.target.value))} className="mt-2 border-amber-300" />
-                    </div>
-                    <div>
-                      <Label className="text-amber-700">{tr.checkOutDate}</Label>
-                      <Input type="date" value={checkOutDate ? format(checkOutDate, 'yyyy-MM-dd') : ''} onChange={(e) => e.target.value && setCheckOutDate(new Date(e.target.value))} className="mt-2 border-amber-300" />
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-base font-semibold text-green-800">{tr.signature}</Label>
-                  <div className="border-2 border-green-300 rounded-lg overflow-hidden bg-white relative">
-                    <canvas
-                      ref={canvasRef}
-                      className="w-full h-40 cursor-crosshair touch-none"
-                      onMouseDown={startDrawing}
-                      onMouseMove={draw}
-                      onMouseUp={stopDrawing}
-                      onMouseLeave={stopDrawing}
-                      onTouchStart={startDrawing}
-                      onTouchMove={draw}
-                      onTouchEnd={stopDrawing}
-                    />
-                    {!hasSignature && <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><span className="text-gray-300 italic">{tr.signaturePlaceholder}</span></div>}
-                  </div>
-                  <Button type="button" variant="outline" size="sm" onClick={clearSignature}><RotateCcw className="h-4 w-4 mr-2" />{tr.clear}</Button>
-                </div>
-                <Button onClick={handleSaveRegistration} disabled={isLoading || !hasSignature} className="w-full bg-green-600 hover:bg-green-700 text-white">
-                  {isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  {tr.saveRegistration}
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setShowSettings(false)} className="flex-1">
+                  Cancelar
                 </Button>
+                <Button onClick={handleUpdateBirthDate} className="flex-1 bg-orange-500 hover:bg-orange-600">
+                  Guardar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <main className="max-w-6xl mx-auto px-4 py-6">
+        <Tabs value={activeSection} onValueChange={setActiveSection}>
+          <TabsList className="grid grid-cols-3 w-full max-w-md mx-auto mb-6">
+            <TabsTrigger value="intro" className="flex items-center gap-2">
+              <Utensils className="w-4 h-4" />
+              <span className="hidden sm:inline">Guía</span>
+            </TabsTrigger>
+            <TabsTrigger value="shopping" className="flex items-center gap-2">
+              <ShoppingCart className="w-4 h-4" />
+              <span className="hidden sm:inline">Compras</span>
+            </TabsTrigger>
+            <TabsTrigger value="info" className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4" />
+              <span className="hidden sm:inline">Info</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Introduction Tab */}
+          <TabsContent value="intro">
+            {/* Age Range Banner */}
+            <Card className={`mb-6 ${ageInfo?.bgClass} ${ageInfo?.borderClass} border`}>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  <span className="text-4xl">{ageInfo?.icon}</span>
+                  <div className="flex-1">
+                    <h2 className="text-xl font-bold text-gray-800">
+                      {ageInfo?.title}
+                    </h2>
+                    <p className="text-gray-600">{ageInfo?.subtitle}</p>
+                    <p className="text-sm text-gray-500 mt-1">{ageInfo?.description}</p>
+                  </div>
+                  <div className="text-right">
+                    <Badge className={`${ageInfo?.bgClass} ${ageInfo?.textClass} border`}>
+                      {ageInfo?.mealsPerDay} {ageInfo?.mealsPerDay === 1 ? 'comida/día' : 'comidas/día'}
+                    </Badge>
+                  </div>
+                </div>
               </CardContent>
             </Card>
-          </div>
-        )}
 
-        {view === 'admin' && (
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <Button variant="ghost" onClick={() => setView('selection')} className="text-green-700">
-                <ArrowLeft className="h-4 w-4 mr-2" />{tr.backToApartments}
-              </Button>
-              <h2 className="text-2xl font-bold text-green-800">{tr.adminPanel}</h2>
+            {/* Month Selector */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-orange-500" />
+                  Selecciona el Mes
+                </h3>
+                {family?.baby_birth_date && babyAgeMonths && babyAgeMonths >= 6 && babyAgeMonths <= 24 && (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="text-orange-600 border-orange-300 hover:bg-orange-50"
+                    onClick={() => {
+                      const birthDate = new Date(family.baby_birth_date!)
+                      const currentDay = calculateCurrentDayFromBirth(birthDate)
+                      setSelectedMonth(babyAgeMonths)
+                      setSelectedShoppingMonth(babyAgeMonths)
+                      if (currentDay > 0) {
+                        const dayInMonth = ((currentDay - 1) % 30) + 1
+                        setSelectedDay(dayInMonth)
+                      }
+                    }}
+                  >
+                    📍 Ir a hoy
+                  </Button>
+                )}
+              </div>
+              {family?.baby_birth_date && babyAgeMonths && babyAgeMonths >= 6 && babyAgeMonths <= 24 && selectedMonth === babyAgeMonths && (
+                <div className="mb-3 p-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700 flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4" />
+                  <span>Sincronizado con la edad de {family.baby_name || 'tu bebé'} ({babyAgeMonths} meses)</span>
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2">
+                {availableMonths.map(month => {
+                  const monthAgeRange = getAgeRangeForMonth(month)
+                  const monthAgeInfo = ageRangeInfo[monthAgeRange]
+                  const isSelected = selectedMonth === month
+                  const isCurrentMonth = babyAgeMonths === month
+                  
+                  return (
+                    <Button
+                      key={month}
+                      variant={isSelected ? 'default' : 'outline'}
+                      className={`${isSelected ? 'bg-orange-500 hover:bg-orange-600' : ''} ${isCurrentMonth && !isSelected ? 'border-green-400 border-2' : ''} flex flex-col items-center py-2 h-auto relative`}
+                      onClick={() => setSelectedMonth(month)}
+                    >
+                      {isCurrentMonth && <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full" />}
+                      <span className="font-semibold">Mes {month}</span>
+                      <span className="text-xs opacity-75">{monthAgeInfo?.subtitle}</span>
+                    </Button>
+                  )
+                })}
+              </div>
             </div>
-            {isDataLoading ? (
-              <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-green-600" /></div>
-            ) : registrations.length === 0 ? (
-              <Card className="bg-white/80 backdrop-blur">
-                <CardContent className="p-12 text-center">
-                  <ClipboardList className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">{tr.noRegistrations}</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {registrations.map((reg) => (
-                  <Card key={reg.id} className="bg-white/80 backdrop-blur">
-                    <CardContent className="p-4">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <Badge className={reg.status === 'active' ? 'bg-green-600' : ''}>{reg.status === 'active' ? tr.active : tr.checkedOut}</Badge>
-                          <p className="text-sm mt-2">{tr.checkIn}: {format(new Date(reg.checkInDate), 'PPP', { locale: dateLocale })}</p>
-                          <p className="text-sm text-muted-foreground">{reg.apartment.name} - {reg.guests.length} {tr.guests.toLowerCase()}</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline" onClick={() => { setSelectedReg(reg); setShowDetailsModal(true) }}>
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => exportAsImage(reg)} className="border-green-500 text-green-700">
-                            <Download className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" onClick={() => { setRegToDelete(reg.id); setShowDeleteDialog(true) }} className="border-red-500 text-red-700">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+
+            {/* Day Selector */}
+            {groupedSteps[selectedMonth] && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-700 mb-3">Día del Mes</h3>
+                <div className="flex flex-wrap gap-2">
+                  {groupedSteps[selectedMonth].map((step, index) => {
+                    const birthDate = family?.baby_birth_date ? new Date(family.baby_birth_date) : null
+                    const currentDay = birthDate ? calculateCurrentDayFromBirth(birthDate) : null
+                    const currentDayInMonth = currentDay ? ((currentDay - 1) % 30) + 1 : null
+                    const isCurrentDay = currentDayInMonth === index + 1 && selectedMonth === babyAgeMonths
+                    
+                    return (
+                      <Button
+                        key={step.id}
+                        variant={selectedDay === index + 1 ? 'default' : 'outline'}
+                        size="sm"
+                        className={`${selectedDay === index + 1 ? 'bg-orange-500 hover:bg-orange-600' : ''} ${isCurrentDay && selectedDay !== index + 1 ? 'border-green-400 border-2' : ''} relative`}
+                        onClick={() => setSelectedDay(index + 1)}
+                      >
+                        {isCurrentDay && <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full" />}
+                        Día {index + 1}
+                      </Button>
+                    )
+                  })}
+                </div>
               </div>
             )}
-          </div>
-        )}
-      </main>
 
-      <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{tr.registrationDetails}</DialogTitle>
-          </DialogHeader>
-          {selectedReg && (
-            <div className="space-y-4">
-              <Badge className={selectedReg.status === 'active' ? 'bg-green-600' : ''}>{selectedReg.status === 'active' ? tr.active : tr.checkedOut}</Badge>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-muted-foreground">{tr.apartment}</Label>
-                  <p className="font-medium">{selectedReg.apartment.name}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">{tr.checkIn}</Label>
-                  <p className="font-medium">{format(new Date(selectedReg.checkInDate), 'PPP', { locale: dateLocale })}</p>
-                </div>
-              </div>
-              <Separator />
-              <div>
-                <Label className="text-lg font-semibold">{tr.guests}</Label>
-                <div className="space-y-3 mt-2">
-                  {selectedReg.guests.map((g, i) => (
-                    <div key={i} className="p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-green-800">{g.firstName} {g.lastName}</span>
-                            {g.isMainGuest && <Badge className="bg-amber-500 text-white text-xs">{tr.principal}</Badge>}
-                          </div>
-                          <p className="text-sm text-muted-foreground">{g.documentType}: {g.documentNumber}</p>
-                        </div>
-                        {g.documentPhoto && (
-                          <img src={g.documentPhoto} alt="Documento" className="h-16 w-16 object-cover rounded-md border cursor-pointer" onClick={() => openPhotoModal(g.documentPhoto!)} />
-                        )}
+            {/* Current Step Content */}
+            {currentStep && (
+              <Card className="border-orange-200">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Badge variant="secondary" className="mb-2">
+                        Mes {currentStep.monthNumber} | {ageRangeInfo[currentStep.ageRange]?.title}
+                      </Badge>
+                      <CardTitle className="text-xl">{currentStep.title}</CardTitle>
+                    </div>
+                    <span className="text-3xl">{ageRangeInfo[currentStep.ageRange]?.icon}</span>
+                  </div>
+                  <CardDescription>{currentStep.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Meals Section */}
+                  {currentStep.meals && currentStep.meals.length > 0 && (
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-gray-700 flex items-center gap-2">
+                        <Utensils className="w-5 h-5 text-orange-500" />
+                        Comidas del Día ({currentStep.mealsPerDay} {currentStep.mealsPerDay === 1 ? 'comida' : 'comidas'})
+                      </h4>
+                      {currentStep.meals.map((meal, mealIndex) => (
+                        <Card key={mealIndex} className="border-gray-200">
+                          <CardHeader className="pb-2">
+                            <div className="flex items-center gap-2">
+                              {meal.type === 'desayuno' && <Sun className="w-5 h-5 text-yellow-500" />}
+                              {meal.type === 'almuerzo' && <Sun className="w-5 h-5 text-orange-400" />}
+                              {meal.type === 'merienda' && <Sun className="w-5 h-5 text-amber-400" />}
+                              {meal.type === 'cena' && <Moon className="w-5 h-5 text-indigo-400" />}
+                              <CardTitle className="text-base">{meal.title}</CardTitle>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <div>
+                              <p className="text-sm text-gray-500">Alimento</p>
+                              <p className="font-medium">{meal.food}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-500">Porción</p>
+                              <p className="font-medium">{meal.portion}</p>
+                            </div>
+                            <div className="bg-gray-50 p-3 rounded-lg">
+                              <p className="text-sm text-gray-500 mb-1 flex items-center gap-2">
+                                <ChefHat className="w-4 h-4" />
+                                Preparación
+                              </p>
+                              <p className="text-sm">{meal.recipe}</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Legacy: Specific Food (for backwards compatibility) */}
+                  {currentStep.specificFood && !currentStep.meals?.length && (
+                    <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+                      <p className="font-medium text-orange-700">Alimento:</p>
+                      <p className="text-lg text-orange-800">{currentStep.specificFood}</p>
+                    </div>
+                  )}
+
+                  {/* Portion Size */}
+                  {currentStep.portionSize && (
+                    <div className="p-3 bg-blue-50 rounded-lg">
+                      <div className="flex items-center gap-2 text-blue-700 mb-1">
+                        <Utensils className="w-4 h-4" />
+                        <span className="font-medium">Porción</span>
+                      </div>
+                      <p className="text-sm text-gray-600">{currentStep.portionSize}</p>
+                    </div>
+                  )}
+
+                  {/* Frequency */}
+                  {currentStep.frequency && (
+                    <div className="p-3 bg-purple-50 rounded-lg">
+                      <div className="flex items-center gap-2 text-purple-700 mb-1">
+                        <Clock className="w-4 h-4" />
+                        <span className="font-medium">Frecuencia</span>
+                      </div>
+                      <p className="text-sm text-gray-600">{currentStep.frequency}</p>
+                    </div>
+                  )}
+
+                  {/* Tips */}
+                  {currentStep.tips && (
+                    <div className="p-4 bg-green-50 rounded-lg">
+                      <h4 className="font-medium text-green-700 mb-2 flex items-center gap-2">
+                        <Sparkles className="w-4 h-4" /> Consejos
+                      </h4>
+                      <ul className="space-y-1">
+                        {parseJson(currentStep.tips).map((tip, i) => (
+                          <li key={i} className="flex items-start gap-2 text-sm text-green-600">
+                            <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                            <span>{tip}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Warnings */}
+                  {currentStep.warnings && (
+                    <div className="p-4 bg-red-50 rounded-lg border border-red-200">
+                      <h4 className="font-medium text-red-700 mb-2 flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4" /> Importante
+                      </h4>
+                      <ul className="space-y-1">
+                        {parseJson(currentStep.warnings).map((warning, i) => (
+                          <li key={i} className="flex items-start gap-2 text-sm text-red-600">
+                            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                            <span>{warning}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Breastmilk Note */}
+                  {currentStep.breastmilkNote && (
+                    <div className="p-4 bg-pink-50 rounded-lg">
+                      <p className="text-sm text-pink-700 flex items-center gap-2">
+                        <Heart className="w-4 h-4" />
+                        {currentStep.breastmilkNote}
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Recipe Section */}
+            {currentStep?.specificFood && predefinedRecipes[currentStep.specificFood] && (
+              <Card className="mt-6 border-green-200">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <ChefHat className="w-5 h-5 text-green-600" />
+                    Recetas para {currentStep.specificFood}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {predefinedRecipes[currentStep.specificFood].map((recipe, idx) => (
+                    <div key={idx} className="p-4 bg-green-50 rounded-lg">
+                      <h4 className="font-semibold text-green-700 mb-2">{recipe.name}</h4>
+                      <div className="mb-2">
+                        <p className="text-sm text-gray-500">Ingredientes:</p>
+                        <p className="text-sm">{recipe.ingredients.join(', ')}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Preparación:</p>
+                        <ol className="list-decimal list-inside text-sm space-y-1">
+                          {recipe.instructions.map((inst, i) => (
+                            <li key={i}>{inst}</li>
+                          ))}
+                        </ol>
                       </div>
                     </div>
                   ))}
-                </div>
-              </div>
-              {selectedReg.signature && (
-                <div>
-                  <Label className="text-lg font-semibold">{tr.signature}</Label>
-                  <div className="mt-2 border rounded-lg p-2 bg-white">
-                    <img src={selectedReg.signature} alt="Firma" className="max-h-32 mx-auto" />
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Shopping Tab */}
+          <TabsContent value="shopping">
+            <Card className="border-orange-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ShoppingCart className="w-5 h-5 text-orange-500" />
+                  Lista de Compras - Mes {selectedShoppingMonth}
+                </CardTitle>
+                <CardDescription>
+                  Todos los ingredientes necesarios para el mes seleccionado
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {/* Month Selector for Shopping */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-medium text-gray-700">Selecciona el Mes:</h4>
+                    {family?.baby_birth_date && babyAgeMonths && babyAgeMonths >= 6 && babyAgeMonths <= 24 && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="text-orange-600 border-orange-300"
+                        onClick={() => setSelectedShoppingMonth(babyAgeMonths!)}
+                      >
+                        📍 Mi mes actual
+                      </Button>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {availableMonths.map(month => {
+                      const isCurrentMonth = babyAgeMonths === month
+                      return (
+                        <Button
+                          key={month}
+                          variant={selectedShoppingMonth === month ? 'default' : 'outline'}
+                          className={`${selectedShoppingMonth === month ? 'bg-orange-500 hover:bg-orange-600' : ''} ${isCurrentMonth && selectedShoppingMonth !== month ? 'border-green-400 border-2' : ''} relative`}
+                          onClick={() => setSelectedShoppingMonth(month)}
+                        >
+                          {isCurrentMonth && <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full" />}
+                          Mes {month}
+                        </Button>
+                      )
+                    })}
                   </div>
                 </div>
-              )}
-              {selectedReg.status === 'active' && (
-                <Button onClick={() => handleCheckout(selectedReg.id)} disabled={isLoading} className="w-full bg-amber-500 hover:bg-amber-600 text-white">
-                  {tr.checkout}
-                </Button>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
-      <Dialog open={showPhotoModal} onOpenChange={setShowPhotoModal}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{tr.documentPhoto}</DialogTitle>
-          </DialogHeader>
-          {selectedPhoto && (
-            <div className="flex justify-center">
-              <img src={selectedPhoto} alt="Documento" className="max-w-full max-h-[70vh] object-contain rounded-lg" />
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+                {/* Shopping List Summary */}
+                {shoppingList.length > 0 && (
+                  <div className="mb-4 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg border border-orange-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-orange-700 font-semibold text-lg">
+                        {shoppingList.length} productos para el mes completo
+                      </span>
+                      <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                        {checkedItems.size}/{shoppingList.length} ✓
+                      </Badge>
+                    </div>
+                    {/* Total estimado */}
+                    {(() => {
+                      const summary = getMonthSummary(selectedShoppingMonth, introSteps)
+                      const totalKg = (summary.totalGrams / 1000).toFixed(1)
+                      return (
+                        <div className="mb-3 p-2 bg-white rounded-lg border border-orange-100">
+                          <p className="text-sm text-orange-700">
+                            📊 <strong>Total estimado:</strong> {summary.uniqueFoods} alimentos diferentes | ~{totalKg}kg de comida
+                          </p>
+                          <p className="text-xs text-orange-600 mt-1">
+                            {summary.totalDays} días | {summary.totalMeals} comidas
+                          </p>
+                        </div>
+                      )
+                    })()}
+                    <div className="flex flex-wrap gap-2 text-sm">
+                      {categories.map(cat => {
+                        const categoryItems = shoppingList.filter(i => i.category === cat)
+                        const totalCatGrams = categoryItems.reduce((sum, i) => sum + (i.totalGrams || i.quantityGrams), 0)
+                        if (categoryItems.length === 0) return null
+                        return (
+                          <Badge key={cat} variant="outline" className="bg-white">
+                            {categoryIcons[cat]} {cat}: {categoryItems.length} ({(totalCatGrams/1000).toFixed(1)}kg)
+                          </Badge>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{tr.deleteConfirmTitle}</AlertDialogTitle>
-            <AlertDialogDescription>{tr.deleteConfirmDescription}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{tr.cancel}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">{tr.delete}</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+                {/* Shopping List by Category */}
+                {shoppingList.length === 0 ? (
+                  <Card className="border-orange-200 bg-orange-50">
+                    <CardContent className="p-6 text-center">
+                      <ShoppingCart className="w-12 h-12 mx-auto text-orange-300 mb-3" />
+                      <p className="text-orange-700 font-medium">No hay datos de alimentos para este mes</p>
+                      <p className="text-sm text-orange-600 mt-1">Selecciona otro mes o verifica los datos</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-4">
+                    {categories.map(category => {
+                      const categoryItems = shoppingList.filter(item => item.category === category)
+                      if (categoryItems.length === 0) return null
+                      
+                      return (
+                        <Card key={category} className="border-gray-200 shadow-sm">
+                          <CardHeader className="pb-2 bg-gray-50">
+                            <CardTitle className="text-base flex items-center gap-2">
+                              <span className="text-2xl">{categoryIcons[category]}</span>
+                              {category}
+                              <Badge variant="secondary" className="ml-auto">{categoryItems.length} items</Badge>
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="pt-3 space-y-2">
+                            {categoryItems.map((item) => (
+                              <div
+                                key={item.name}
+                                className={`p-3 rounded-lg cursor-pointer transition-all ${
+                                  checkedItems.has(item.name) 
+                                    ? 'bg-green-50 border border-green-200' 
+                                    : 'bg-white border border-gray-200 hover:border-orange-300 hover:bg-orange-50'
+                                }`}
+                                onClick={() => toggleItem(item.name)}
+                              >
+                                <div className="flex items-start gap-3">
+                                  <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                                    checkedItems.has(item.name) 
+                                      ? 'bg-green-500 border-green-500' 
+                                      : 'border-gray-300'
+                                  }`}>
+                                    {checkedItems.has(item.name) && <Check className="w-4 h-4 text-white" />}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <p className={`font-medium ${checkedItems.has(item.name) ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+                                        {item.icon} {item.name}
+                                      </p>
+                                    </div>
+                                    <p className={`text-sm font-medium ${checkedItems.has(item.name) ? 'text-gray-400' : 'text-orange-600'}`}>
+                                      {item.quantity}
+                                    </p>
+                                    {item.daysUsed && item.daysUsed.length > 0 && (
+                                      <p className="text-xs text-gray-500 mt-1">
+                                        📅 Días: {item.daysUsed.slice(0, 5).join(', ')}{item.daysUsed.length > 5 ? ` (+${item.daysUsed.length - 5} más)` : ''}
+                                      </p>
+                                    )}
+                                    {item.notes && (
+                                      <p className="text-xs text-gray-400 mt-1">
+                                        💡 {item.notes}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Info Tab */}
+          <TabsContent value="info">
+            <div className="space-y-6">
+              {/* Age Ranges Info */}
+              <Card className="border-orange-200">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Baby className="w-5 h-5 text-orange-500" />
+                    Rangos de Edad
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {Object.entries(ageRangeInfo).map(([key, info]) => (
+                    <div key={key} className={`p-4 rounded-lg ${info.bgClass} ${info.borderClass} border`}>
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">{info.icon}</span>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-800">{info.title}</h3>
+                          <p className="text-sm text-gray-600">{info.subtitle}</p>
+                          <p className="text-sm text-gray-500 mt-1">{info.description}</p>
+                        </div>
+                        <Badge className={`${info.bgClass} ${info.textClass} border`}>
+                          {info.mealsPerDay} {info.mealsPerDay === 1 ? 'comida/día' : 'comidas/día'}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              {/* WHO Recommendations */}
+              <Card className="border-green-200">
+                <CardHeader>
+                  <CardTitle className="text-green-700 flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5" />
+                    Recomendaciones OMS
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="p-3 bg-green-50 rounded-lg">
+                    <p className="text-sm text-green-600">La OMS recomienda iniciar la alimentación complementaria a los 6 meses, manteniendo la lactancia materna hasta al menos los 2 años.</p>
+                  </div>
+                  <div className="p-3 bg-yellow-50 rounded-lg">
+                    <p className="text-sm text-yellow-700 mt-1">Introduce alérgenos comunes (huevo, pescado, frutos secos) a partir de los 6 meses, sin retrasar su introducción.</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Allergen Info */}
+              <Card className="border-purple-200">
+                <CardHeader>
+                  <CardTitle className="text-purple-700 flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5" />
+                    Introducción de Alérgenos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2">🥚 Huevo (yema desde los 6-7 meses, clara desde los 12 meses)</li>
+                    <li className="flex items-center gap-2">🐟 Pescado (desde los 9-10 meses)</li>
+                    <li className="flex items-center gap-2">🥜 Frutos secos (en forma de crema, desde los 12 meses)</li>
+                    <li className="flex items-center gap-2">🥛 Lácteos (yogur y queso desde los 9-12 meses)</li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              {/* Prohibited Foods */}
+              <Card className="border-red-200">
+                <CardHeader>
+                  <CardTitle className="text-red-600 flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5" />
+                    Alimentos Prohibidos antes de los 12 meses
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2 text-red-600">🍯 Miel (riesgo de botulismo)</li>
+                    <li className="flex items-center gap-2 text-red-600">🧂 Sal añadida</li>
+                    <li className="flex items-center gap-2 text-red-600">🍬 Azúcar añadida</li>
+                    <li className="flex items-center gap-2 text-red-600">🥛 Leche de vaca como bebida principal</li>
+                    <li className="flex items-center gap-2 text-red-600">🐟 Pescados crudos</li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </main>
     </div>
   )
 }

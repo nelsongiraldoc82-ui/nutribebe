@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // No usar "standalone" para Netlify - el plugin maneja todo automáticamente
+  output: 'export',
+  basePath: '/nutribebe',
+  images: {
+    unoptimized: true,
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
